@@ -489,9 +489,35 @@ function setupEventHandlers() {
     });
 
     const telLink = document.getElementById('btn-order-call');
+    const modalOverlay = document.getElementById('order-modal-overlay');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const orderForm = document.getElementById('order-form');
+
     if (telLink) {
-        telLink.addEventListener('click', () => {
-            sendOrderNotification();
+        telLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (modalOverlay) modalOverlay.classList.add('active');
+        });
+    }
+
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', () => {
+            if (modalOverlay) modalOverlay.classList.remove('active');
+        });
+    }
+
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                modalOverlay.classList.remove('active');
+            }
+        });
+    }
+
+    if (orderForm) {
+        orderForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitOrderRequest();
         });
     }
 }
@@ -631,21 +657,35 @@ function getHaversineDistance(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
-// Send POST request to notify admin of a new order click
-function sendOrderNotification() {
+// Send POST request to notify admin and save order
+function submitOrderRequest() {
     const activeData = getActiveMaterialData(currentMaterial);
     if (!activeData) return;
+
+    const phoneInput = document.getElementById('user-phone');
+    const phone = phoneInput ? phoneInput.value.trim() : '';
+    if (!phone) return;
 
     const materialCost = activeData.price * currentVolume;
     const deliveryCost = currentDistance * deliveryRate;
     const totalCost = materialCost + deliveryCost;
 
     const orderData = {
+        phone: phone,
         material: activeData.name,
         volume: currentVolume,
         distance: currentDistance,
-        totalCost: totalCost
+        totalCost: totalCost,
+        destinationAddress: destinationAddress || 'Не указан'
     };
+
+    const submitBtn = document.querySelector('#order-form .btn-calc');
+    const spinner = document.getElementById('modal-spinner');
+    const btnText = document.getElementById('modal-btn-text');
+
+    if (submitBtn) submitBtn.disabled = true;
+    if (spinner) spinner.style.display = 'inline-block';
+    if (btnText) btnText.style.display = 'none';
 
     fetch('/api/order', {
         method: 'POST',
@@ -659,10 +699,20 @@ function sendOrderNotification() {
         return res.json();
     })
     .then(data => {
-        console.log('[App] Order notification request sent successfully:', data);
+        console.log('[App] Order request sent successfully:', data);
+        alert('Запрос успешно отправлен! Мы перезвоним вам в ближайшее время.');
+        const modalOverlay = document.getElementById('order-modal-overlay');
+        if (modalOverlay) modalOverlay.classList.remove('active');
+        if (phoneInput) phoneInput.value = '';
     })
     .catch(err => {
-        console.error('[App] Failed to send order notification:', err);
+        console.error('[App] Failed to send order request:', err);
+        alert('Произошла ошибка при отправке. Пожалуйста, попробуйте позвонить нам.');
+    })
+    .finally(() => {
+        if (submitBtn) submitBtn.disabled = false;
+        if (spinner) spinner.style.display = 'none';
+        if (btnText) btnText.style.display = 'inline-block';
     });
 }
 

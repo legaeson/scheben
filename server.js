@@ -99,17 +99,41 @@ app.post('/api/settings', (req, res) => {
     }
 });
 
-// API endpoint to notify admin of a new order call
+const ORDERS_PATH = path.join(__dirname, 'orders.json');
+
+// Helper to save order to JSON file
+function saveOrderToFile(orderData) {
+    try {
+        let orders = [];
+        if (fs.existsSync(ORDERS_PATH)) {
+            const data = fs.readFileSync(ORDERS_PATH, 'utf8');
+            if (data) {
+                orders = JSON.parse(data);
+            }
+        }
+        orderData.timestamp = new Date().toISOString();
+        orders.push(orderData);
+        fs.writeFileSync(ORDERS_PATH, JSON.stringify(orders, null, 2), 'utf8');
+    } catch (err) {
+        console.error('[Server] Error saving order to file:', err);
+    }
+}
+
+// API endpoint to handle order request
 app.post('/api/order', (req, res) => {
-    const { material, volume, distance, totalCost } = req.body;
+    const { phone, material, volume, distance, totalCost, destinationAddress } = req.body;
     
+    // Save to local file
+    saveOrderToFile(req.body);
+
     // Construct a nice notification message
-    let msgText = `🔔 *Новый заказ на сайте!*\n\n`;
+    let msgText = `🔔 *Новый запрос с сайта!*\n\n`;
+    msgText += `📱 *Телефон:* ${phone}\n`;
+    msgText += `📍 *Адрес:* ${destinationAddress}\n`;
     msgText += `📦 *Материал:* ${material}\n`;
     msgText += `🔢 *Объем:* ${volume} м³\n`;
     msgText += `🚗 *Дистанция:* ${distance} км\n`;
-    msgText += `💰 *Ориентировочная стоимость:* ${totalCost} ₽\n\n`;
-    msgText += `📞 _Клиент кликнул «Позвонить и заказать»_`;
+    msgText += `💰 *Ориентировочная стоимость:* ${totalCost} ₽\n`;
 
     if (bot && adminChatId) {
         bot.sendMessage(adminChatId, msgText, { parse_mode: 'Markdown' })
@@ -122,7 +146,7 @@ app.post('/api/order', (req, res) => {
         });
     } else {
         console.warn('[Server] Telegram bot not active or admin ID not set. Cannot send order notification.');
-        res.json({ success: false, message: 'Telegram notification skipped (bot or admin chat ID missing)' });
+        res.json({ success: true, message: 'Order saved, Telegram notification skipped' });
     }
 });
 
