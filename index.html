@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>шебень.рф — Доставка щебня, ПГС, песка, гравия в Красноярске</title>
     <meta name="description" content="Заказ и доставка сыпучих строительных материалов (щебень, ПГС, песок, гравий, битый кирпич) напрямую с нашего склада по Красноярску и пригороду. Удобный расчет стоимости онлайн.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2.5'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
     <link rel="stylesheet" href="style.css">
-    <!-- Leaflet CSS and JS (OpenStreetMap) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet CSS & JS for OpenStreetMap -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
  
@@ -46,7 +47,7 @@
                         <div class="material-info">
                             <div class="material-name">Щебень</div>
                             <div class="material-price">от 750 ₽/м³</div>
-                            <select class="variant-select" data-mat="crushed_stone">
+                            <select class="variant-select" id="select-crushed-stone" name="variant_crushed_stone" aria-label="Фракция щебня" data-mat="crushed_stone">
                                 <option value="frac_4_10">Фракция 4-8 ; 5-10</option>
                                 <option value="frac_8_20">Фракция 8-16 ; 5-20 ; 10-20</option>
                             </select>
@@ -58,7 +59,7 @@
                         <div class="material-info">
                             <div class="material-name">Песок</div>
                             <div class="material-price">от 850 ₽/м³</div>
-                            <select class="variant-select" data-mat="sand">
+                            <select class="variant-select" id="select-sand" name="variant_sand" aria-label="Вид песка" data-mat="sand">
                                 <option value="sand_0_5">Из отсева дробления 0-5</option>
                                 <option value="sand_washed">2 кл (мытый)</option>
                             </select>
@@ -70,7 +71,7 @@
                         <div class="material-info">
                             <div class="material-name">ПЩС</div>
                             <div class="material-price">от 750 ₽/м³</div>
-                            <select class="variant-select" data-mat="pshs">
+                            <select class="variant-select" id="select-pshs" name="variant_pshs" aria-label="Фракция ПЩС" data-mat="pshs">
                                 <option value="pshs_0_10">0-10</option>
                                 <option value="pshs_0_8">0-8</option>
                                 <option value="pshs_0_20">0-20</option>
@@ -84,7 +85,7 @@
                         <div class="material-info">
                             <div class="material-name">ГПС / Гравий</div>
                             <div class="material-price">от 550 ₽/м³</div>
-                            <select class="variant-select" data-mat="gps_gravel">
+                            <select class="variant-select" id="select-gps-gravel" name="variant_gps_gravel" aria-label="Вид ГПС / гравия" data-mat="gps_gravel">
                                 <option value="gps_0_20">ГПС 0-20 ; Гравий 5-20</option>
                             </select>
                         </div>
@@ -137,7 +138,7 @@
                         <button type="button" id="btn-calculate" class="btn-calc">
                             <span class="spinner" id="calc-spinner"></span>
                             <svg class="btn-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            <span id="btn-text">Найти</span>
+                            <span id="btn-text">Рассчитать</span>
                         </button>
                     </div>
                     <ul id="suggestions" class="suggestions-list"></ul>
@@ -145,10 +146,6 @@
 
                 <div class="map-wrapper-relative">
                     <div class="map-container" id="map"></div>
-                    <button type="button" class="btn-toggle-fullscreen" id="btn-toggle-fullscreen" title="Развернуть карту">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-                        <span id="fullscreen-btn-text">Развернуть карту</span>
-                    </button>
                 </div>
 
                 <div class="volume-control" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
@@ -164,7 +161,7 @@
                 <div class="price-breakdown">
                     <div class="breakdown-row">
                         <span>Начальная точка:</span>
-                        <strong>Склад</strong>
+                        <strong>Склад (д. Кубеково)</strong>
                     </div>
                     <div class="breakdown-row">
                         <span>Расстояние доставки:</span>

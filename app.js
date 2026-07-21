@@ -1,7 +1,7 @@
-// OpenStreetMap & Leaflet App Logic for шебень.рф
+// OpenStreetMap App Logic for шебень.рф using Leaflet, Nominatim & OSRM
 
 // Default starting configurations
-const defaultStartCoords = [56.146389, 93.112222]; // [lat, lon]
+const defaultStartCoords = [56.146389, 93.112222]; // Warehouse [lat, lon] (Kubekovo)
 
 const defaultMaterials = {
     crushed_stone: {
@@ -43,37 +43,45 @@ const defaultDeliveryRate = 400;
 
 // State variables
 let startCoords = [...defaultStartCoords];
-let materials = { ...defaultMaterials };
+let materials = JSON.parse(JSON.stringify(defaultMaterials));
 let deliveryRate = defaultDeliveryRate;
 
 let currentMaterial = 'crushed_stone';
 let currentVolume = 15;
 let currentDistance = 0; // in km
 let destinationAddress = '';
+
 let myMap = null;
-let currentRoute = null; // Polyline layer
-let startMarker = null;
 let destMarker = null;
-let tempMarker = null;
-let searchTimeout = null;
+let routePolyline = null;
 
-// Custom premium SVG icon for start and destination points
-const startIcon = L.divIcon({
-    html: `<div style="background-color: #d97706; width: 14px; height: 14px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>`,
-    className: 'custom-start-marker',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-});
+let pendingCoords = null;
+let pendingAddressName = '';
 
-const destIcon = L.divIcon({
-    html: `<div style="background-color: #10b981; width: 14px; height: 14px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>`,
-    className: 'custom-dest-marker',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-});
+// Custom Leaflet Green Pin Marker Icon
+function getGreenIcon() {
+    return L.divIcon({
+        className: 'custom-leaflet-pin',
+        html: `<div style="background-color: #10b981; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+}
 
-// Initialize app when DOM is ready
-document.addEventListener('DOMContentLoaded', init);
+// Initialize app when DOM and Leaflet script are loaded
+function checkAndInitMap() {
+    if (typeof L !== 'undefined') {
+        init();
+    } else {
+        setTimeout(checkAndInitMap, 100);
+    }
+}
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    checkAndInitMap();
+} else {
+    document.addEventListener('DOMContentLoaded', checkAndInitMap);
+}
 
 function init() {
     initMap();
@@ -81,101 +89,225 @@ function init() {
     loadSettingsFromServer();
 }
 
-// Initialize Leaflet Map with default coordinates
-function initMap() {
-    myMap = L.map('map', {
-        scrollWheelZoom: false, // Disable scroll zoom for better page scrolling experience
-        attributionControl: false // Disable default Leaflet attribution
-    }).setView(startCoords, 10); // Krasnoyarsk
+// Set destination point marker on Leaflet map
+function setDestinationMarker(coords, addressName) {
+    if (!myMap) return;
+    const iconToUse = getGreenIcon();
 
-    // Add 2GIS (2ГИС) tiles
-    L.tileLayer('https://tile{s}.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1', {
-        maxZoom: 18,
-        subdomains: '0123'
+    if (destMarker) {
+        destMarker.setLatLng(coords);
+        destMarker.bindPopup(`<b>Адрес доставки:</b><br>${addressName || 'Точка на карте'}`);
+    } else {
+        destMarker = L.marker(coords, { icon: iconToUse }).addTo(myMap);
+        destMarker.bindPopup(`<b>Адрес доставки:</b><br>${addressName || 'Точка на карте'}`);
+    }
+}
+
+// Initialize Leaflet Map
+function initMap() {
+    // Restrain bounds to Krasnoyarsk delivery area (200km radius)
+    const krasnoyarskBounds = L.latLngBounds(
+        L.latLng(54.0, 90.0),
+        L.latLng(58.0, 96.0)
+    );
+
+    myMap = L.map('map', {
+        center: startCoords,
+        zoom: 10,
+        minZoom: 8,
+        maxZoom: 19,
+        maxBounds: krasnoyarskBounds,
+        maxBoundsViscosity: 0.8,
+        zoomControl: true,
+        attributionControl: false
+    });
+
+    // Standard OpenStreetMap tiles with regional zoom restriction & hidden attribution
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        minZoom: 8
     }).addTo(myMap);
 
-    // Create warehouse marker
-    startMarker = L.marker(startCoords, { icon: startIcon }).addTo(myMap)
-        .bindPopup('<b>Наш склад</b><br>Отсюда отправляется доставка материалов');
+    // Note: Warehouse start marker at Kubekovo is intentionally hidden from map view,
+    // while route calculations continue from startCoords (Kubekovo).
 
-    // Click on map to drop temporary pin with "Выбрать это место" popup
-    myMap.on('click', (e) => {
+    // Click on map to place point marker instantly and defer reverse geocoding + route calculation to clicking "Рассчитать"
+    myMap.on('click', function (e) {
         const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-        
-        // Limit to 200km radius from warehouse / Krasnoyarsk
-        const distFromStart = getHaversineDistance(startCoords[0], startCoords[1], lat, lng);
+        const lon = e.latlng.lng;
+
+        // Limit to 200km radius from warehouse
+        const distFromStart = getHaversineDistance(startCoords[0], startCoords[1], lat, lon);
         if (distFromStart > 200) {
             alert('Доставка выполняется только по Красноярску и окрестностям (до 200 км). Пожалуйста, выберите точку ближе к городу.');
             return;
         }
 
-        // Remove previous temp marker if exists
-        if (tempMarker) {
-            myMap.removeLayer(tempMarker);
-            tempMarker = null;
+        if (routePolyline) {
+            myMap.removeLayer(routePolyline);
+            routePolyline = null;
         }
 
-        showLoading(true);
-        // Reverse geocoding via Nominatim
-        const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
-        fetch(url, {
-            headers: {
-                'Accept-Language': 'ru',
-                'User-Agent': 'scheben-delivery-calculator'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            showLoading(false);
-            let name = 'Точка на карте';
-            if (data && data.display_name) {
-                name = formatNominatimAddress(data);
-            }
-            
-            // Create temporary marker with "Выбрать это место" button
-            const cleanName = name.replace(/'/g, "\\'");
-            const popupContent = `
-                <div style="text-align: center; padding: 4px;">
-                    <div style="font-weight: 600; font-size: 0.9rem; color: #111827; margin-bottom: 8px;">${name}</div>
-                    <button type="button" class="btn-map-confirm" onclick="confirmMapPoint(${lat}, ${lng}, '${cleanName}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
-                        ✓ Выбрать это место
-                    </button>
-                </div>
-            `;
+        const coords = [lat, lon];
+        const pointLabel = `Точка на карте (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+        setDestinationMarker(coords, pointLabel);
+        document.getElementById('address-input').value = pointLabel;
 
-            tempMarker = L.marker([lat, lng], { icon: destIcon }).addTo(myMap)
-                .bindPopup(popupContent)
-                .openPopup();
-        })
-        .catch(err => {
-            showLoading(false);
-            console.warn('Reverse geocoding failed:', err);
-            const name = `Точка на карте (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-            tempMarker = L.marker([lat, lng], { icon: destIcon }).addTo(myMap)
-                .bindPopup(`
-                    <div style="text-align: center; padding: 4px;">
-                        <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 8px;">${name}</div>
-                        <button type="button" class="btn-map-confirm" onclick="confirmMapPoint(${lat}, ${lng}, '${name}')" style="background: #10b981; color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
-                            ✓ Выбрать это место
-                        </button>
-                    </div>
-                `)
-                .openPopup();
-        });
+        pendingCoords = coords;
+        pendingAddressName = pointLabel;
+        setSearchButtonState(false);
     });
 }
 
-// Global function triggered when user clicks "Выбрать это место" in marker popup
-window.confirmMapPoint = function(lat, lng, name) {
-    if (tempMarker) {
-        myMap.removeLayer(tempMarker);
-        tempMarker = null;
-    }
+// Reverse geocode point to nearest street/house using Nominatim and calculate driving route via OSRM
+function resolvePointAndCalculateRoute(coords) {
     showLoading(true);
-    renderRouteAndCalculate([lat, lng], name);
-    setSearchButtonState(true);
-};
+    const lat = coords[0];
+    const lon = coords[1];
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
+
+    fetch(url, { headers: { 'Accept-Language': 'ru' } })
+    .then(res => res.json())
+    .then(data => {
+        let addressName = `Точка на карте (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+        let targetCoords = coords;
+
+        if (data) {
+            if (data.address) {
+                const addr = data.address;
+                const road = addr.road || addr.street || addr.pedestrian || addr.footway || addr.suburb || addr.city_district;
+                const house = addr.house_number || addr.building;
+                if (road) {
+                    addressName = house ? `${road}, ${house}` : road;
+                } else if (data.display_name) {
+                    addressName = data.display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
+                }
+            } else if (data.display_name) {
+                addressName = data.display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
+            }
+
+            if (data.lat && data.lon) {
+                targetCoords = [parseFloat(data.lat), parseFloat(data.lon)];
+            }
+        }
+
+        document.getElementById('address-input').value = addressName;
+        pendingCoords = targetCoords;
+        pendingAddressName = addressName;
+        setDestinationMarker(targetCoords, addressName);
+        calculateRoute(targetCoords, addressName);
+    })
+    .catch(err => {
+        console.warn('Nominatim reverse geocoding failed:', err);
+        const fallbackName = `Точка на карте (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+        document.getElementById('address-input').value = fallbackName;
+        calculateRoute(coords, fallbackName);
+    });
+}
+
+// Calculate driving route using OSRM API (Open Source Routing Machine)
+function calculateRoute(destCoords, displayName) {
+    destinationAddress = displayName;
+    setDestinationMarker(destCoords, displayName);
+    showLoading(true);
+
+    if (routePolyline) {
+        myMap.removeLayer(routePolyline);
+        routePolyline = null;
+    }
+
+    // OSRM Driving Route URL from startCoords (Kubekovo) to destCoords
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${destCoords[1]},${destCoords[0]}?overview=full&geometries=geojson`;
+
+    fetch(osrmUrl)
+    .then(res => res.json())
+    .then(data => {
+        showLoading(false);
+        if (data && data.routes && data.routes.length > 0) {
+            const route = data.routes[0];
+            const distanceMeters = route.distance;
+            currentDistance = Math.round(distanceMeters / 1000 * 10) / 10;
+
+            const coordsGeoJSON = route.geometry.coordinates; // [[lon, lat], ...]
+            const routeLatLngs = coordsGeoJSON.map(c => [c[1], c[0]]);
+
+            routePolyline = L.polyline(routeLatLngs, {
+                color: '#ff6600',
+                weight: 5,
+                opacity: 0.9,
+                lineJoin: 'round'
+            }).addTo(myMap);
+
+            myMap.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
+        } else {
+            const straightDist = getHaversineDistance(startCoords[0], startCoords[1], destCoords[0], destCoords[1]);
+            currentDistance = Math.round(straightDist * 1.35 * 10) / 10;
+        }
+        recalculate();
+        setSearchButtonState(true);
+    })
+    .catch(err => {
+        console.warn('OSRM routing failed, fallback to Haversine:', err);
+        showLoading(false);
+        const straightDist = getHaversineDistance(startCoords[0], startCoords[1], destCoords[0], destCoords[1]);
+        currentDistance = Math.round(straightDist * 1.35 * 10) / 10;
+        recalculate();
+        setSearchButtonState(true);
+    });
+}
+
+// Calculate address by text query with Nominatim API
+function calculateAddress(query) {
+    let searchQuery = query.trim();
+    if (!searchQuery) return;
+
+    if (!searchQuery.toLowerCase().includes('красноярск')) {
+        searchQuery = 'Красноярск, ' + searchQuery;
+    }
+
+    showLoading(true);
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1&addressdetails=1`;
+
+    fetch(url, { headers: { 'Accept-Language': 'ru' } })
+    .then(res => res.json())
+    .then(data => {
+        if (!data || data.length === 0) {
+            showLoading(false);
+            alert('Указанный адрес не найден. Пожалуйста, уточните запрос.');
+            return;
+        }
+        const item = data[0];
+        const coords = [parseFloat(item.lat), parseFloat(item.lon)];
+        
+        const distFromStart = getHaversineDistance(startCoords[0], startCoords[1], coords[0], coords[1]);
+        if (distFromStart > 200) {
+            showLoading(false);
+            alert('Найденный адрес находится слишком далеко. Доставка осуществляется в пределах 200 км от Красноярска.');
+            return;
+        }
+
+        let addressName = item.display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
+        if (item.address) {
+            const addr = item.address;
+            const road = addr.road || addr.street || addr.pedestrian || addr.suburb;
+            const house = addr.house_number || addr.building;
+            if (road) {
+                addressName = house ? `${road}, ${house}` : road;
+            }
+        }
+
+        document.getElementById('address-input').value = addressName;
+        pendingCoords = coords;
+        pendingAddressName = addressName;
+        setDestinationMarker(coords, addressName);
+        calculateRoute(coords, addressName);
+    })
+    .catch(err => {
+        showLoading(false);
+        console.warn('Address search failed:', err);
+        alert('Не удалось определить координаты адреса. Проверьте запрос.');
+    });
+}
 
 // Load settings from backend server
 function loadSettingsFromServer() {
@@ -194,19 +326,13 @@ function loadSettingsFromServer() {
         }
         if (data.startCoords && Array.isArray(data.startCoords) && data.startCoords.length === 2) {
             startCoords = data.startCoords;
-            // Update warehouse marker position dynamically
-            if (startMarker) {
-                startMarker.setLatLng(startCoords);
-                myMap.panTo(startCoords);
-            }
         }
         updateUIWithPrices();
         recalculate();
     })
     .catch(err => {
-        console.warn('[App] Server connection failed, using client defaults:', err);
-        // Fallback to defaults
-        materials = { ...defaultMaterials };
+        console.warn('[App] Server connection failed, using defaults:', err);
+        materials = JSON.parse(JSON.stringify(defaultMaterials));
         deliveryRate = defaultDeliveryRate;
         startCoords = [...defaultStartCoords];
         updateUIWithPrices();
@@ -214,7 +340,7 @@ function loadSettingsFromServer() {
     });
 }
 
-// Helper to get active price data for a material (considering selected variants)
+// Helper to get active price data for a material
 function getActiveMaterialData(matKey) {
     const matData = materials[matKey];
     if (!matData) return null;
@@ -231,7 +357,6 @@ function getActiveMaterialData(matKey) {
                 };
             }
         }
-        // Fallback to first variant if select not found
         return {
             name: `${matData.name} (${matData.variants[0].name})`,
             price: matData.variants[0].price
@@ -242,7 +367,6 @@ function getActiveMaterialData(matKey) {
 
 // Update DOM elements representing prices
 function updateUIWithPrices() {
-    // 1. Update prices displayed on material cards dynamically
     document.querySelectorAll('.material-card').forEach(card => {
         const matKey = card.dataset.material;
         const activeData = getActiveMaterialData(matKey);
@@ -250,12 +374,21 @@ function updateUIWithPrices() {
         if (activeData) {
             const priceEl = card.querySelector('.material-price');
             if (priceEl) {
-                priceEl.textContent = `от ${activeData.price} ₽/м³`;
+                const matData = materials[matKey];
+                if (matData && matData.variants && matData.variants.length > 0) {
+                    const minPrice = Math.min(...matData.variants.map(v => v.price));
+                    if (activeData.price === minPrice) {
+                        priceEl.textContent = `от ${activeData.price} ₽/м³`;
+                    } else {
+                        priceEl.textContent = `${activeData.price} ₽/м³`;
+                    }
+                } else {
+                    priceEl.textContent = `от ${activeData.price} ₽/м³`;
+                }
             }
         }
     });
 
-    // 2. Update delivery rate label in breakdown list
     const rateEl = document.getElementById('delivery-rate-label');
     if (rateEl) {
         rateEl.textContent = `Доставка (${deliveryRate} ₽/км):`;
@@ -264,7 +397,6 @@ function updateUIWithPrices() {
 
 // Set up UI Event Handlers
 function setupEventHandlers() {
-    // Material cards selection
     const cards = document.querySelectorAll('.material-card');
     cards.forEach(card => {
         card.addEventListener('click', () => {
@@ -275,7 +407,6 @@ function setupEventHandlers() {
         });
     });
 
-    // Variant Select Dropdowns
     const selects = document.querySelectorAll('.variant-select');
     selects.forEach(sel => {
         sel.addEventListener('change', (e) => {
@@ -289,11 +420,9 @@ function setupEventHandlers() {
             updateUIWithPrices();
             recalculate();
         });
-        // Prevent click on dropdown from double-triggering card click if needed
         sel.addEventListener('click', (e) => e.stopPropagation());
     });
 
-    // Volume Slider
     const slider = document.getElementById('volume-slider');
     const display = document.getElementById('volume-display');
     
@@ -303,48 +432,47 @@ function setupEventHandlers() {
         recalculate();
     });
 
-    // Calculate/Search button
     const btnCalc = document.getElementById('btn-calculate');
     const input = document.getElementById('address-input');
     
-    btnCalc.addEventListener('click', () => {
+    const triggerCalculation = () => {
         const address = input.value.trim();
-        if (address.length > 2) {
-            showLoading(true);
-            fetchSuggestions(address);
-        }
-    });
+        if (!address) return;
 
-    // Keyboard Enter key inside address input
+        if (pendingCoords) {
+            resolvePointAndCalculateRoute(pendingCoords);
+        } else if (address.length > 2) {
+            calculateAddress(address);
+        }
+    };
+
+    btnCalc.addEventListener('click', triggerCalculation);
+
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            const address = input.value.trim();
-            if (address.length > 2) {
-                showLoading(true);
-                fetchSuggestions(address);
-            }
+            triggerCalculation();
         }
     });
 
-    // Reset search button state when user edits address input
+    let searchTimeout = null;
     input.addEventListener('input', () => {
         setSearchButtonState(false);
+        pendingCoords = null; // User typing text manually resets pending map click coords
+        const query = input.value.trim();
+        if (query.length > 2) {
+            if (searchTimeout) clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => fetchSuggestions(query), 300);
+        } else {
+            hideSuggestions();
+        }
     });
 
-    // Toggle full-screen map mode
-    const btnFullscreen = document.getElementById('btn-toggle-fullscreen');
-    if (btnFullscreen) {
-        btnFullscreen.addEventListener('click', toggleMapFullscreen);
-    }
-
-    // Close suggestions dropdown when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.address-group')) {
             hideSuggestions();
         }
     });
 
-    // Call button click to send order notification
     const telLink = document.getElementById('btn-order-call');
     if (telLink) {
         telLink.addEventListener('click', () => {
@@ -353,131 +481,61 @@ function setupEventHandlers() {
     }
 }
 
-// Fetch geocoding suggestions from Nominatim API
+// Fetch suggestions for address search
 function fetchSuggestions(query) {
     let searchQuery = query;
-    // Prepend Krasnoyarsk only if the user hasn't typed it to keep results local
     if (!query.toLowerCase().includes('красноярск')) {
         searchQuery = 'Красноярск, ' + query;
     }
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=5&addressdetails=1`;
     
-    fetch(url, {
-        headers: {
-            'Accept-Language': 'ru',
-            'User-Agent': 'scheben-delivery-calculator'
-        }
-    })
-    .then(res => {
-        if (!res.ok) throw new Error('Nominatim network response was not ok');
-        return res.json();
-    })
+    fetch(url, { headers: { 'Accept-Language': 'ru' } })
+    .then(res => res.json())
     .then(data => {
-        showLoading(false);
         if (!data || data.length === 0) {
-            alert('Указанный адрес не найден. Пожалуйста, уточните запрос.');
             hideSuggestions();
             return;
         }
-        // Filter suggestions to within 200km of Krasnoyarsk
-        const items = data
-            .map(item => {
-                const lat = parseFloat(item.lat);
-                const lon = parseFloat(item.lon);
-                const dist = getHaversineDistance(startCoords[0], startCoords[1], lat, lon);
-                return {
-                    displayName: formatNominatimAddress(item),
-                    value: formatNominatimAddress(item),
-                    coords: [lat, lon],
-                    dist: dist
-                };
-            })
-            .filter(item => item.dist <= 200);
-
-        if (items.length === 0) {
-            alert('Найденные адреса находятся слишком далеко. Доставка осуществляется в пределах 200 км от Красноярска.');
-            hideSuggestions();
-            return;
-        }
-
+        const items = data.map(item => {
+            let name = item.display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
+            if (item.address) {
+                const addr = item.address;
+                const road = addr.road || addr.street || addr.pedestrian || addr.suburb;
+                const house = addr.house_number || addr.building;
+                if (road) {
+                    name = house ? `${road}, ${house}` : road;
+                }
+            }
+            return { name, coords: [parseFloat(item.lat), parseFloat(item.lon)] };
+        });
         renderSuggestions(items);
     })
     .catch(err => {
-        showLoading(false);
-        console.error('Nominatim suggest error:', err);
-        alert('Не удалось распознать адрес. Пожалуйста, проверьте интернет-соединение или уточните запрос.');
+        console.warn('Suggest error:', err);
+        hideSuggestions();
     });
 }
 
-// Formats the Nominatim response address details into a clean, short display string
-function formatNominatimAddress(item) {
-    if (!item.address) return item.display_name;
-    const addr = item.address;
-    const parts = [];
-    
-    // 1. Street, square, path etc.
-    const street = addr.road || addr.pedestrian || addr.footway || addr.square || addr.highway || addr.path;
-    if (street) {
-        if (addr.house_number) {
-            parts.push(`${street}, ${addr.house_number}`);
-        } else {
-            parts.push(street);
-        }
-    } else if (addr.amenity || addr.shop || addr.tourism || addr.office) {
-        const poi = addr.amenity || addr.shop || addr.tourism || addr.office;
-        parts.push(poi);
-    }
-    
-    // 2. Suburb / Settlement / District
-    if (addr.suburb) {
-        parts.push(addr.suburb);
-    } else if (addr.neighbourhood) {
-        parts.push(addr.neighbourhood);
-    } else if (addr.quarter) {
-        parts.push(addr.quarter);
-    } else if (addr.city_district) {
-        parts.push(addr.city_district);
-    }
-    
-    // 3. City / Town / Village / Hamlet
-    const cityOrTown = addr.city || addr.town || addr.village || addr.hamlet;
-    if (cityOrTown && cityOrTown !== 'Красноярск') {
-        parts.push(cityOrTown);
-    }
-    
-    if (parts.length > 0) {
-        return parts.join(', ');
-    }
-    
-    // Fallback: clean display_name slightly
-    let name = item.display_name;
-    name = name.replace('Россия, Красноярский край, ', '')
-               .replace('Россия, ', '')
-               .replace(', городской округ Красноярск', '');
-    return name;
-}
-
-// Render Suggestions in Dropdown
 function renderSuggestions(items) {
     const list = document.getElementById('suggestions');
+    if (!list) return;
     list.innerHTML = '';
-    
-    if (items.length === 0) {
-        hideSuggestions();
-        return;
-    }
 
     items.forEach(item => {
-        let name = item.displayName;
         const li = document.createElement('li');
         li.className = 'suggestion-item';
-        li.textContent = name;
+        li.textContent = item.name;
         li.addEventListener('click', () => {
-            document.getElementById('address-input').value = name;
+            document.getElementById('address-input').value = item.name;
             hideSuggestions();
-            showLoading(true);
-            renderRouteAndCalculate(item.coords, name);
-            setSearchButtonState(true);
+            pendingCoords = item.coords;
+            pendingAddressName = item.name;
+            setDestinationMarker(item.coords, item.name);
+            setSearchButtonState(false);
+            if (routePolyline) {
+                myMap.removeLayer(routePolyline);
+                routePolyline = null;
+            }
         });
         list.appendChild(li);
     });
@@ -486,90 +544,23 @@ function renderSuggestions(items) {
 }
 
 function hideSuggestions() {
-    document.getElementById('suggestions').style.display = 'none';
+    const list = document.getElementById('suggestions');
+    if (list) list.style.display = 'none';
 }
 
-// Render route and calculate distance using OSRM with straight-line fallback
-function renderRouteAndCalculate(destCoords, displayName) {
-    destinationAddress = displayName;
-    document.getElementById('address-input').value = displayName;
+// Toggle search button state
+function setSearchButtonState(isCalculated) {
+    const btnText = document.getElementById('btn-text');
+    const btn = document.getElementById('btn-calculate');
+    if (!btnText || !btn) return;
 
-    // Clean up previous route and destination marker
-    if (currentRoute) {
-        myMap.removeLayer(currentRoute);
-        currentRoute = null;
+    if (isCalculated) {
+        btnText.textContent = 'Рассчитано';
+        btn.classList.add('calculated');
+    } else {
+        btnText.textContent = 'Рассчитать';
+        btn.classList.remove('calculated');
     }
-    if (destMarker) {
-        myMap.removeLayer(destMarker);
-        destMarker = null;
-    }
-
-    // Try road routing using OSRM (OSRM coordinates format is [lon, lat])
-    const url = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${destCoords[1]},${destCoords[0]}?overview=full&geometries=geojson`;
-
-    fetch(url)
-    .then(res => {
-        if (!res.ok) throw new Error('OSRM routing request failed');
-        return res.json();
-    })
-    .then(data => {
-        if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
-            throw new Error('OSRM route not found');
-        }
-
-        const route = data.routes[0];
-        // OSRM returns distance in meters, convert to km
-        currentDistance = Math.round(route.distance / 1000 * 10) / 10;
-
-        // Extract coordinates from geometry and convert [lon, lat] to [lat, lon]
-        const coordinates = route.geometry.coordinates;
-        const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
-
-        // Draw road route polyline (Bright Vivid Orange color)
-        currentRoute = L.polyline(latLngs, {
-            color: '#ff6600',
-            weight: 6,
-            opacity: 0.9,
-            lineJoin: 'round'
-        }).addTo(myMap);
-
-        // Add destination marker
-        destMarker = L.marker(destCoords, { icon: destIcon }).addTo(myMap)
-            .bindPopup(`<b>Адрес доставки:</b><br>${displayName}`);
-
-        // Zoom map to show both warehouse and destination
-        const group = new L.featureGroup([startMarker, destMarker, currentRoute]);
-        myMap.fitBounds(group.getBounds().pad(0.1));
-
-        showLoading(false);
-        recalculate();
-    })
-    .catch(err => {
-        console.warn('Road routing failed. Falling back to straight-line estimation:', err);
-
-        // Fallback: straight line distance with a road coefficient of 1.35
-        const straightLineDist = getHaversineDistance(startCoords[0], startCoords[1], destCoords[0], destCoords[1]);
-        currentDistance = Math.round(straightLineDist * 1.35 * 10) / 10;
-
-        // Draw straight dashed line (Orange)
-        currentRoute = L.polyline([startCoords, destCoords], {
-            color: '#ff6600',
-            weight: 4,
-            dashArray: '6, 10',
-            opacity: 0.85
-        }).addTo(myMap);
-
-        // Add destination marker
-        destMarker = L.marker(destCoords, { icon: destIcon }).addTo(myMap)
-            .bindPopup(`<b>Адрес доставки (прямая линия):</b><br>${displayName}`);
-
-        // Zoom map to show both markers
-        const group = new L.featureGroup([startMarker, destMarker]);
-        myMap.fitBounds(group.getBounds().pad(0.1));
-
-        showLoading(false);
-        recalculate();
-    });
 }
 
 // Toggle loading state on button
@@ -589,38 +580,17 @@ function showLoading(isLoading) {
     }
 }
 
-// Toggle fullscreen map mode
-function toggleMapFullscreen() {
-    const wrapper = document.querySelector('.map-wrapper-relative');
-    const btnText = document.getElementById('fullscreen-btn-text');
-    if (!wrapper) return;
-
-    wrapper.classList.toggle('fullscreen');
-    const isFS = wrapper.classList.contains('fullscreen');
-
-    if (btnText) {
-        btnText.textContent = isFS ? 'Свернуть карту' : 'Развернуть карту';
-    }
-
-    setTimeout(() => {
-        if (myMap) myMap.invalidateSize();
-    }, 200);
-}
-
-// Calculate cost breakdowns and update UI
+// Recalculate costs
 function recalculate() {
     const activeData = getActiveMaterialData(currentMaterial);
     if (!activeData) return;
     
-    // Calculate costs
     const materialCost = activeData.price * currentVolume;
     const deliveryCost = currentDistance * deliveryRate;
     const totalCost = materialCost + deliveryCost;
 
-    // Formatting numbers with spaces
     const formatRub = (num) => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(num);
 
-    // Update UI elements
     document.getElementById('summary-mat-name').textContent = activeData.name;
     document.getElementById('summary-volume').textContent = currentVolume;
     document.getElementById('distance-val').textContent = `${currentDistance} км`;
@@ -628,15 +598,14 @@ function recalculate() {
     document.getElementById('delivery-cost-val').textContent = formatRub(deliveryCost);
     document.getElementById('total-cost-val').textContent = formatRub(totalCost);
 
-    // Update phone button tel link with selected details
     const telLink = document.getElementById('btn-order-call');
     const msg = `Здравствуйте! Хочу заказать ${activeData.name} в объеме ${currentVolume} м³ с доставкой в ${destinationAddress ? destinationAddress : '(укажите адрес)'}. Посчитало примерно ${formatRub(totalCost)}.`;
-    telLink.dataset.msg = msg;
+    if (telLink) telLink.dataset.msg = msg;
 }
 
-// Mathematical calculation for straight-line distance (in km)
+// Mathematical Haversine distance helper (in km)
 function getHaversineDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Earth's radius in km
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = 
