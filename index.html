@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>шебень.рф — Доставка щебня, ПГС, песка и гравия в Красноярске</title>
+    <title>шебень.рф — Доставка щебня, ПЩС, песка и гравия в Красноярске</title>
     <meta name="description" content="Быстрый и удобный заказ сыпучих строительных материалов (щебень, ПГС, песок, гравий, битый кирпич) в Красноярске и пригороде. Онлайн-расчет стоимости за 10 секунд!">
+    <meta name="keywords" content="щебень Красноярск, доставка щебня, песок, ПЩС, гравий, битый кирпич, керамзит, калькулятор доставки">
     
     <!-- Open Graph -->
     <meta property="og:title" content="шебень.рф — Доставка щебня, ПГС, песка в Красноярске">
@@ -12,6 +13,24 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://шебень.рф">
     <meta property="og:locale" content="ru_RU">
+
+    <!-- JSON-LD Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "шебень.рф",
+      "image": "https://шебень.рф/images/crushed_stone.jpg",
+      "telephone": "+79069713377",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Красноярск",
+        "addressCountry": "RU"
+      },
+      "priceRange": "₽₽",
+      "description": "Доставка сыпучих строительных материалов: щебень, песок, ПЩС, гравий по Красноярску и пригороду."
+    }
+    </script>
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'><path d='M16 2L4 8L16 14L28 8L16 2Z' fill='%2334d399'/><path d='M4 8V22L16 28V14L4 8Z' fill='%23059669'/><path d='M28 8V22L16 28V14L28 8Z' fill='%2310b981'/></svg>">
@@ -30,7 +49,7 @@
     <!-- Header -->
     <header class="site-header">
         <div class="container header-inner">
-            <a href="/" class="logo">
+            <a href="/" class="logo" aria-label="шебень.рф Главная страница">
                 <div class="logo-badge">
                     <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M16 2L4 8L16 14L28 8L16 2Z" fill="#34d399"/>
@@ -41,18 +60,33 @@
                 <div class="logo-text">шебень<span>.рф</span></div>
             </a>
 
-            <ul class="nav-menu">
-                <li><a href="#calculator-section" class="nav-link">Калькулятор</a></li>
-                <li><a href="#specs-section" class="nav-link">Материалы</a></li>
-                <li><a href="#faq-section" class="nav-link">Частые вопросы</a></li>
-            </ul>
+            <nav class="nav-container" aria-label="Основная навигация">
+                <ul class="nav-menu" id="nav-menu">
+                    <li><a href="#calculator-section" class="nav-link active">Калькулятор</a></li>
+                    <li><a href="#specs-section" class="nav-link">Материалы</a></li>
+                    <li><a href="#faq-section" class="nav-link">Частые вопросы</a></li>
+                </ul>
+            </nav>
 
             <div class="header-actions">
-                <a href="tel:+79069713377" class="phone-button" id="header-phone-link">
+                <a href="tel:+79069713377" class="phone-button" id="header-phone-link" aria-label="Позвонить диспетчеру">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    +7 (906) 971-33-77
+                    <span class="phone-text">+7 (906) 971-33-77</span>
                 </a>
+                <button type="button" class="mobile-toggle" id="mobile-toggle" aria-label="Переключить меню">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
             </div>
+        </div>
+
+        <!-- Mobile Drawer -->
+        <div class="mobile-nav-drawer" id="mobile-nav-drawer">
+            <ul class="mobile-nav-list">
+                <li><a href="#calculator-section" class="mobile-nav-link">Калькулятор доставки</a></li>
+                <li><a href="#specs-section" class="mobile-nav-link">Характеристики материалов</a></li>
+                <li><a href="#faq-section" class="mobile-nav-link">Частые вопросы (FAQ)</a></li>
+                <li><a href="tel:+79069713377" class="mobile-nav-link call-accent">📞 Позвонить +7 (906) 971-33-77</a></li>
+            </ul>
         </div>
     </header>
 
@@ -79,16 +113,16 @@
                         <span class="step-num">1</span>
                         Выберите материал и объём
                     </h2>
-                    <span class="panel-subtitle">Цены за м³</span>
+                    <span class="panel-subtitle">Цены за м³ (ГОСТ)</span>
                 </div>
 
                 <!-- Category Tabs -->
-                <div class="category-tabs">
-                    <button type="button" class="tab-btn active" data-category="all">Все материалы</button>
-                    <button type="button" class="tab-btn" data-category="crushed">Щебень</button>
-                    <button type="button" class="tab-btn" data-category="sand_pgs">Песок & ПЩС</button>
-                    <button type="button" class="tab-btn" data-category="gravel">Гравий & ГПС</button>
-                    <button type="button" class="tab-btn" data-category="secondary">Вторичные & Грунт</button>
+                <div class="category-tabs" role="tablist">
+                    <button type="button" class="tab-btn active" data-category="all" role="tab">Все материалы</button>
+                    <button type="button" class="tab-btn" data-category="crushed" role="tab">Щебень</button>
+                    <button type="button" class="tab-btn" data-category="sand_pgs" role="tab">Песок & ПЩС</button>
+                    <button type="button" class="tab-btn" data-category="gravel" role="tab">Гравий & ГПС</button>
+                    <button type="button" class="tab-btn" data-category="secondary" role="tab">Вторичные & Грунт</button>
                 </div>
 
                 <!-- Material Cards Grid -->
@@ -100,10 +134,13 @@
                 <div class="volume-card">
                     <div class="volume-header">
                         <span class="volume-title">Требуемый объём (в кубах):</span>
-                        <span class="volume-val-badge" id="volume-display">15 м³</span>
+                        <div class="volume-input-wrapper">
+                            <input type="number" id="volume-num-input" class="volume-num-input" value="15" min="1" max="200" step="1" title="Введите точный объем">
+                            <span class="unit-tag">м³</span>
+                        </div>
                     </div>
 
-                    <input type="range" id="volume-slider" class="range-slider" min="5" max="30" step="1" value="15">
+                    <input type="range" id="volume-slider" class="range-slider" min="5" max="50" step="1" value="15" aria-label="Выбор объёма материала">
 
                     <div class="volume-presets">
                         <button type="button" class="vol-preset-btn" data-vol="5">5 м³</button>
@@ -126,22 +163,26 @@
                 <div class="panel-header">
                     <h2 class="panel-title">
                         <span class="step-num">2</span>
-                        Укажите локацию и получите расчёт
+                        Укажите локацию и расчёт
                     </h2>
-                    <span class="panel-subtitle">Маршрут по Красноярску</span>
+                    <button type="button" id="btn-reset-calc" class="btn-reset" title="Сбросить выбранную точку и очистить адрес">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                        Сброс
+                    </button>
                 </div>
 
                 <!-- Address Input Box -->
                 <div class="address-search-box">
                     <div class="search-input-wrapper">
                         <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="address-input" class="address-input" placeholder="Введите адрес доставки в Красноярске..." autocomplete="off">
+                        <input type="text" id="address-input" class="address-input" placeholder="Адрес доставки в Красноярске..." autocomplete="off">
+                        <button type="button" id="btn-clear-address" class="btn-clear-address" title="Очистить адрес" style="display: none;">&times;</button>
                         <button type="button" id="btn-calculate" class="btn-calc-search">
                             <span class="spinner" id="calc-spinner" style="display: none;"></span>
                             <span id="btn-text">Рассчитать</span>
                         </button>
                     </div>
-                    <ul id="suggestions" class="suggestions-dropdown"></ul>
+                    <ul id="suggestions" class="suggestions-dropdown" role="listbox"></ul>
                 </div>
 
                 <!-- Quick Location Presets -->
@@ -173,19 +214,22 @@
                     <div class="summary-rows">
                         <div class="summary-row">
                             <span>Расстояние доставки:</span>
-                            <strong id="distance-val">0 км</strong>
+                            <strong id="distance-val">Укажите адрес</strong>
                         </div>
                         <div class="summary-row">
                             <span>Материал (<span id="summary-mat-name">Щебень 4-8</span>, <span id="summary-volume">15</span> м³):</span>
                             <strong id="material-cost-val">11 250 ₽</strong>
                         </div>
                         <div class="summary-row">
-                            <span>Доставка (400 ₽/км):</span>
-                            <strong id="delivery-cost-val">0 ₽</strong>
+                            <span>Доставка (<span id="delivery-rate-label">400 ₽/км</span>):</span>
+                            <strong id="delivery-cost-val">Укажите адрес на карте</strong>
                         </div>
                         <div class="summary-row total">
-                            <span>Итого ориентировочно:</span>
-                            <span class="total-val" id="total-cost-val">11 250 ₽</span>
+                            <span class="total-label">Итого ориентировочно:</span>
+                            <div class="total-price-wrapper">
+                                <span class="total-val" id="total-cost-val">11 250 ₽</span>
+                                <span class="delivery-notice-badge" id="delivery-notice-badge">(+ доставка)</span>
+                            </div>
                         </div>
                     </div>
 
@@ -195,8 +239,8 @@
                     </button>
 
                     <p class="order-notice">
-                        Диспетчер перезвонит в течение 5 минут для уточнения точных деталей и согласования времени.<br>
-                        Нажимая кнопку, вы соглашаетесь на обработку персональных данных в соответствии с <a href="privacy.html" style="color: var(--primary); text-decoration: underline;">Политикой конфиденциальности</a> (ФЗ № 152-ФЗ).
+                        Диспетчер перезвонит в течение 5 минут для уточнения деталей.<br>
+                        Нажимая кнопку, вы соглашаетесь на обработку персональных данных (<a href="privacy.html" target="_blank" style="color: var(--primary); text-decoration: underline;">152-ФЗ</a>).
                     </p>
                 </div>
             </div>
@@ -213,31 +257,34 @@
 
             <div class="specs-grid">
                 <div class="spec-card">
-                    <h3 class="spec-title">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                        Щебень гранитный / диоритовый
-                    </h3>
+                    <div class="spec-icon-badge">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                    </div>
+                    <h3 class="spec-title">Щебень гранитный / диоритовый</h3>
                     <p class="spec-desc">Высокопрочный щебень фракций 4-8, 5-10, 8-16, 5-20, 10-20. Сопровождается паспортом качества по ГОСТ 8267-93. Отлично подходит для бетона, заливки фундамента и дорожных покрытий.</p>
                 </div>
+
                 <div class="spec-card">
-                    <h3 class="spec-title">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                        Песок (Отсев 0-5 & Мытый)
-                    </h3>
+                    <div class="spec-icon-badge">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                    </div>
+                    <h3 class="spec-title">Песок (Отсев 0-5 & Мытый)</h3>
                     <p class="spec-desc">Чистый песок без глинистых примесей (ГОСТ 8736-2014). Используется для штукатурки, кладки, стяжки и производства высокомаркированного бетона.</p>
                 </div>
+
                 <div class="spec-card">
-                    <h3 class="spec-title">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                        ПЩС (Песчано-щебеночная смесь)
-                    </h3>
+                    <div class="spec-icon-badge">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                    </div>
+                    <h3 class="spec-title">ПЩС (Песчано-щебеночная смесь)</h3>
                     <p class="spec-desc">Смеси фракций 0-8, 0-10, 0-20, 0-40. Идеальное решение для отсыпки дорог, парковок и подушек под фундамент со стопроцентной уплотняемостью.</p>
                 </div>
+
                 <div class="spec-card">
-                    <h3 class="spec-title">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                        Гравий и ГПС
-                    </h3>
+                    <div class="spec-icon-badge">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                    </div>
+                    <h3 class="spec-title">Гравий и ГПС</h3>
                     <p class="spec-desc">Природный и промытый гравий фракций 5-20, ГПС 0-20. Используется для ландшафтного дизайна, дренажа и бетонирования.</p>
                 </div>
             </div>
@@ -299,24 +346,25 @@
     <!-- Order Callback Modal -->
     <div class="modal-overlay" id="order-modal-overlay">
         <div class="modal-box">
-            <button type="button" class="modal-close" id="modal-close-btn">&times;</button>
+            <button type="button" class="modal-close" id="modal-close-btn" aria-label="Закрыть модальное окно">&times;</button>
             <h3 class="modal-title">Оформление заказа</h3>
             <p class="modal-desc">Оставьте номер телефона, и диспетчер сразу свяжется с вами для согласования точного времени доставки.</p>
             
             <div class="modal-summary-chip">
-                <div>
-                    <strong id="modal-mat-summary">Щебень (15 м³)</strong>
-                </div>
-                <div>
-                    <span id="modal-addr-summary">Адрес не указан</span>
-                </div>
+                <div>Материал: <strong id="modal-mat-summary">Щебень (15 м³)</strong></div>
+                <div>Адрес: <span id="modal-addr-summary">Адрес не указан</span></div>
                 <div>Ориентировочно: <strong id="modal-cost-summary" style="color: var(--primary);">11 250 ₽</strong></div>
             </div>
 
             <form id="order-form">
                 <div class="form-group">
-                    <label class="form-label" for="user-phone">Ваш номер телефона:</label>
+                    <label class="form-label" for="user-phone">Ваш номер телефона:*</label>
                     <input type="tel" id="user-phone" class="form-input" placeholder="+7 (999) 000-00-00" required autocomplete="tel">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="user-notes">Комментарий к заказу (необязательно):</label>
+                    <input type="text" id="user-notes" class="form-input" placeholder="Например: удобный въезд со двора...">
                 </div>
 
                 <button type="submit" class="btn-order-cta" style="margin-top: 1rem;">
@@ -325,14 +373,55 @@
                 </button>
 
                 <p style="font-size: 0.72rem; color: var(--text-subtle); margin-top: 0.75rem; text-align: center;">
-                    Нажимая кнопку, вы даете согласие на обработку персональных данных (ФЗ № 152-ФЗ).
+                    Нажимая кнопку, вы даете согласие на обработку персональных данных (<a href="privacy.html" target="_blank" style="color: var(--primary);">152-ФЗ</a>).
                 </p>
             </form>
         </div>
     </div>
 
+    <!-- Success Confirmation Modal -->
+    <div class="modal-overlay" id="success-modal-overlay">
+        <div class="modal-box success-box">
+            <button type="button" class="modal-close" id="success-close-btn" aria-label="Закрыть">&times;</button>
+            <div class="success-icon-badge">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <h3 class="modal-title">Заявка принята!</h3>
+            <p class="modal-desc">Спасибо за обращение. Номер вашей заявки: <strong id="success-order-id" class="order-id-badge">#SCH-0000</strong></p>
+
+            <div class="success-details-card">
+                <div class="success-detail-row">
+                    <span>Материал:</span>
+                    <strong id="success-mat-text">-</strong>
+                </div>
+                <div class="success-detail-row">
+                    <span>Адрес:</span>
+                    <strong id="success-addr-text">-</strong>
+                </div>
+                <div class="success-detail-row">
+                    <span>Сумма:</span>
+                    <strong id="success-cost-text" style="color: var(--primary);">-</strong>
+                </div>
+            </div>
+
+            <div class="callback-timer-box">
+                ⏱ Диспетчер свяжется с вами в течение <strong>5 минут</strong>.
+            </div>
+
+            <div class="success-actions">
+                <button type="button" class="btn-secondary" id="btn-copy-order">Копировать № заявки</button>
+                <button type="button" class="btn-order-cta" id="btn-success-done">Понятно, спасибо</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toast-container"></div>
+
+    <!-- Back to Top Button -->
+    <button type="button" class="back-to-top" id="back-to-top" aria-label="Наверх">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </button>
 
     <!-- Footer -->
     <footer class="site-footer">
@@ -366,14 +455,14 @@
                 <ul class="footer-links">
                     <li><a href="tel:+79069713377">+7 (906) 971-33-77</a></li>
                     <li><a href="https://wa.me/79069713377" target="_blank" rel="noopener">WhatsApp Чат</a></li>
-                    <li><a href="privacy.html">Политика конфиденциальности (152-ФЗ)</a></li>
+                    <li><a href="privacy.html" target="_blank">Политика конфиденциальности (152-ФЗ)</a></li>
                 </ul>
             </div>
         </div>
 
         <div class="container footer-bottom">
             <p>&copy; 2026 шебень.рф. Все права защищены.</p>
-            <p style="font-size: 0.76rem; opacity: 0.8; margin-top: 0.4rem; max-width: 750px; margin-left: auto; margin-right: auto; line-height: 1.45;">
+            <p style="font-size: 0.76rem; opacity: 0.85; margin-top: 0.4rem; max-width: 750px; margin-left: auto; margin-right: auto; line-height: 1.45;">
                 Информация на сайте и онлайн-расчет стоимости носят ознакомительный характер и не являются публичной офертой (ст. 437 ГК РФ). Окончательная стоимость и условия доставки утверждаются диспетчером при согласовании заявки.
             </p>
         </div>
