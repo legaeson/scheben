@@ -87,10 +87,10 @@ function initMap() {
         attributionControl: false // Disable default Leaflet attribution
     }).setView(startCoords, 10); // Krasnoyarsk
 
-    // Add clean CartoDB Voyager tiles (without heavy state borders)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        subdomains: 'abcd'
+    // Add 2GIS (2ГИС) tiles
+    L.tileLayer('https://tile{s}.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1', {
+        maxZoom: 18,
+        subdomains: '0123'
     }).addTo(myMap);
 
     // Create warehouse marker
