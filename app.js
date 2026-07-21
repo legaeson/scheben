@@ -103,7 +103,6 @@ let appState = {
 
 let myMap = null;
 let destMarker = null;
-let routePolyline = null;
 let searchTimeout = null;
 
 // Initialize when DOM and Leaflet are ready
@@ -296,7 +295,7 @@ function recalculateTotalCost() {
     if (modalCost) modalCost.textContent = `${grandTotal.toLocaleString('ru-RU')} ₽`;
 }
 
-// Leaflet Map Initialization (No warehouse pin displayed on map to maintain privacy)
+// Leaflet Map Initialization (Shows only destination point, NO route line drawn to protect privacy)
 function initLeafletMap() {
     if (typeof L === 'undefined') return;
 
@@ -332,9 +331,9 @@ function setDestinationPoint(coords, name) {
         destMarker = L.marker(coords, {
             icon: L.divIcon({
                 className: 'dest-pin',
-                html: '<div style="background:#059669; width:20px; height:20px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 2px 10px rgba(0,0,0,0.3);"></div>',
-                iconSize: [20, 20],
-                iconAnchor: [10, 10]
+                html: '<div style="background:#059669; width:22px; height:22px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 2px 10px rgba(0,0,0,0.3);"></div>',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
             })
         }).addTo(myMap);
     } else {
@@ -345,12 +344,12 @@ function setDestinationPoint(coords, name) {
     calculateOSRMRoute(coords);
 }
 
-// OSRM Driving Route Engine
+// OSRM Driving Distance Calculation (NO polyline drawn on map)
 function calculateOSRMRoute(coords) {
     const spinner = document.getElementById('calc-spinner');
     if (spinner) spinner.style.display = 'inline-block';
 
-    const url = `https://router.project-osrm.org/route/v1/driving/${appState.startCoords[1]},${appState.startCoords[0]};${coords[1]},${coords[0]}?overview=full&geometries=geojson`;
+    const url = `https://router.project-osrm.org/route/v1/driving/${appState.startCoords[1]},${appState.startCoords[0]};${coords[1]},${coords[0]}?overview=false`;
 
     fetch(url)
         .then(res => res.json())
@@ -360,21 +359,19 @@ function calculateOSRMRoute(coords) {
                 const route = data.routes[0];
                 appState.distanceKm = Math.round((route.distance / 1000) * 10) / 10;
 
-                const latLngs = route.geometry.coordinates.map(c => [c[1], c[0]]);
-
-                if (routePolyline) myMap.removeLayer(routePolyline);
-                routePolyline = L.polyline(latLngs, { color: '#059669', weight: 5, opacity: 0.85 }).addTo(myMap);
-                myMap.fitBounds(routePolyline.getBounds(), { padding: [40, 40] });
+                // Center map smoothly on the delivery point (NO route line drawn)
+                myMap.setView(coords, 14, { animate: true });
 
                 recalculateTotalCost();
-                showToast(`Дистанция маршрута: ${appState.distanceKm} км`);
+                showToast(`Расстояние: ${appState.distanceKm} км`);
             }
         })
         .catch(err => {
             if (spinner) spinner.style.display = 'none';
-            console.warn('OSRM Route calculation error:', err);
+            console.warn('OSRM Distance calculation error:', err);
             const dist = getHaversineDistance(appState.startCoords[0], appState.startCoords[1], coords[0], coords[1]);
             appState.distanceKm = Math.round(dist * 1.35 * 10) / 10;
+            myMap.setView(coords, 14, { animate: true });
             recalculateTotalCost();
         });
 }
