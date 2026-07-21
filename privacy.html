@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Политика конфиденциальности — шебень.рф</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .privacy-container {
+            max-width: 800px;
+            margin: 3rem auto;
+            padding: 2.5rem;
+            background-color: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+        }
+        .privacy-container h1 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+        }
+        .privacy-container h2 {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+        }
+        .privacy-container p, .privacy-container li {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .privacy-container ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        .btn-back:hover {
+            color: var(--primary-hover);
+        }
+        @media (max-width: 768px) {
+            .privacy-container {
+                margin: 1rem;
+                padding: 1.25rem;
+                border-radius: 8px;
+            }
+            .privacy-container h1 {
+                font-size: 1.6rem;
+            }
+            .btn-back {
+                margin-bottom: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="privacy-container">
+        <a href="/" class="btn-back">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Вернуться на главную
+        </a>
+        <h1>Политика конфиденциальности</h1>
+        <p>Настоящая Политика конфиденциальности персональных данных действует в отношении всей информации, которую сайт <strong>шебень.рф</strong> может получить о Пользователе во время использования калькулятора доставки.</p>
+        
+        <h2>1. Какие данные мы собираем</h2>
+        <p>Мы обрабатываем только ту информацию, которую вы добровольно вводите на сайте:</p>
+        <ul>
+            <li>Адрес доставки строительных материалов;</li>
+            <li>Выбранный тип материала, его объем и рассчитанные параметры доставки (стоимость, расстояние).</li>
+        </ul>
+
+        <h2>2. Цели сбора персональных данных</h2>
+        <p>Персональные данные Пользователя обрабатываются исключительно в целях:</p>
+        <ul>
+            <li>Расчета стоимости строительных материалов и их доставки до объекта;</li>
+            <li>Связи с Пользователем (водителем или диспетчером) для оформления и подтверждения заказа при нажатии кнопки звонка.</li>
+        </ul>
+
+        <h2>3. Передача и защита данных</h2>
+        <p>Мы заботимся о безопасности ваших данных:</p>
+        <ul>
+            <li>Введенный адрес используется для геокодирования и прокладывания маршрута через картографические сервисы (OpenStreetMap/OSRM).</li>
+            <li>Детали заказа отправляются напрямую администратору сайта в защищенный чат Telegram-бота. Данные не передаются третьим лицам в рекламных целях и не публикуются в открытом доступе.</li>
+        </ul>
+
+        <h2>4. Согласие пользователя</h2>
+        <p>Используя форму ввода адреса на сайте и совершая звонок, Пользователь выражает свое согласие с настоящей Политикой конфиденциальности и условиями обработки персональных данных.</p>
+    </div>
+</body>
+</html>

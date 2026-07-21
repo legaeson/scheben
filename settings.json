@@ -1,0 +1,42 @@
+{
+  "materials": {
+    "crushed_stone": {
+      "name": "Щебень",
+      "variants": [
+        {"id": "frac_4_10", "name": "4-8 ; 5-10", "price": 750},
+        {"id": "frac_8_20", "name": "8-16 ; 5-20 ; 10-20", "price": 1000}
+      ]
+    },
+    "sand": {
+      "name": "Песок",
+      "variants": [
+        {"id": "sand_0_5", "name": "Из отсева дробления 0-5", "price": 850},
+        {"id": "sand_washed", "name": "2 кл (мытый)", "price": 1400}
+      ]
+    },
+    "pshs": {
+      "name": "ПЩС",
+      "variants": [
+        {"id": "pshs_0_10", "name": "0-10", "price": 750},
+        {"id": "pshs_0_8", "name": "0-8", "price": 800},
+        {"id": "pshs_0_20", "name": "0-20", "price": 1000},
+        {"id": "pshs_0_40", "name": "0-40", "price": 1000}
+      ]
+    },
+    "gps_gravel": {
+      "name": "ГПС / Гравий",
+      "variants": [
+        {"id": "gps_0_20", "name": "ГПС 0-20 ; Гравий 5-20", "price": 550}
+      ]
+    },
+    "anti_ice": { "name": "Противогололедный материал", "price": 1400 },
+    "crushed_brick": { "name": "Битый кирпич", "price": 800 },
+    "expanded_clay": { "name": "Керамзит", "price": 1600 },
+    "chernozem": { "name": "Чернозём", "price": 1000 }
+  },
+  "deliveryRate": 400,
+  "startCoords": [
+    56.146389,
+    93.112222
+  ]
+}
