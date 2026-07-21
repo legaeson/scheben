@@ -111,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
+    setupThemeToggle();
     renderMaterialCards('all');
     setupCategoryTabs();
     setupVolumeSlider();
@@ -120,6 +121,30 @@ function initApp() {
     setupAddressAutocomplete();
     initLeafletMap();
     fetchServerSettings();
+}
+
+// Theme Switcher Logic (Light default + Dark toggle)
+function setupThemeToggle() {
+    const toggleBtn = document.getElementById('theme-toggle-btn');
+    const savedTheme = localStorage.getItem('scheben_theme') || 'light';
+    setTheme(savedTheme);
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+    }
+}
+
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('scheben_theme', theme);
+    const themeIcon = document.getElementById('theme-icon');
+    if (themeIcon) {
+        themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
 }
 
 // Render Material Cards Grid
@@ -316,7 +341,7 @@ function initLeafletMap() {
     L.marker(appState.startCoords, {
         icon: L.divIcon({
             className: 'warehouse-pin',
-            html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 0 12px #f59e0b;"></div>',
+            html: '<div style="background:#d97706; width:16px; height:16px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>',
             iconSize: [16, 16],
             iconAnchor: [8, 8]
         })
@@ -341,7 +366,7 @@ function setDestinationPoint(coords, name) {
         destMarker = L.marker(coords, {
             icon: L.divIcon({
                 className: 'dest-pin',
-                html: '<div style="background:#10b981; width:20px; height:20px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 0 12px #10b981;"></div>',
+                html: '<div style="background:#059669; width:20px; height:20px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 0 12px rgba(0,0,0,0.3);"></div>',
                 iconSize: [20, 20],
                 iconAnchor: [10, 10]
             })
@@ -372,7 +397,7 @@ function calculateOSRMRoute(coords) {
                 const latLngs = route.geometry.coordinates.map(c => [c[1], c[0]]);
 
                 if (routePolyline) myMap.removeLayer(routePolyline);
-                routePolyline = L.polyline(latLngs, { color: '#f59e0b', weight: 5, opacity: 0.85 }).addTo(myMap);
+                routePolyline = L.polyline(latLngs, { color: '#d97706', weight: 5, opacity: 0.85 }).addTo(myMap);
                 myMap.fitBounds(routePolyline.getBounds(), { padding: [40, 40] });
 
                 recalculateTotalCost();
@@ -382,7 +407,6 @@ function calculateOSRMRoute(coords) {
         .catch(err => {
             if (spinner) spinner.style.display = 'none';
             console.warn('OSRM Route calculation error:', err);
-            // Fallback straight-line calculation with 1.35 road factor
             const dist = getHaversineDistance(appState.startCoords[0], appState.startCoords[1], coords[0], coords[1]);
             appState.distanceKm = Math.round(dist * 1.35 * 10) / 10;
             recalculateTotalCost();
