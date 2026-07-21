@@ -84,17 +84,55 @@ function init() {
 function initMap() {
     myMap = L.map('map', {
         scrollWheelZoom: false, // Disable scroll zoom for better page scrolling experience
-        attributionControl: false // Disable default Leaflet attribution (removes flag and credits)
+        attributionControl: false // Disable default Leaflet attribution
     }).setView(startCoords, 10); // Krasnoyarsk
 
-    // Add standard OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
+    // Add clean CartoDB Voyager tiles (without heavy state borders)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+        subdomains: 'abcd'
     }).addTo(myMap);
 
     // Create warehouse marker
     startMarker = L.marker(startCoords, { icon: startIcon }).addTo(myMap)
         .bindPopup('<b>Наш склад</b><br>Отсюда отправляется доставка материалов');
+
+    // Click on map to select delivery location
+    myMap.on('click', (e) => {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        
+        // Limit to 200km radius from warehouse / Krasnoyarsk
+        const distFromStart = getHaversineDistance(startCoords[0], startCoords[1], lat, lng);
+        if (distFromStart > 200) {
+            alert('Доставка выполняется только по Красноярску и окрестностям (до 200 км). Пожалуйста, выберите точку ближе к городу.');
+            return;
+        }
+
+        showLoading(true);
+        // Reverse geocoding via Nominatim
+        const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
+        fetch(url, {
+            headers: {
+                'Accept-Language': 'ru',
+                'User-Agent': 'scheben-delivery-calculator'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            let name = 'Точка на карте';
+            if (data && data.display_name) {
+                name = formatNominatimAddress(data);
+            }
+            renderRouteAndCalculate([lat, lng], name);
+            setSearchButtonState(true);
+        })
+        .catch(err => {
+            console.warn('Reverse geocoding failed:', err);
+            renderRouteAndCalculate([lat, lng], `Точка на карте (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+            setSearchButtonState(true);
+        });
+    });
 }
 
 // Load settings from backend server
@@ -246,6 +284,11 @@ function setupEventHandlers() {
         }
     });
 
+    // Reset search button state when user edits address input
+    input.addEventListener('input', () => {
+        setSearchButtonState(false);
+    });
+
     // Close suggestions dropdown when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.address-group')) {
@@ -288,14 +331,27 @@ function fetchSuggestions(query) {
             hideSuggestions();
             return;
         }
-        const items = data.map(item => {
-            const displayName = formatNominatimAddress(item);
-            return {
-                displayName: displayName,
-                value: displayName,
-                coords: [parseFloat(item.lat), parseFloat(item.lon)]
-            };
-        });
+        // Filter suggestions to within 200km of Krasnoyarsk
+        const items = data
+            .map(item => {
+                const lat = parseFloat(item.lat);
+                const lon = parseFloat(item.lon);
+                const dist = getHaversineDistance(startCoords[0], startCoords[1], lat, lon);
+                return {
+                    displayName: formatNominatimAddress(item),
+                    value: formatNominatimAddress(item),
+                    coords: [lat, lon],
+                    dist: dist
+                };
+            })
+            .filter(item => item.dist <= 200);
+
+        if (items.length === 0) {
+            alert('Найденные адреса находятся слишком далеко. Доставка осуществляется в пределах 200 км от Красноярска.');
+            hideSuggestions();
+            return;
+        }
+
         renderSuggestions(items);
     })
     .catch(err => {
@@ -373,6 +429,7 @@ function renderSuggestions(items) {
             hideSuggestions();
             showLoading(true);
             renderRouteAndCalculate(item.coords, name);
+            setSearchButtonState(true);
         });
         list.appendChild(li);
     });
@@ -480,6 +537,24 @@ function showLoading(isLoading) {
         spinner.style.display = 'none';
         text.style.display = 'inline-block';
         btn.disabled = false;
+    }
+}
+
+// Update Search button appearance when address is selected vs editing
+function setSearchButtonState(isFound) {
+    const wrapper = document.querySelector('.address-input-wrapper');
+    const btnText = document.getElementById('btn-text');
+    const btnCalc = document.getElementById('btn-calculate');
+    if (!wrapper || !btnText || !btnCalc) return;
+
+    if (isFound) {
+        wrapper.classList.add('address-selected');
+        btnText.innerHTML = '✓ Выбрано';
+        btnCalc.disabled = true;
+    } else {
+        wrapper.classList.remove('address-selected');
+        btnText.innerHTML = 'Найти';
+        btnCalc.disabled = false;
     }
 }
 

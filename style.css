@@ -380,6 +380,27 @@ header {
   transform: translateY(-1px);
 }
 
+/* Merged state when address is selected */
+.address-input-wrapper.address-selected {
+  gap: 0;
+}
+
+.address-input-wrapper.address-selected .address-input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+  border-color: #10b981;
+}
+
+.address-input-wrapper.address-selected .btn-calc {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  background: #10b981;
+  box-shadow: none;
+  cursor: default;
+  opacity: 0.95;
+}
+
 .suggestions-list {
   position: absolute;
   top: 100%;
@@ -826,4 +847,9 @@ footer {
 
 .variant-select:hover {
   border-color: var(--primary);
+}
+
+/* Prevent zoom on interactive elements on iOS Safari 10+ */
+button, input, select, textarea, a {
+  touch-action: manipulation;
 }
