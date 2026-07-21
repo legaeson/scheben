@@ -1,5 +1,5 @@
 /* ==========================================================================
-   шебень.рф — Modern Light Theme Design System (Emerald & Honey Ochre Palette)
+   шебень.рф — Light Theme Design System & Micro-Interactions
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -16,7 +16,6 @@
   --accent-hover: #b45309;
   --accent-light: #fef3c7;
   --accent-border: rgba(217, 119, 6, 0.3);
-  --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 
   /* Light Surface Colors */
   --bg-main: #f8fafc;
@@ -24,7 +23,7 @@
   --bg-card: #ffffff;
   --bg-card-hover: #f1f5f9;
   --bg-input: #f8fafc;
-  --bg-glass: rgba(255, 255, 255, 0.9);
+  --bg-glass: rgba(255, 255, 255, 0.92);
 
   /* Borders */
   --border-subtle: #e2e8f0;
@@ -52,7 +51,7 @@
   --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
   --shadow-lg: 0 16px 36px -4px rgba(15, 23, 42, 0.1), 0 6px 12px -2px rgba(15, 23, 42, 0.05);
 
-  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Reset & Base */
@@ -121,7 +120,6 @@ body {
   gap: 1rem;
 }
 
-/* Brand New Logo Design */
 .logo {
   display: flex;
   align-items: center;
@@ -175,7 +173,7 @@ body {
   color: var(--primary);
 }
 
-/* Header Phone Button */
+/* Phone Button */
 .phone-button {
   display: flex;
   align-items: center;
@@ -201,8 +199,8 @@ body {
   box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
 }
 
-.phone-button svg {
-  stroke-width: 2.3;
+.phone-button:active {
+  transform: scale(0.97);
 }
 
 /* Hero Section */
@@ -228,10 +226,6 @@ body {
   font-size: 0.85rem;
   font-weight: 700;
   margin-bottom: 1.25rem;
-}
-
-.hero-pill svg {
-  color: var(--primary);
 }
 
 .hero-title {
@@ -352,6 +346,10 @@ body {
   border-color: var(--border-medium);
 }
 
+.tab-btn:active {
+  transform: scale(0.96);
+}
+
 .tab-btn.active {
   background: var(--primary-light);
   border-color: var(--primary);
@@ -382,6 +380,10 @@ body {
   border-color: var(--border-medium);
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
+}
+
+.material-card:active {
+  transform: scale(0.98);
 }
 
 .material-card.selected {
@@ -542,6 +544,10 @@ body {
   box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
 }
 
+.btn-calc-search:active {
+  transform: scale(0.96);
+}
+
 .suggestions-dropdown {
   position: absolute;
   top: 100%;
@@ -608,6 +614,10 @@ body {
   border-color: var(--primary);
   color: var(--primary-hover);
   background: var(--primary-light);
+}
+
+.preset-chip:active {
+  transform: scale(0.95);
 }
 
 /* Map Container */
@@ -721,6 +731,10 @@ body {
   color: var(--primary-hover);
 }
 
+.vol-preset-btn:active {
+  transform: scale(0.95);
+}
+
 .truck-recommendation {
   margin-top: 0.85rem;
   display: flex;
@@ -824,6 +838,10 @@ body {
   background: linear-gradient(135deg, #047857 0%, #065f46 100%);
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(5, 150, 105, 0.4);
+}
+
+.btn-order-cta:active {
+  transform: scale(0.98);
 }
 
 .order-notice {
@@ -1068,6 +1086,12 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 1.15rem;
+  transition: var(--transition);
+}
+
+.modal-close:hover {
+  background: var(--border-subtle);
+  color: var(--text-dark);
 }
 
 .modal-title {
@@ -1124,6 +1148,17 @@ body {
   background: #ffffff;
 }
 
+.form-input.input-error {
+  border-color: #ef4444;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
 /* Toast Container */
 .toast-container {
   position: fixed;
@@ -1148,6 +1183,12 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  animation: slideToastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideToastIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .spinner {
@@ -1164,10 +1205,7 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* ==========================================================================
-   MOBILE MEDIA QUERIES (320px to 1024px)
-   ========================================================================== */
-
+/* Mobile Media Queries */
 @media (max-width: 1024px) {
   .app-grid {
     grid-template-columns: 1fr;

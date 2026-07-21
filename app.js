@@ -192,6 +192,8 @@ function selectMaterial(matId) {
     const mat = materialsData[matId];
     if (mat && mat.variants && mat.variants.length > 0) {
         appState.selectedVariantId = mat.variants[0].id;
+    } else {
+        appState.selectedVariantId = null;
     }
     document.querySelectorAll('.material-card').forEach(c => {
         c.classList.toggle('selected', c.dataset.id === matId);
@@ -214,7 +216,6 @@ function setupCategoryTabs() {
 // Volume Controller & Truck Capacity Matcher
 function setupVolumeSlider() {
     const slider = document.getElementById('volume-slider');
-    const display = document.getElementById('volume-display');
     const presetBtns = document.querySelectorAll('.vol-preset-btn');
 
     if (!slider) return;
@@ -281,9 +282,16 @@ function recalculateTotalCost() {
     if (summaryMatName) summaryMatName.textContent = selectedName;
     if (summaryVolume) summaryVolume.textContent = appState.volume;
     if (matCostVal) matCostVal.textContent = `${materialTotalCost.toLocaleString('ru-RU')} ₽`;
-    if (distanceVal) distanceVal.textContent = `${appState.distanceKm} км`;
-    if (deliveryCostVal) deliveryCostVal.textContent = `${deliveryTotalCost.toLocaleString('ru-RU')} ₽`;
-    if (totalCostVal) totalCostVal.textContent = `${grandTotal.toLocaleString('ru-RU')} ₽`;
+
+    if (appState.distanceKm > 0) {
+        if (distanceVal) distanceVal.textContent = `${appState.distanceKm} км`;
+        if (deliveryCostVal) deliveryCostVal.textContent = `${deliveryTotalCost.toLocaleString('ru-RU')} ₽`;
+        if (totalCostVal) totalCostVal.textContent = `${grandTotal.toLocaleString('ru-RU')} ₽`;
+    } else {
+        if (distanceVal) distanceVal.textContent = `Укажите адрес`;
+        if (deliveryCostVal) deliveryCostVal.textContent = `Укажите адрес на карте`;
+        if (totalCostVal) totalCostVal.textContent = `${materialTotalCost.toLocaleString('ru-RU')} ₽ (+ доставка)`;
+    }
 
     // Modal summary
     const modalMat = document.getElementById('modal-mat-summary');
@@ -292,17 +300,17 @@ function recalculateTotalCost() {
 
     if (modalMat) modalMat.textContent = `${selectedName} (${appState.volume} м³)`;
     if (modalAddr) modalAddr.textContent = appState.addressName || 'Адрес не указан (выбор на карте)';
-    if (modalCost) modalCost.textContent = `${grandTotal.toLocaleString('ru-RU')} ₽`;
+    if (modalCost) modalCost.textContent = appState.distanceKm > 0 ? `${grandTotal.toLocaleString('ru-RU')} ₽` : `${materialTotalCost.toLocaleString('ru-RU')} ₽ (+ доставка)`;
 }
 
-// Leaflet Map Initialization (Shows only destination point, NO route line drawn to protect privacy)
+// Leaflet Map Initialization
 function initLeafletMap() {
     if (typeof L === 'undefined') return;
 
     const bounds = L.latLngBounds(L.latLng(54.0, 90.0), L.latLng(58.0, 96.0));
 
     myMap = L.map('map', {
-        center: [56.0105, 92.8525], // Center on Krasnoyarsk city
+        center: [56.0105, 92.8525], // Center on Krasnoyarsk
         zoom: 11,
         minZoom: 8,
         maxZoom: 18,
@@ -317,8 +325,6 @@ function initLeafletMap() {
         const coords = [e.latlng.lat, e.latlng.lng];
         const label = `Точка на карте (${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)})`;
         setDestinationPoint(coords, label);
-        const mapHint = document.getElementById('map-click-hint');
-        if (mapHint) mapHint.style.display = 'none';
     });
 }
 
@@ -326,6 +332,10 @@ function setDestinationPoint(coords, name) {
     appState.destCoords = coords;
     appState.addressName = name;
     document.getElementById('address-input').value = name;
+
+    // Hide map hint on destination selection
+    const mapHint = document.getElementById('map-click-hint');
+    if (mapHint) mapHint.style.display = 'none';
 
     if (!destMarker) {
         destMarker = L.marker(coords, {
@@ -344,7 +354,7 @@ function setDestinationPoint(coords, name) {
     calculateOSRMRoute(coords);
 }
 
-// OSRM Driving Distance Calculation (NO polyline drawn on map)
+// OSRM Driving Distance Calculation
 function calculateOSRMRoute(coords) {
     const spinner = document.getElementById('calc-spinner');
     if (spinner) spinner.style.display = 'inline-block';
@@ -359,11 +369,9 @@ function calculateOSRMRoute(coords) {
                 const route = data.routes[0];
                 appState.distanceKm = Math.round((route.distance / 1000) * 10) / 10;
 
-                // Center map smoothly on the delivery point (NO route line drawn)
                 myMap.setView(coords, 14, { animate: true });
-
                 recalculateTotalCost();
-                showToast(`Расстояние: ${appState.distanceKm} км`);
+                showToast(`Расстояние доставки: ${appState.distanceKm} км`);
             }
         })
         .catch(err => {
@@ -399,7 +407,7 @@ function setupQuickPresets() {
     });
 }
 
-// Address Search Autocomplete (Nominatim)
+// Address Search Autocomplete (Nominatim + Keyboard Enter)
 function setupAddressAutocomplete() {
     const input = document.getElementById('address-input');
     const list = document.getElementById('suggestions');
@@ -441,13 +449,42 @@ function setupAddressAutocomplete() {
                 }
             })
             .catch(() => list.classList.remove('active'));
-        }, 350);
+        }, 300);
+    });
+
+    // Keydown Enter / Escape handler
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const firstSuggestion = list.querySelector('.suggestion-item');
+            if (firstSuggestion) {
+                firstSuggestion.click();
+            } else if (input.value.trim().length >= 3) {
+                // Perform geocoding directly for current query
+                fetch(`https://nominatim.openstreetmap.org/search?q=Красноярск+${encodeURIComponent(input.value.trim())}&format=json&limit=1`, {
+                    headers: { 'Accept-Language': 'ru' }
+                })
+                .then(res => res.json())
+                .then(items => {
+                    if (items && items[0]) {
+                        const name = items[0].display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
+                        setDestinationPoint([parseFloat(items[0].lat), parseFloat(items[0].lon)], name);
+                        list.classList.remove('active');
+                    }
+                });
+            }
+        } else if (e.key === 'Escape') {
+            list.classList.remove('active');
+        }
     });
 
     if (calcBtn) {
         calcBtn.addEventListener('click', () => {
             if (appState.destCoords) {
                 calculateOSRMRoute(appState.destCoords);
+            } else if (input.value.trim().length >= 3) {
+                const firstSuggestion = list.querySelector('.suggestion-item');
+                if (firstSuggestion) firstSuggestion.click();
             }
         });
     }
@@ -481,6 +518,7 @@ function setupModalAndForm() {
     openBtn.addEventListener('click', () => {
         recalculateTotalCost();
         overlay.classList.add('active');
+        if (phoneInput) setTimeout(() => phoneInput.focus(), 150);
     });
 
     if (closeBtn) {
@@ -491,9 +529,17 @@ function setupModalAndForm() {
         if (e.target === overlay) overlay.classList.remove('active');
     });
 
+    // Close on Escape Key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) {
+            overlay.classList.remove('active');
+        }
+    });
+
     // Phone Auto-Format
     if (phoneInput) {
         phoneInput.addEventListener('input', (e) => {
+            phoneInput.classList.remove('input-error');
             let num = e.target.value.replace(/\D/g, '');
             if (num.startsWith('7') || num.startsWith('8')) num = num.substring(1);
             if (num.length > 10) num = num.substring(0, 10);
@@ -514,7 +560,8 @@ function setupModalAndForm() {
             e.preventDefault();
             const phone = phoneInput.value.trim();
             if (phone.length < 16) {
-                showToast('Введите корректный номер телефона');
+                if (phoneInput) phoneInput.classList.add('input-error');
+                showToast('Введите полный номер телефона: +7 (XXX) XXX-XX-XX');
                 return;
             }
 
@@ -585,14 +632,21 @@ function fetchServerSettings() {
         .catch(() => {});
 }
 
-// Toast Helper
+// Toast Helper with max 3 limit
 function showToast(message) {
     const container = document.getElementById('toast-container');
     if (!container) return;
+
+    // Remove oldest toast if more than 3
+    while (container.children.length >= 3) {
+        container.removeChild(container.firstChild);
+    }
+
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.textContent = message;
     container.appendChild(toast);
+
     setTimeout(() => {
         toast.remove();
     }, 4000);
