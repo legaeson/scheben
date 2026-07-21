@@ -223,27 +223,15 @@ function setupEventHandlers() {
         recalculate();
     });
 
-    // Input element
+    // Calculate/Search button
+    const btnCalc = document.getElementById('btn-calculate');
     const input = document.getElementById('address-input');
-
-    // Suggest autocomplete (debounced)
-    input.addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
-        const query = e.target.value.trim();
-        if (query.length < 3) {
-            hideSuggestions();
-            return;
-        }
-
-        searchTimeout = setTimeout(() => {
-            fetchSuggestions(query);
-        }, 400);
-    });
-
-    // Close suggestions dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.address-group')) {
-            hideSuggestions();
+    
+    btnCalc.addEventListener('click', () => {
+        const address = input.value.trim();
+        if (address.length > 2) {
+            showLoading(true);
+            fetchSuggestions(address);
         }
     });
 
@@ -252,9 +240,16 @@ function setupEventHandlers() {
         if (e.key === 'Enter') {
             const address = input.value.trim();
             if (address.length > 2) {
-                calculateRoute(address);
-                hideSuggestions();
+                showLoading(true);
+                fetchSuggestions(address);
             }
+        }
+    });
+
+    // Close suggestions dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.address-group')) {
+            hideSuggestions();
         }
     });
 
@@ -287,7 +282,9 @@ function fetchSuggestions(query) {
         return res.json();
     })
     .then(data => {
+        showLoading(false);
         if (!data || data.length === 0) {
+            alert('Указанный адрес не найден. Пожалуйста, уточните запрос.');
             hideSuggestions();
             return;
         }
@@ -302,7 +299,9 @@ function fetchSuggestions(query) {
         renderSuggestions(items);
     })
     .catch(err => {
+        showLoading(false);
         console.error('Nominatim suggest error:', err);
+        alert('Не удалось распознать адрес. Пожалуйста, проверьте интернет-соединение или уточните запрос.');
     });
 }
 
@@ -383,46 +382,6 @@ function renderSuggestions(items) {
 
 function hideSuggestions() {
     document.getElementById('suggestions').style.display = 'none';
-}
-
-// Calculate road distance and draw route using Nominatim + OSRM
-function calculateRoute(address) {
-    showLoading(true);
-
-    let searchQuery = address;
-    if (!address.toLowerCase().includes('красноярск')) {
-        searchQuery = 'Красноярск, ' + address;
-    }
-    
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1&addressdetails=1`;
-    fetch(url, {
-        headers: {
-            'Accept-Language': 'ru',
-            'User-Agent': 'scheben-delivery-calculator'
-        }
-    })
-    .then(res => {
-        if (!res.ok) throw new Error('Nominatim request failed');
-        return res.json();
-    })
-    .then(data => {
-        if (!data || data.length === 0) {
-            alert('Указанный адрес не найден. Пожалуйста, уточните запрос.');
-            showLoading(false);
-            return;
-        }
-        
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-        const displayName = formatNominatimAddress(data[0]);
-        
-        renderRouteAndCalculate([lat, lon], displayName);
-    })
-    .catch(err => {
-        console.error('Geocoding error:', err);
-        alert('Не удалось распознать адрес. Пожалуйста, проверьте интернет-соединение или уточните запрос.');
-        showLoading(false);
-    });
 }
 
 // Render route and calculate distance using OSRM with straight-line fallback
@@ -507,11 +466,20 @@ function renderRouteAndCalculate(destCoords, displayName) {
     });
 }
 
-// Toggle loading state on spinner
+// Toggle loading state on button
 function showLoading(isLoading) {
     const spinner = document.getElementById('calc-spinner');
-    if (spinner) {
-        spinner.style.display = isLoading ? 'inline-block' : 'none';
+    const text = document.getElementById('btn-text');
+    const btn = document.getElementById('btn-calculate');
+    
+    if (isLoading) {
+        spinner.style.display = 'inline-block';
+        text.style.display = 'none';
+        btn.disabled = true;
+    } else {
+        spinner.style.display = 'none';
+        text.style.display = 'inline-block';
+        btn.disabled = false;
     }
 }
 
