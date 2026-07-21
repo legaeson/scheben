@@ -2,25 +2,34 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>шебень.рф — Доставка щебня, ПГС, песка, гравия в Красноярске</title>
     <meta name="description" content="Заказ и доставка сыпучих строительных материалов (щебень, ПГС, песок, гравий, битый кирпич) напрямую с нашего склада по Красноярску и пригороду. Удобный расчет стоимости онлайн.">
+    <!-- Open Graph -->
+    <meta property="og:title" content="шебень.рф — Доставка щебня, ПГС, песка в Красноярске">
+    <meta property="og:description" content="Щебень, ПГС, песок, гравий с доставкой. Онлайн-расчёт стоимости до вашего объекта.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://шебень.рф">
+    <meta property="og:locale" content="ru_RU">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2.5'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="style.css">
     <!-- Leaflet CSS & JS for OpenStreetMap -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
  
     <header>
         <div class="header-container">
-            <div class="logo">
+            <a href="/" class="logo">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                 <div class="logo-text">шебень<span>.рф</span></div>
-            </div>
+            </a>
             <div class="header-phone">
                 <span class="phone-badge">Пн-Сб 8:00-19:30 (Обед 12-13)</span>
+                <span class="phone-badge-mobile">🕗 до 19:30</span>
                 <a href="tel:+79069713377" class="phone-link" id="header-phone-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     +7 (906) 971-33-77
@@ -30,10 +39,7 @@
     </header>
  
     <main>
-        <section class="hero">
-            <h1>шебень.рф — Доставка сыпучих материалов в Красноярске</h1>
-            <p>Прямые поставки песка, щебня, гравия, ПГС и битого кирпича с нашего склада. Простой расчет стоимости доставки до вашего объекта.</p>
-        </section>
+
 
         <div class="main-content">
             <!-- Left Side: Material selection and volume -->
@@ -43,19 +49,22 @@
                 <div class="material-grid" id="material-grid">
                     <!-- Cards will be populated dynamically, but we put them here for fast load and SEO -->
                     <div class="material-card selected" data-material="crushed_stone">
-                        <img src="images/crushed_stone.png" alt="Щебень" class="material-image">
+                        <img src="images/crushed_stone.jpg" alt="Щебень" class="material-image" loading="lazy">
                         <div class="material-info">
                             <div class="material-name">Щебень</div>
                             <div class="material-price">от 750 ₽/м³</div>
                             <select class="variant-select" id="select-crushed-stone" name="variant_crushed_stone" aria-label="Фракция щебня" data-mat="crushed_stone">
-                                <option value="frac_4_10">Фракция 4-8 ; 5-10</option>
-                                <option value="frac_8_20">Фракция 8-16 ; 5-20 ; 10-20</option>
+                                <option value="frac_4_8">Фракция 4-8</option>
+                                <option value="frac_5_10">Фракция 5-10</option>
+                                <option value="frac_8_16">Фракция 8-16</option>
+                                <option value="frac_5_20">Фракция 5-20</option>
+                                <option value="frac_10_20">Фракция 10-20</option>
                             </select>
                         </div>
                     </div>
                     
                     <div class="material-card" data-material="sand">
-                        <img src="images/sand.png" alt="Песок" class="material-image">
+                        <img src="images/sand.jpg" alt="Песок" class="material-image" loading="lazy">
                         <div class="material-info">
                             <div class="material-name">Песок</div>
                             <div class="material-price">от 850 ₽/м³</div>
@@ -67,7 +76,7 @@
                     </div>
 
                     <div class="material-card" data-material="pshs">
-                        <img src="images/pgs.png" alt="ПЩС" class="material-image">
+                        <img src="images/pgs.jpg" alt="ПЩС" class="material-image" loading="lazy">
                         <div class="material-info">
                             <div class="material-name">ПЩС</div>
                             <div class="material-price">от 750 ₽/м³</div>
@@ -81,18 +90,19 @@
                     </div>
 
                     <div class="material-card" data-material="gps_gravel">
-                        <img src="images/gravel.png" alt="ГПС / Гравий" class="material-image">
+                        <img src="images/gravel.jpg" alt="ГПС / Гравий" class="material-image" loading="lazy">
                         <div class="material-info">
                             <div class="material-name">ГПС / Гравий</div>
                             <div class="material-price">от 550 ₽/м³</div>
                             <select class="variant-select" id="select-gps-gravel" name="variant_gps_gravel" aria-label="Вид ГПС / гравия" data-mat="gps_gravel">
-                                <option value="gps_0_20">ГПС 0-20 ; Гравий 5-20</option>
+                                <option value="gps_0_20">ГПС 0-20</option>
+                                <option value="gravel_5_20">Гравий 5-20</option>
                             </select>
                         </div>
                     </div>
                     
                     <div class="material-card" data-material="anti_ice">
-                        <img src="images/anti_ice.png" alt="Противогололедный материал" class="material-image">
+                        <img src="images/anti_ice.jpg" alt="Противогололедный материал" class="material-image" loading="lazy">
                         <div class="material-info">
                             <div class="material-name">Противогололедный материал</div>
                             <div class="material-price">от 1 400 ₽/м³</div>
@@ -100,7 +110,7 @@
                     </div>
 
                     <div class="material-card" data-material="crushed_brick">
-                        <img src="images/crushed_brick.png" alt="Битый кирпич" class="material-image">
+                        <img src="images/crushed_brick.jpg" alt="Битый кирпич" class="material-image" loading="lazy">
                         <div class="material-info">
                             <div class="material-name">Битый кирпич</div>
                             <div class="material-price">от 800 ₽/м³</div>
@@ -108,7 +118,7 @@
                     </div>
 
                     <div class="material-card" data-material="expanded_clay">
-                        <img src="images/expanded_clay.png" alt="Керамзит" class="material-image">
+                        <img src="images/expanded_clay.jpg" alt="Керамзит" class="material-image" loading="lazy">
                         <div class="material-info">
                             <div class="material-name">Керамзит</div>
                             <div class="material-price">от 1 600 ₽/м³</div>
@@ -116,7 +126,7 @@
                     </div>
 
                     <div class="material-card" data-material="chernozem">
-                        <img src="images/chernozem.png" alt="Чернозём" class="material-image">
+                        <img src="images/chernozem.jpg" alt="Чернозём" class="material-image" loading="lazy">
                         <div class="material-info">
                             <div class="material-name">Чернозём</div>
                             <div class="material-price">от 1 000 ₽/м³</div>
@@ -126,7 +136,7 @@
             </div>
 
             <!-- Right Side: Delivery Calculator & Map & Order -->
-            <div class="section-card calc-section">
+            <div class="section-card calc-section" id="calculator">
                 <h2 class="section-title">2. Укажите адрес доставки</h2>
                 
                 <div class="address-group">
@@ -146,6 +156,7 @@
 
                 <div class="map-wrapper-relative">
                     <div class="map-container" id="map"></div>
+                    <p class="map-click-hint" id="map-click-hint">💡 Или нажмите на карту, чтобы выбрать точку доставки</p>
                 </div>
 
                 <div class="volume-control" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
@@ -172,7 +183,9 @@
                         <strong id="material-cost-val">11 250 ₽</strong>
                     </div>
                     <div class="breakdown-row">
-                        <span id="delivery-rate-label">Доставка (400 ₽/км):</span>
+                        <span id="delivery-rate-label">Доставка (400 ₽/км):
+                            <span class="delivery-tooltip" title="Стоимость за рейс самосвала, включая погрузку. Рассчитывается по расстоянию от склада.">ⓘ</span>
+                        </span>
                         <strong id="delivery-cost-val">0 ₽</strong>
                     </div>
                     <div class="breakdown-row total">
@@ -187,8 +200,8 @@
                 </a>
                 
                 <p class="order-notice">
-                    Нажмите «Позвонить», чтобы связаться с водителем напрямую и согласовать точное время доставки. Расчет стоимости примерный.<br>
-                    Нажимая кнопку «Позвонить и заказать», вы соглашаетесь на обработку персональных данных в соответствии с <a href="privacy.html" style="color: var(--primary); text-decoration: underline;">Политикой конфиденциальности</a>.
+                    Нажмите, чтобы связаться с диспетчером и согласовать точное время доставки. Расчёт стоимости примерный.<br>
+                    Нажимая кнопку, вы соглашаетесь на обработку персональных данных в соответствии с <a href="privacy.html" style="color: var(--primary); text-decoration: underline;">Политикой конфиденциальности</a>.
                 </p>
             </div>
         </div>
@@ -196,10 +209,17 @@
 
     <footer>
         <p>&copy; 2026 шебень.рф. Доставка сыпучих материалов в г. Красноярске.</p>
+        <p class="footer-address">📍 Склад: д. Кубеково, Красноярский край</p>
+        <div class="footer-links">
+            <a href="privacy.html">Политика конфиденциальности</a>
+            <a href="tel:+79069713377">+7 (906) 971-33-77</a>
+            <a href="https://wa.me/79069713377" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
         <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 0.5rem; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.5;">
             Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ).
             <br>
-            ИП [Ваше ФИО] | ОГРНИП [Ваш ОГРНИП] | ИНН [Ваш ИНН]
+            <!-- TODO: Замените на реальные реквизиты ИП -->
+            ИП Иванов И.И. | ОГРНИП 300000000000000 | ИНН 000000000000
         </p>
     </footer>
 

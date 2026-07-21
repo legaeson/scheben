@@ -7,6 +7,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 2000;
 const SETTINGS_PATH = path.join(__dirname, 'settings.json');
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'change-me-in-env';
 
 app.use(express.json());
 // Serve static website files
@@ -28,8 +29,11 @@ function getSettings() {
             crushed_stone: {
                 name: 'Щебень',
                 variants: [
-                    { id: 'frac_4_10', name: '4-8 ; 5-10', price: 750 },
-                    { id: 'frac_8_20', name: '8-16 ; 5-20 ; 10-20', price: 1000 }
+                    { id: 'frac_4_8', name: '4-8', price: 750 },
+                    { id: 'frac_5_10', name: '5-10', price: 750 },
+                    { id: 'frac_8_16', name: '8-16', price: 1000 },
+                    { id: 'frac_5_20', name: '5-20', price: 1000 },
+                    { id: 'frac_10_20', name: '10-20', price: 1000 }
                 ]
             },
             sand: {
@@ -51,7 +55,8 @@ function getSettings() {
             gps_gravel: {
                 name: 'ГПС / Гравий',
                 variants: [
-                    { id: 'gps_0_20', name: 'ГПС 0-20 ; Гравий 5-20', price: 550 }
+                    { id: 'gps_0_20', name: 'ГПС 0-20', price: 550 },
+                    { id: 'gravel_5_20', name: 'Гравий 5-20', price: 550 }
                 ]
             },
             anti_ice: { name: 'Противогололедный материал', price: 1400 },
@@ -82,6 +87,10 @@ app.get('/api/settings', (req, res) => {
 
 // API endpoint to save settings (optional)
 app.post('/api/settings', (req, res) => {
+    const apiKey = req.headers['x-api-key'];
+    if (apiKey !== ADMIN_API_KEY) {
+        return res.status(403).json({ success: false, message: 'Forbidden: Invalid API key' });
+    }
     const success = saveSettings(req.body);
     if (success) {
         res.json({ success: true, message: 'Settings saved successfully' });

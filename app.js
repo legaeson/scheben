@@ -86,6 +86,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 function init() {
     initMap();
     setupEventHandlers();
+    initCustomSelects();
     loadSettingsFromServer();
 }
 
@@ -128,8 +129,19 @@ function initMap() {
         minZoom: 8
     }).addTo(myMap);
 
-    // Note: Warehouse start marker at Kubekovo is intentionally hidden from map view,
-    // while route calculations continue from startCoords (Kubekovo).
+    // Warehouse marker at Kubekovo
+    L.marker(startCoords, {
+        icon: L.divIcon({
+            className: 'warehouse-marker',
+            html: '<div style="background-color: #1e3a5f; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.35);"></div>',
+            iconSize: [14, 14],
+            iconAnchor: [7, 7]
+        })
+    }).addTo(myMap).bindPopup('Склад (д. Кубеково)');
+
+    // Delivery zone circle (200km radius)
+    L.circle(startCoords, { radius: 200000, color: '#d97706', fillColor: '#fef3c7', fillOpacity: 0.08, weight: 1, dashArray: '8,6', interactive: false }).addTo(myMap);
+
 
     // Click on map to place point marker instantly and defer reverse geocoding + route calculation to clicking "Рассчитать"
     myMap.on('click', function (e) {
@@ -142,6 +154,9 @@ function initMap() {
             alert('Доставка выполняется только по Красноярску и окрестностям (до 200 км). Пожалуйста, выберите точку ближе к городу.');
             return;
         }
+
+        const mapHint = document.getElementById('map-click-hint');
+        if (mapHint) mapHint.style.display = 'none';
 
         if (routePolyline) {
             myMap.removeLayer(routePolyline);
@@ -648,5 +663,89 @@ function sendOrderNotification() {
     })
     .catch(err => {
         console.error('[App] Failed to send order notification:', err);
+    });
+}
+
+// Custom Select UI Initialization
+function initCustomSelects() {
+    const selects = document.querySelectorAll('.variant-select');
+    selects.forEach(select => {
+        if (select.nextElementSibling && select.nextElementSibling.classList.contains('custom-select-wrapper')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-select-wrapper';
+        select.parentNode.insertBefore(wrapper, select.nextSibling);
+        wrapper.appendChild(select);
+        select.style.display = 'none';
+
+        const trigger = document.createElement('div');
+        trigger.className = 'custom-select-trigger';
+        
+        const triggerText = document.createElement('span');
+        triggerText.textContent = select.options[select.selectedIndex].text;
+        trigger.appendChild(triggerText);
+
+        const arrow = document.createElement('div');
+        arrow.className = 'custom-select-arrow';
+        arrow.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+        trigger.appendChild(arrow);
+        
+        wrapper.appendChild(trigger);
+
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'custom-select-options';
+
+        Array.from(select.options).forEach(option => {
+            const optDiv = document.createElement('div');
+            optDiv.className = 'custom-option';
+            if (option.selected) optDiv.classList.add('selected');
+            optDiv.textContent = option.text;
+            optDiv.dataset.value = option.value;
+            
+            optDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                select.value = option.value;
+                triggerText.textContent = option.text;
+                
+                optionsDiv.querySelectorAll('.custom-option').forEach(el => el.classList.remove('selected'));
+                optDiv.classList.add('selected');
+                wrapper.classList.remove('open');
+                
+                const card = wrapper.closest('.material-card');
+                if (card) card.style.zIndex = '';
+                
+                select.dispatchEvent(new Event('change'));
+            });
+            optionsDiv.appendChild(optDiv);
+        });
+
+        wrapper.appendChild(optionsDiv);
+
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.custom-select-wrapper').forEach(el => {
+                if (el !== wrapper) {
+                    el.classList.remove('open');
+                    const c = el.closest('.material-card');
+                    if (c) c.style.zIndex = '';
+                }
+            });
+            const isOpen = wrapper.classList.toggle('open');
+            const card = wrapper.closest('.material-card');
+            if (card) {
+                card.style.zIndex = isOpen ? '10' : '';
+            }
+        });
+        
+        wrapper.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-select-wrapper').forEach(el => {
+            el.classList.remove('open');
+        });
+        document.querySelectorAll('.material-card').forEach(el => {
+            el.style.zIndex = '';
+        });
     });
 }
