@@ -2,7 +2,7 @@
 // шебень.рф — Interactive Application Logic (Leaflet, Nominatim, OSRM & API)
 // ==========================================================================
 
-// Default starting point coordinates: Krasnoyarsk Logistics Hub (ul. 26 Bakinskikh Komissarov)
+// Internal reference coordinates for Krasnoyarsk routing calculations
 const defaultStartCoords = [56.0355, 93.0085];
 
 const materialsData = {
@@ -296,14 +296,14 @@ function recalculateTotalCost() {
     if (modalCost) modalCost.textContent = `${grandTotal.toLocaleString('ru-RU')} ₽`;
 }
 
-// Leaflet Map Initialization
+// Leaflet Map Initialization (No warehouse pin displayed on map to maintain privacy)
 function initLeafletMap() {
     if (typeof L === 'undefined') return;
 
     const bounds = L.latLngBounds(L.latLng(54.0, 90.0), L.latLng(58.0, 96.0));
 
     myMap = L.map('map', {
-        center: appState.startCoords,
+        center: [56.0105, 92.8525], // Center on Krasnoyarsk city
         zoom: 11,
         minZoom: 8,
         maxZoom: 18,
@@ -312,16 +312,6 @@ function initLeafletMap() {
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(myMap);
-
-    // Warehouse Logistics Point Marker (Krasnoyarsk)
-    L.marker(appState.startCoords, {
-        icon: L.divIcon({
-            className: 'warehouse-pin',
-            html: '<div style="background:#059669; width:18px; height:18px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 2px 8px rgba(0,0,0,0.25);"></div>',
-            iconSize: [18, 18],
-            iconAnchor: [9, 9]
-        })
-    }).addTo(myMap).bindPopup('<b>База отгрузки</b><br>г. Красноярск');
 
     // Map Click Listener
     myMap.on('click', (e) => {
@@ -342,7 +332,7 @@ function setDestinationPoint(coords, name) {
         destMarker = L.marker(coords, {
             icon: L.divIcon({
                 className: 'dest-pin',
-                html: '<div style="background:#d97706; width:20px; height:20px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 2px 10px rgba(0,0,0,0.3);"></div>',
+                html: '<div style="background:#059669; width:20px; height:20px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 2px 10px rgba(0,0,0,0.3);"></div>',
                 iconSize: [20, 20],
                 iconAnchor: [10, 10]
             })
@@ -351,7 +341,7 @@ function setDestinationPoint(coords, name) {
         destMarker.setLatLng(coords);
     }
 
-    destMarker.bindPopup(`<b>Доставка:</b><br>${name}`).openPopup();
+    destMarker.bindPopup(`<b>Точка доставки:</b><br>${name}`).openPopup();
     calculateOSRMRoute(coords);
 }
 
