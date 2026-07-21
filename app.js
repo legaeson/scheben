@@ -2,7 +2,8 @@
 // шебень.рф — Interactive Application Logic (Leaflet, Nominatim, OSRM & API)
 // ==========================================================================
 
-const defaultStartCoords = [56.146389, 93.112222]; // Warehouse [lat, lon] at Kubekovo
+// Default starting point coordinates: Krasnoyarsk Logistics Hub (ul. 26 Bakinskikh Komissarov)
+const defaultStartCoords = [56.0355, 93.0085];
 
 const materialsData = {
     crushed_stone: {
@@ -211,7 +212,7 @@ function setupCategoryTabs() {
     });
 }
 
-// Volume Controller & Truck Matcher
+// Volume Controller & Truck Capacity Matcher
 function setupVolumeSlider() {
     const slider = document.getElementById('volume-slider');
     const display = document.getElementById('volume-display');
@@ -239,12 +240,12 @@ function updateVolume(vol) {
         b.classList.toggle('active', parseInt(b.dataset.vol, 10) === vol);
     });
 
-    // Update truck recommendation badge
+    // Update truck recommendation text
     const truckText = document.getElementById('truck-type-text');
     if (truckText) {
-        if (vol <= 10) truckText.textContent = '1 Самосвал Камаз (10 м³)';
-        else if (vol <= 15) truckText.textContent = '1 Самосвал Камаз (15 м³)';
-        else if (vol <= 20) truckText.textContent = '1 Самосвал HOWO / Shacman (20 м³)';
+        if (vol <= 10) truckText.textContent = '1 Самосвал (10 м³)';
+        else if (vol <= 15) truckText.textContent = '1 Самосвал (15 м³)';
+        else if (vol <= 20) truckText.textContent = '1 Большой самосвал (20 м³)';
         else if (vol <= 25) truckText.textContent = '1 Тяжелый самосвал (25 м³)';
         else truckText.textContent = '2 Самосвала (15 м³ + 15 м³)';
     }
@@ -303,7 +304,7 @@ function initLeafletMap() {
 
     myMap = L.map('map', {
         center: appState.startCoords,
-        zoom: 10,
+        zoom: 11,
         minZoom: 8,
         maxZoom: 18,
         maxBounds: bounds,
@@ -312,7 +313,7 @@ function initLeafletMap() {
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(myMap);
 
-    // Warehouse Marker (Kubekovo)
+    // Warehouse Logistics Point Marker (Krasnoyarsk)
     L.marker(appState.startCoords, {
         icon: L.divIcon({
             className: 'warehouse-pin',
@@ -320,7 +321,7 @@ function initLeafletMap() {
             iconSize: [18, 18],
             iconAnchor: [9, 9]
         })
-    }).addTo(myMap).bindPopup('<b>Склад сыпучих материалов</b><br>д. Кубеково');
+    }).addTo(myMap).bindPopup('<b>База отгрузки</b><br>г. Красноярск');
 
     // Map Click Listener
     myMap.on('click', (e) => {

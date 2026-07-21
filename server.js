@@ -35,7 +35,7 @@ function getSettings() {
             chernozem: { name: 'Чернозём', price: 1000 }
         },
         deliveryRate: 400,
-        startCoords: [56.146389, 93.112222]
+        startCoords: [56.0355, 93.0085]
     };
 }
 
@@ -215,7 +215,7 @@ if (!token) {
         if (state && state.action === 'set_warehouse') {
             const parts = text.split(',').map(p => parseFloat(p.trim()));
             if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) {
-                bot.sendMessage(chatId, '❌ Введите координаты (например: `56.146389, 93.112222`):', { parse_mode: 'Markdown' });
+                bot.sendMessage(chatId, '❌ Введите координаты (например: `56.0355, 93.0085`):', { parse_mode: 'Markdown' });
                 return;
             }
             const settings = getSettings();
