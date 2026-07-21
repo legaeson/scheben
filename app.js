@@ -54,6 +54,7 @@ let myMap = null;
 let currentRoute = null; // Polyline layer
 let startMarker = null;
 let destMarker = null;
+let tempMarker = null;
 let searchTimeout = null;
 
 // Custom premium SVG icon for start and destination points
@@ -97,7 +98,7 @@ function initMap() {
     startMarker = L.marker(startCoords, { icon: startIcon }).addTo(myMap)
         .bindPopup('<b>Наш склад</b><br>Отсюда отправляется доставка материалов');
 
-    // Click on map to select delivery location
+    // Click on map to drop temporary pin with "Выбрать это место" popup
     myMap.on('click', (e) => {
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
@@ -107,6 +108,12 @@ function initMap() {
         if (distFromStart > 200) {
             alert('Доставка выполняется только по Красноярску и окрестностям (до 200 км). Пожалуйста, выберите точку ближе к городу.');
             return;
+        }
+
+        // Remove previous temp marker if exists
+        if (tempMarker) {
+            myMap.removeLayer(tempMarker);
+            tempMarker = null;
         }
 
         showLoading(true);
@@ -120,20 +127,55 @@ function initMap() {
         })
         .then(res => res.json())
         .then(data => {
+            showLoading(false);
             let name = 'Точка на карте';
             if (data && data.display_name) {
                 name = formatNominatimAddress(data);
             }
-            renderRouteAndCalculate([lat, lng], name);
-            setSearchButtonState(true);
+            
+            // Create temporary marker with "Выбрать это место" button
+            const cleanName = name.replace(/'/g, "\\'");
+            const popupContent = `
+                <div style="text-align: center; padding: 4px;">
+                    <div style="font-weight: 600; font-size: 0.9rem; color: #111827; margin-bottom: 8px;">${name}</div>
+                    <button type="button" class="btn-map-confirm" onclick="confirmMapPoint(${lat}, ${lng}, '${cleanName}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+                        ✓ Выбрать это место
+                    </button>
+                </div>
+            `;
+
+            tempMarker = L.marker([lat, lng], { icon: destIcon }).addTo(myMap)
+                .bindPopup(popupContent)
+                .openPopup();
         })
         .catch(err => {
+            showLoading(false);
             console.warn('Reverse geocoding failed:', err);
-            renderRouteAndCalculate([lat, lng], `Точка на карте (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
-            setSearchButtonState(true);
+            const name = `Точка на карте (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+            tempMarker = L.marker([lat, lng], { icon: destIcon }).addTo(myMap)
+                .bindPopup(`
+                    <div style="text-align: center; padding: 4px;">
+                        <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 8px;">${name}</div>
+                        <button type="button" class="btn-map-confirm" onclick="confirmMapPoint(${lat}, ${lng}, '${name}')" style="background: #10b981; color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
+                            ✓ Выбрать это место
+                        </button>
+                    </div>
+                `)
+                .openPopup();
         });
     });
 }
+
+// Global function triggered when user clicks "Выбрать это место" in marker popup
+window.confirmMapPoint = function(lat, lng, name) {
+    if (tempMarker) {
+        myMap.removeLayer(tempMarker);
+        tempMarker = null;
+    }
+    showLoading(true);
+    renderRouteAndCalculate([lat, lng], name);
+    setSearchButtonState(true);
+};
 
 // Load settings from backend server
 function loadSettingsFromServer() {
@@ -288,6 +330,12 @@ function setupEventHandlers() {
     input.addEventListener('input', () => {
         setSearchButtonState(false);
     });
+
+    // Toggle full-screen map mode
+    const btnFullscreen = document.getElementById('btn-toggle-fullscreen');
+    if (btnFullscreen) {
+        btnFullscreen.addEventListener('click', toggleMapFullscreen);
+    }
 
     // Close suggestions dropdown when clicking outside
     document.addEventListener('click', (e) => {
@@ -477,11 +525,12 @@ function renderRouteAndCalculate(destCoords, displayName) {
         const coordinates = route.geometry.coordinates;
         const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
 
-        // Draw road route polyline (amber color)
+        // Draw road route polyline (Bright Vivid Orange color)
         currentRoute = L.polyline(latLngs, {
-            color: '#d97706',
-            weight: 5,
-            opacity: 0.85
+            color: '#ff6600',
+            weight: 6,
+            opacity: 0.9,
+            lineJoin: 'round'
         }).addTo(myMap);
 
         // Add destination marker
@@ -502,12 +551,12 @@ function renderRouteAndCalculate(destCoords, displayName) {
         const straightLineDist = getHaversineDistance(startCoords[0], startCoords[1], destCoords[0], destCoords[1]);
         currentDistance = Math.round(straightLineDist * 1.35 * 10) / 10;
 
-        // Draw straight dashed line
+        // Draw straight dashed line (Orange)
         currentRoute = L.polyline([startCoords, destCoords], {
-            color: '#ef4444',
-            weight: 3,
-            dashArray: '5, 10',
-            opacity: 0.75
+            color: '#ff6600',
+            weight: 4,
+            dashArray: '6, 10',
+            opacity: 0.85
         }).addTo(myMap);
 
         // Add destination marker
@@ -540,22 +589,22 @@ function showLoading(isLoading) {
     }
 }
 
-// Update Search button appearance when address is selected vs editing
-function setSearchButtonState(isFound) {
-    const wrapper = document.querySelector('.address-input-wrapper');
-    const btnText = document.getElementById('btn-text');
-    const btnCalc = document.getElementById('btn-calculate');
-    if (!wrapper || !btnText || !btnCalc) return;
+// Toggle fullscreen map mode
+function toggleMapFullscreen() {
+    const wrapper = document.querySelector('.map-wrapper-relative');
+    const btnText = document.getElementById('fullscreen-btn-text');
+    if (!wrapper) return;
 
-    if (isFound) {
-        wrapper.classList.add('address-selected');
-        btnText.innerHTML = '✓ Выбрано';
-        btnCalc.disabled = true;
-    } else {
-        wrapper.classList.remove('address-selected');
-        btnText.innerHTML = 'Найти';
-        btnCalc.disabled = false;
+    wrapper.classList.toggle('fullscreen');
+    const isFS = wrapper.classList.contains('fullscreen');
+
+    if (btnText) {
+        btnText.textContent = isFS ? 'Свернуть карту' : 'Развернуть карту';
     }
+
+    setTimeout(() => {
+        if (myMap) myMap.invalidateSize();
+    }, 200);
 }
 
 // Calculate cost breakdowns and update UI
