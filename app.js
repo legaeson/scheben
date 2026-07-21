@@ -111,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
-    setupThemeToggle();
     renderMaterialCards('all');
     setupCategoryTabs();
     setupVolumeSlider();
@@ -121,30 +120,6 @@ function initApp() {
     setupAddressAutocomplete();
     initLeafletMap();
     fetchServerSettings();
-}
-
-// Theme Switcher Logic (Light default + Dark toggle)
-function setupThemeToggle() {
-    const toggleBtn = document.getElementById('theme-toggle-btn');
-    const savedTheme = localStorage.getItem('scheben_theme') || 'light';
-    setTheme(savedTheme);
-
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            setTheme(newTheme);
-        });
-    }
-}
-
-function setTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('scheben_theme', theme);
-    const themeIcon = document.getElementById('theme-icon');
-    if (themeIcon) {
-        themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
-    }
 }
 
 // Render Material Cards Grid
@@ -341,9 +316,9 @@ function initLeafletMap() {
     L.marker(appState.startCoords, {
         icon: L.divIcon({
             className: 'warehouse-pin',
-            html: '<div style="background:#d97706; width:16px; height:16px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>',
-            iconSize: [16, 16],
-            iconAnchor: [8, 8]
+            html: '<div style="background:#059669; width:18px; height:18px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 2px 8px rgba(0,0,0,0.25);"></div>',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9]
         })
     }).addTo(myMap).bindPopup('<b>Склад сыпучих материалов</b><br>д. Кубеково');
 
@@ -366,7 +341,7 @@ function setDestinationPoint(coords, name) {
         destMarker = L.marker(coords, {
             icon: L.divIcon({
                 className: 'dest-pin',
-                html: '<div style="background:#059669; width:20px; height:20px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 0 12px rgba(0,0,0,0.3);"></div>',
+                html: '<div style="background:#d97706; width:20px; height:20px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 2px 10px rgba(0,0,0,0.3);"></div>',
                 iconSize: [20, 20],
                 iconAnchor: [10, 10]
             })
@@ -397,11 +372,11 @@ function calculateOSRMRoute(coords) {
                 const latLngs = route.geometry.coordinates.map(c => [c[1], c[0]]);
 
                 if (routePolyline) myMap.removeLayer(routePolyline);
-                routePolyline = L.polyline(latLngs, { color: '#d97706', weight: 5, opacity: 0.85 }).addTo(myMap);
+                routePolyline = L.polyline(latLngs, { color: '#059669', weight: 5, opacity: 0.85 }).addTo(myMap);
                 myMap.fitBounds(routePolyline.getBounds(), { padding: [40, 40] });
 
                 recalculateTotalCost();
-                showToast(`📍 Дистанция: ${appState.distanceKm} км`);
+                showToast(`Дистанция маршрута: ${appState.distanceKm} км`);
             }
         })
         .catch(err => {
@@ -551,7 +526,7 @@ function setupModalAndForm() {
             e.preventDefault();
             const phone = phoneInput.value.trim();
             if (phone.length < 16) {
-                showToast('⚠️ Введите корректный номер телефона');
+                showToast('Введите корректный номер телефона');
                 return;
             }
 
@@ -593,16 +568,16 @@ function setupModalAndForm() {
 
                 if (data.success) {
                     overlay.classList.remove('active');
-                    showToast('🎉 Заявка принята! Диспетчер перезвонит через 5 минут.');
+                    showToast('Заявка принята! Диспетчер перезвонит через 5 минут.');
                     form.reset();
                 } else {
-                    showToast('⚠️ Ошибка при отправке заявки');
+                    showToast('Ошибка при отправке заявки');
                 }
             })
             .catch(() => {
                 if (spinner) spinner.style.display = 'none';
                 if (btnText) btnText.textContent = 'Отправить заявку';
-                showToast('🎉 Заявка принята! Диспетчер перезвонит через 5 минут.');
+                showToast('Заявка принята! Диспетчер перезвонит через 5 минут.');
                 overlay.classList.remove('active');
                 form.reset();
             });
