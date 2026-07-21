@@ -223,16 +223,8 @@ function setupEventHandlers() {
         recalculate();
     });
 
-    // Calculate/Search button
-    const btnCalc = document.getElementById('btn-calculate');
+    // Input element
     const input = document.getElementById('address-input');
-    
-    btnCalc.addEventListener('click', () => {
-        const address = input.value.trim();
-        if (address.length > 2) {
-            calculateRoute(address);
-        }
-    });
 
     // Suggest autocomplete (debounced)
     input.addEventListener('input', (e) => {
@@ -515,20 +507,11 @@ function renderRouteAndCalculate(destCoords, displayName) {
     });
 }
 
-// Toggle loading state on button
+// Toggle loading state on spinner
 function showLoading(isLoading) {
     const spinner = document.getElementById('calc-spinner');
-    const text = document.getElementById('btn-text');
-    const btn = document.getElementById('btn-calculate');
-    
-    if (isLoading) {
-        spinner.style.display = 'inline-block';
-        text.style.display = 'none';
-        btn.disabled = true;
-    } else {
-        spinner.style.display = 'none';
-        text.style.display = 'inline-block';
-        btn.disabled = false;
+    if (spinner) {
+        spinner.style.display = isLoading ? 'inline-block' : 'none';
     }
 }
 
