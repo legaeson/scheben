@@ -3,241 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>шебень.рф — Доставка щебня, ПГС, песка, гравия в Красноярске</title>
-    <meta name="description" content="Заказ и доставка сыпучих строительных материалов (щебень, ПГС, песок, гравий, битый кирпич) напрямую с нашего склада по Красноярску и пригороду. Удобный расчет стоимости онлайн.">
+    <title>шебень.рф — Доставка щебня, ПГС, песка и гравия в Красноярске</title>
+    <meta name="description" content="Прямые поставки сыпучих строительных материалов (щебень, ПГС, песок, гравий, битый кирпич) со склада в д. Кубеково. Онлайн-расчет стоимости доставки по Красноярску и пригороду за 10 секунд!">
+    
     <!-- Open Graph -->
     <meta property="og:title" content="шебень.рф — Доставка щебня, ПГС, песка в Красноярске">
-    <meta property="og:description" content="Щебень, ПГС, песок, гравий с доставкой. Онлайн-расчёт стоимости до вашего объекта.">
+    <meta property="og:description" content="Онлайн-калькулятор доставки щебня и сыпучих материалов напрямую со склада в д. Кубеково. Точный расчет расстояния и цены!">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://шебень.рф">
     <meta property="og:locale" content="ru_RU">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2.5'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+    
+    <!-- Fonts & CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="style.css">
+
     <!-- Leaflet CSS & JS for OpenStreetMap -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
- 
-    <header>
-        <div class="header-container">
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container header-inner">
             <a href="/" class="logo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                <div class="logo-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
                 <div class="logo-text">шебень<span>.рф</span></div>
             </a>
-            <div class="header-phone">
-                <span class="phone-badge">Пн-Сб 8:00-19:30 (Обед 12-13)</span>
-                <span class="phone-badge-mobile">🕗 до 19:30</span>
-                <a href="tel:+79069713377" class="phone-link" id="header-phone-link">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+
+            <ul class="nav-menu">
+                <li><a href="#calculator-section" class="nav-link">Калькулятор</a></li>
+                <li><a href="#specs-section" class="nav-link">Материалы</a></li>
+                <li><a href="#fleet-section" class="nav-link">Автопарк</a></li>
+                <li><a href="#faq-section" class="nav-link">Частые вопросы</a></li>
+            </ul>
+
+            <div class="header-actions">
+                <div class="status-badge">
+                    <span class="status-pulse"></span>
+                    <span>Приём заявок 8:00 - 19:30</span>
+                </div>
+                <a href="tel:+79069713377" class="phone-button" id="header-phone-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     +7 (906) 971-33-77
                 </a>
             </div>
         </div>
     </header>
- 
-    <main>
 
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container hero-grid">
+            <div class="hero-pill">
+                <span>⚡ Доставка по Красноярску и пригороду от 2 часов</span>
+            </div>
+            <h1 class="hero-title">Прямые поставки щебня, песка и ПЩС <span>со склада в д. Кубеково</span></h1>
+            <p class="hero-subtitle">Рассчитайте точную стоимость доставки до вашего участка за 10 секунд на интерактивной карте с учётом реального километража.</p>
+            
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">🏗️</div>
+                    <div class="stat-info">
+                        <div class="stat-num">Собственный склад</div>
+                        <div class="stat-label">д. Кубеково, без посредников</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚖️</div>
+                    <div class="stat-info">
+                        <div class="stat-num">100% Весовой контроль</div>
+                        <div class="stat-label">Точный объём в каждой машине</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚚</div>
+                    <div class="stat-info">
+                        <div class="stat-num">Самосвалы 10-30 м³</div>
+                        <div class="stat-label">Свой автопарк (Камаз, HOWO)</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💳</div>
+                    <div class="stat-info">
+                        <div class="stat-num">Оплата по факту</div>
+                        <div class="stat-label">Наличный и безналичный расчет</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <div class="main-content">
-            <!-- Left Side: Material selection and volume -->
-            <div class="section-card">
-                <h2 class="section-title">1. Выберите материал <span>Цены за м³</span></h2>
-                
+    <!-- Main Calculator App Section -->
+    <main class="app-section" id="calculator-section">
+        <div class="container app-grid">
+
+            <!-- Left Panel: Material Selector & Volume Slider -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <span class="step-num">1</span>
+                        Выберите материал и объём
+                    </h2>
+                    <span class="panel-subtitle">Цены за м³ со склада</span>
+                </div>
+
+                <!-- Category Tabs -->
+                <div class="category-tabs">
+                    <button type="button" class="tab-btn active" data-category="all">Все материалы</button>
+                    <button type="button" class="tab-btn" data-category="crushed">Щебень</button>
+                    <button type="button" class="tab-btn" data-category="sand_pgs">Песок & ПЩС</button>
+                    <button type="button" class="tab-btn" data-category="gravel">Гравий & ГПС</button>
+                    <button type="button" class="tab-btn" data-category="secondary">Вторичные & Грунт</button>
+                </div>
+
+                <!-- Material Cards Grid -->
                 <div class="material-grid" id="material-grid">
-                    <!-- Cards will be populated dynamically, but we put them here for fast load and SEO -->
-                    <div class="material-card selected" data-material="crushed_stone">
-                        <img src="images/crushed_stone.jpg" alt="Щебень" class="material-image" loading="lazy">
-                        <div class="material-info">
-                            <div class="material-name">Щебень</div>
-                            <div class="material-price">от 750 ₽/м³</div>
-                            <select class="variant-select" id="select-crushed-stone" name="variant_crushed_stone" aria-label="Фракция щебня" data-mat="crushed_stone">
-                                <option value="frac_4_8">Фракция 4-8</option>
-                                <option value="frac_5_10">Фракция 5-10</option>
-                                <option value="frac_8_16">Фракция 8-16</option>
-                                <option value="frac_5_20">Фракция 5-20</option>
-                                <option value="frac_10_20">Фракция 10-20</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="material-card" data-material="sand">
-                        <img src="images/sand.jpg" alt="Песок" class="material-image" loading="lazy">
-                        <div class="material-info">
-                            <div class="material-name">Песок</div>
-                            <div class="material-price">от 850 ₽/м³</div>
-                            <select class="variant-select" id="select-sand" name="variant_sand" aria-label="Вид песка" data-mat="sand">
-                                <option value="sand_0_5">Из отсева дробления 0-5</option>
-                                <option value="sand_washed">2 кл (мытый)</option>
-                            </select>
-                        </div>
+                    <!-- Populated dynamically via app.js -->
+                </div>
+
+                <!-- Volume Controller Card -->
+                <div class="volume-card">
+                    <div class="volume-header">
+                        <span class="volume-title">Требуемый объём (в кубах):</span>
+                        <span class="volume-val-badge" id="volume-display">15 м³</span>
                     </div>
 
-                    <div class="material-card" data-material="pshs">
-                        <img src="images/pgs.jpg" alt="ПЩС" class="material-image" loading="lazy">
-                        <div class="material-info">
-                            <div class="material-name">ПЩС</div>
-                            <div class="material-price">от 750 ₽/м³</div>
-                            <select class="variant-select" id="select-pshs" name="variant_pshs" aria-label="Фракция ПЩС" data-mat="pshs">
-                                <option value="pshs_0_10">0-10</option>
-                                <option value="pshs_0_8">0-8</option>
-                                <option value="pshs_0_20">0-20</option>
-                                <option value="pshs_0_40">0-40</option>
-                            </select>
-                        </div>
+                    <input type="range" id="volume-slider" class="range-slider" min="5" max="30" step="1" value="15">
+
+                    <div class="volume-presets">
+                        <button type="button" class="vol-preset-btn" data-vol="5">5 м³</button>
+                        <button type="button" class="vol-preset-btn" data-vol="10">10 м³</button>
+                        <button type="button" class="vol-preset-btn active" data-vol="15">15 м³</button>
+                        <button type="button" class="vol-preset-btn" data-vol="20">20 м³</button>
+                        <button type="button" class="vol-preset-btn" data-vol="25">25 м³</button>
+                        <button type="button" class="vol-preset-btn" data-vol="30">30 м³</button>
                     </div>
 
-                    <div class="material-card" data-material="gps_gravel">
-                        <img src="images/gravel.jpg" alt="ГПС / Гравий" class="material-image" loading="lazy">
-                        <div class="material-info">
-                            <div class="material-name">ГПС / Гравий</div>
-                            <div class="material-price">от 550 ₽/м³</div>
-                            <select class="variant-select" id="select-gps-gravel" name="variant_gps_gravel" aria-label="Вид ГПС / гравия" data-mat="gps_gravel">
-                                <option value="gps_0_20">ГПС 0-20</option>
-                                <option value="gravel_5_20">Гравий 5-20</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="material-card" data-material="anti_ice">
-                        <img src="images/anti_ice.jpg" alt="Противогололедный материал" class="material-image" loading="lazy">
-                        <div class="material-info">
-                            <div class="material-name">Противогололедный материал</div>
-                            <div class="material-price">от 1 400 ₽/м³</div>
-                        </div>
-                    </div>
-
-                    <div class="material-card" data-material="crushed_brick">
-                        <img src="images/crushed_brick.jpg" alt="Битый кирпич" class="material-image" loading="lazy">
-                        <div class="material-info">
-                            <div class="material-name">Битый кирпич</div>
-                            <div class="material-price">от 800 ₽/м³</div>
-                        </div>
-                    </div>
-
-                    <div class="material-card" data-material="expanded_clay">
-                        <img src="images/expanded_clay.jpg" alt="Керамзит" class="material-image" loading="lazy">
-                        <div class="material-info">
-                            <div class="material-name">Керамзит</div>
-                            <div class="material-price">от 1 600 ₽/м³</div>
-                        </div>
-                    </div>
-
-                    <div class="material-card" data-material="chernozem">
-                        <img src="images/chernozem.jpg" alt="Чернозём" class="material-image" loading="lazy">
-                        <div class="material-info">
-                            <div class="material-name">Чернозём</div>
-                            <div class="material-price">от 1 000 ₽/м³</div>
-                        </div>
+                    <div class="truck-recommendation" id="truck-recommendation">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                        Рекомендуемый транспорт: <span id="truck-type-text">1 Самосвал Камаз (15 м³)</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Side: Delivery Calculator & Map & Order -->
-            <div class="section-card calc-section" id="calculator">
-                <h2 class="section-title">2. Укажите адрес доставки</h2>
-                
-                <div class="address-group">
-                    <div class="address-input-wrapper">
-                        <div class="search-input-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        </div>
-                        <input type="text" id="address-input" class="address-input" placeholder="Введите адрес в Красноярске или пригороде..." autocomplete="off">
-                        <button type="button" id="btn-calculate" class="btn-calc">
-                            <span class="spinner" id="calc-spinner"></span>
-                            <svg class="btn-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <!-- Right Panel: Address Search, Leaflet Route Map & Price Summary -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <span class="step-num">2</span>
+                        Укажите локацию и получите расчёт
+                    </h2>
+                    <span class="panel-subtitle">Маршрут от д. Кубеково</span>
+                </div>
+
+                <!-- Address Input Box -->
+                <div class="address-search-box">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="address-input" class="address-input" placeholder="Введите адрес доставки в Красноярске..." autocomplete="off">
+                        <button type="button" id="btn-calculate" class="btn-calc-search">
+                            <span class="spinner" id="calc-spinner" style="display: none; border-top-color: #000;"></span>
                             <span id="btn-text">Рассчитать</span>
                         </button>
                     </div>
-                    <ul id="suggestions" class="suggestions-list"></ul>
+                    <ul id="suggestions" class="suggestions-dropdown"></ul>
                 </div>
 
-                <div class="map-wrapper-relative">
-                    <div class="map-container" id="map"></div>
-                    <p class="map-click-hint" id="map-click-hint">💡 Или нажмите на карту, чтобы выбрать точку доставки</p>
+                <!-- Quick Location Presets -->
+                <div class="presets-label">
+                    <span>📍 Быстрый выбор популярного района:</span>
+                </div>
+                <div class="location-presets">
+                    <button type="button" class="preset-chip" data-lat="56.0105" data-lon="92.8525" data-name="Красноярск (Центр)">Красноярск (Центр)</button>
+                    <button type="button" class="preset-chip" data-lat="56.0711" data-lon="92.9348" data-name="мкрн. Солнечный">Солнечный</button>
+                    <button type="button" class="preset-chip" data-lat="55.9922" data-lon="92.7661" data-name="мкрн. Удачный">Удачный</button>
+                    <button type="button" class="preset-chip" data-lat="56.0375" data-lon="93.1114" data-name="п. Берёзовка">Берёзовка</button>
+                    <button type="button" class="preset-chip" data-lat="56.1419" data-lon="93.3533" data-name="г. Сосновоборск">Сосновоборск</button>
+                    <button type="button" class="preset-chip" data-lat="56.1739" data-lon="92.8052" data-name="п. Емельяново">Емельяново</button>
+                    <button type="button" class="preset-chip" data-lat="55.9556" data-lon="92.3789" data-name="г. Дивногорск">Дивногорск</button>
                 </div>
 
-                <div class="volume-control" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
-                    <div class="volume-header">
-                        <span class="volume-label" style="font-weight: 600; font-size: 1.1rem; color: var(--text-dark);">Количество (объем):</span>
-                        <span class="volume-value" id="volume-display" style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">15 м³</span>
-                    </div>
-                    <div class="slider-container">
-                        <input type="range" id="volume-slider" class="volume-slider" min="5" max="30" step="1" value="15">
-                    </div>
+                <!-- Leaflet Route Map -->
+                <div class="map-container-wrapper">
+                    <div id="map"></div>
+                    <div class="map-click-hint" id="map-click-hint">💡 Или кликните по карте для выбора точки</div>
                 </div>
 
-                <div class="price-breakdown">
-                    <div class="breakdown-row">
-                        <span>Начальная точка:</span>
-                        <strong>Склад (д. Кубеково)</strong>
+                <!-- Live Price Breakdown Box -->
+                <div class="price-panel">
+                    <div class="summary-rows">
+                        <div class="summary-row">
+                            <span>Начальная точка:</span>
+                            <strong>Склад (д. Кубеково)</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Расстояние по дорогам:</span>
+                            <strong id="distance-val">0 км</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Материал (<span id="summary-mat-name">Щебень 4-8</span>, <span id="summary-volume">15</span> м³):</span>
+                            <strong id="material-cost-val">11 250 ₽</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Доставка (400 ₽/км):</span>
+                            <strong id="delivery-cost-val">0 ₽</strong>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Итого ориентировочно:</span>
+                            <span class="total-val" id="total-cost-val">11 250 ₽</span>
+                        </div>
                     </div>
-                    <div class="breakdown-row">
-                        <span>Расстояние доставки:</span>
-                        <strong id="distance-val">0 км</strong>
-                    </div>
-                    <div class="breakdown-row">
-                        <span>Материал (<span id="summary-mat-name">Щебень 4-8 ; 5-10</span>, <span id="summary-volume">15</span> м³):</span>
-                        <strong id="material-cost-val">11 250 ₽</strong>
-                    </div>
-                    <div class="breakdown-row">
-                        <span id="delivery-rate-label">Доставка (400 ₽/км):
-                            <span class="delivery-tooltip" title="Стоимость за рейс самосвала, включая погрузку. Рассчитывается по расстоянию от склада.">ⓘ</span>
-                        </span>
-                        <strong id="delivery-cost-val">0 ₽</strong>
-                    </div>
-                    <div class="breakdown-row total">
-                        <span>Итого ориентировочно:</span>
-                        <span class="total-val" id="total-cost-val">11 250 ₽</span>
-                    </div>
-                </div>
 
-                <button type="button" class="btn-order-call" id="btn-order-call">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                    Отправить запрос
-                </button>
-                
-                <p class="order-notice">
-                    Нажмите, чтобы связаться с диспетчером и согласовать точное время доставки. Расчёт стоимости примерный.<br>
-                    Нажимая кнопку, вы соглашаетесь на обработку персональных данных в соответствии с <a href="privacy.html" style="color: var(--primary); text-decoration: underline;">Политикой конфиденциальности</a>.
-                </p>
+                    <button type="button" class="btn-order-cta" id="btn-order-call">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                        Оформить заказ / Запросить звонок
+                    </button>
+
+                    <p class="order-notice">
+                        ⚡ Диспетчер перезвонит в течение 5 минут для уточнения удобного времени доставки.<br>
+                        Нажимая кнопку, вы соглашаетесь с <a href="privacy.html" style="color: var(--amber); text-decoration: underline;">Политикой конфиденциальности</a>.
+                    </p>
+                </div>
             </div>
         </div>
     </main>
 
-    <footer>
-        <p>&copy; 2026 шебень.рф. Доставка сыпучих материалов в г. Красноярске.</p>
-        <p class="footer-address">📍 Склад: д. Кубеково, Красноярский край</p>
-        <div class="footer-links">
-            <a href="privacy.html">Политика конфиденциальности</a>
-            <a href="tel:+79069713377">+7 (906) 971-33-77</a>
-            <a href="https://wa.me/79069713377" target="_blank" rel="noopener">WhatsApp</a>
-        </div>
-        <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 0.5rem; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.5;">
-            Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ).
-            <br>
-            <!-- TODO: Замените на реальные реквизиты ИП -->
-            ИП Иванов И.И. | ОГРНИП 300000000000000 | ИНН 000000000000
-        </p>
-    </footer>
+    <!-- Fleet Section -->
+    <section class="fleet-section" id="fleet-section">
+        <div class="container">
+            <div class="section-head">
+                <span class="section-tag">Собственная техника</span>
+                <h2 class="section-title-large">Наш автопарк самосвалов</h2>
+            </div>
 
+            <div class="fleet-grid">
+                <div class="fleet-card">
+                    <div class="fleet-icon">🚛</div>
+                    <h3 class="fleet-title">Самосвал Камаз 10 м³</h3>
+                    <ul class="fleet-specs">
+                        <li><span>Грузоподъемность:</span> <strong>до 15 тонн</strong></li>
+                        <li><span>Объем кузова:</span> <strong>до 10 м³</strong></li>
+                        <li><span>Проходимость:</span> <strong>Отличная (узкие дачи)</strong></li>
+                    </ul>
+                </div>
+
+                <div class="fleet-card">
+                    <div class="fleet-icon">🚛</div>
+                    <h3 class="fleet-title">Самосвал Камаз 15 м³</h3>
+                    <ul class="fleet-specs">
+                        <li><span>Грузоподъемность:</span> <strong>до 20 тонн</strong></li>
+                        <li><span>Объем кузова:</span> <strong>до 15 м³</strong></li>
+                        <li><span>Проходимость:</span> <strong>Универсальная (частные дома)</strong></li>
+                    </ul>
+                </div>
+
+                <div class="fleet-card">
+                    <div class="fleet-icon">🚚</div>
+                    <h3 class="fleet-title">Самосвал HOWO / Shacman 20 м³</h3>
+                    <ul class="fleet-specs">
+                        <li><span>Грузоподъемность:</span> <strong>до 30 тонн</strong></li>
+                        <li><span>Объем кузова:</span> <strong>до 20 м³</strong></li>
+                        <li><span>Назначение:</span> <strong>Крупные объекты и стройки</strong></li>
+                    </ul>
+                </div>
+
+                <div class="fleet-card">
+                    <div class="fleet-icon">🚚</div>
+                    <h3 class="fleet-title">Тяжелый самосвал 25-30 м³</h3>
+                    <ul class="fleet-specs">
+                        <li><span>Грузоподъемность:</span> <strong>до 40 тонн</strong></li>
+                        <li><span>Объем кузова:</span> <strong>до 30 м³</strong></li>
+                        <li><span>Назначение:</span> <strong>Оптовые поставки материалов</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Specs Section -->
+    <section class="faq-section" id="specs-section">
+        <div class="container">
+            <div class="section-head">
+                <span class="section-tag">Качество по ГОСТ</span>
+                <h2 class="section-title-large">Характеристики поставляемых материалов</h2>
+            </div>
+
+            <div class="fleet-grid">
+                <div class="fleet-card">
+                    <h3 class="fleet-title">Щебень гранитный / диоритовый</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Высокопрочный щебень фракций 4-8, 5-10, 8-16, 5-20, 10-20. Отлично подходит для бетона, заливки фундамента и дорожных покрытий.</p>
+                </div>
+                <div class="fleet-card">
+                    <h3 class="fleet-title">Песок (Отсев 0-5 & Мытый)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Чистый песок без глинистых примесей. Используется для штукатурки, кладки, стяжки и производства бетона.</p>
+                </div>
+                <div class="fleet-card">
+                    <h3 class="fleet-title">ПЩС (Песчано-щебеночная смесь)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Смеси фракций 0-8, 0-10, 0-20, 0-40. Идеальное решение для отсыпки дорог, парковок и подушек под фундамент.</p>
+                </div>
+                <div class="fleet-card">
+                    <h3 class="fleet-title">Гравий и ГПС</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Природный и промытый гравий фракций 5-20, ГПС 0-20. Используется для ландшафтного дизайна, дренажа и бетонирования.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section" id="faq-section">
+        <div class="container">
+            <div class="section-head">
+                <span class="section-tag">Ответы на вопросы</span>
+                <h2 class="section-title-large">Часто задаваемые вопросы</h2>
+            </div>
+
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>Как рассчитывается точная стоимость доставки?</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Стоимость рассчитывается исходя из стоимости выбранного материала за м³, количества кубов и расстояния от нашего склада в д. Кубеково до вашей точки по автомобильным дорогам (тариф 400 ₽/км за рейс самосвала).
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>Какой минимальный объём заказа можно заказать?</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Минимальный объем доставки самосвалом составляет 5 м³. Для меньших объёмов стоимость рейса остается фиксированной по минимальной ставке.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>Как гарантируется честный объём и вес?</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Все самосвалы перед выездом со склада проходят взвешивание на автомобильных весах. Вы получаете накладную с точным весом брутто/нетто.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>Какие варианты оплаты доступны?</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Оплата производится по факту доставки на вашем объекте. Доступны: наличный расчет, перевод по карте, а также безналичный расчет для юридических лиц с НДС и без НДС.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Callback Modal -->
     <div class="modal-overlay" id="order-modal-overlay">
-        <div class="modal-content">
+        <div class="modal-box">
             <button type="button" class="modal-close" id="modal-close-btn">&times;</button>
-            <h3 class="modal-title">Оставьте свой номер</h3>
-            <p class="modal-desc">Мы перезвоним вам для подтверждения деталей.</p>
+            <h3 class="modal-title">Оформление заказа</h3>
+            <p class="modal-desc">Оставьте номер телефона, и диспетчер сразу свяжется с вами для согласования времени доставки.</p>
+            
+            <div class="modal-summary-chip">
+                <div>📦 <strong id="modal-mat-summary">Щебень (15 м³)</strong></div>
+                <div>📍 <span id="modal-addr-summary">Адрес не указан</span></div>
+                <div>💰 Ориентировочно: <strong id="modal-cost-summary" style="color: var(--amber);">11 250 ₽</strong></div>
+            </div>
+
             <form id="order-form">
-                <input type="tel" id="user-phone" class="modal-input" placeholder="+7 (999) 000-00-00" required>
-                <button type="submit" class="btn-calc" style="width: 100%; margin-top: 1rem; border-radius: 8px;">
-                    <span class="spinner" id="modal-spinner" style="display: none; border-top-color: white;"></span>
-                    <span id="modal-btn-text">Отправить</span>
+                <div class="form-group">
+                    <label class="form-label" for="user-phone">Ваш номер телефона:</label>
+                    <input type="tel" id="user-phone" class="form-input" placeholder="+7 (999) 000-00-00" required autocomplete="tel">
+                </div>
+
+                <button type="submit" class="btn-order-cta" style="margin-top: 1rem;">
+                    <span class="spinner" id="modal-spinner" style="display: none; border-top-color: #000;"></span>
+                    <span id="modal-btn-text">Отправить заявку</span>
                 </button>
             </form>
         </div>
     </div>
 
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo">
+                    <div class="logo-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <div class="logo-text">шебень<span>.рф</span></div>
+                </a>
+                <p>Прямые поставки сыпучих строительных материалов высшего качества по Красноярску и Красноярскому краю.</p>
+                <p style="margin-top: 0.5rem; color: var(--amber);">📍 Склад: д. Кубеково, Красноярский край</p>
+            </div>
+
+            <div>
+                <h4 class="footer-heading">Навигация</h4>
+                <ul class="footer-links">
+                    <li><a href="#calculator-section">Калькулятор доставки</a></li>
+                    <li><a href="#specs-section">Характеристики материалов</a></li>
+                    <li><a href="#fleet-section">Автопарк самосвалов</a></li>
+                    <li><a href="#faq-section">Вопросы и ответы</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="footer-heading">Контакты</h4>
+                <ul class="footer-links">
+                    <li><a href="tel:+79069713377">+7 (906) 971-33-77</a></li>
+                    <li><a href="https://wa.me/79069713377" target="_blank" rel="noopener">WhatsApp Чат</a></li>
+                    <li><a href="privacy.html">Политика конфиденциальности</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="container footer-bottom">
+            <p>&copy; 2026 шебень.рф. Все права защищены. Информация на сайте не является публичной офертой (ст. 437 ГК РФ).</p>
+        </div>
+    </footer>
+
+    <!-- App JS -->
     <script src="app.js"></script>
 </body>
 </html>

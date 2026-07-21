@@ -1,801 +1,612 @@
-// OpenStreetMap App Logic for шебень.рф using Leaflet, Nominatim & OSRM
+// ==========================================================================
+// шебень.рф — Interactive Application Logic (Leaflet, Nominatim, OSRM & API)
+// ==========================================================================
 
-// Default starting configurations
-const defaultStartCoords = [56.146389, 93.112222]; // Warehouse [lat, lon] (Kubekovo)
+const defaultStartCoords = [56.146389, 93.112222]; // Warehouse [lat, lon] at Kubekovo
 
-const defaultMaterials = {
+const materialsData = {
     crushed_stone: {
+        id: 'crushed_stone',
         name: 'Щебень',
+        category: 'crushed',
+        img: 'images/crushed_stone.jpg',
+        badge: 'ГОСТ 8267-93',
         variants: [
-            { id: 'frac_4_10', name: '4-8 ; 5-10', price: 750 },
-            { id: 'frac_8_20', name: '8-16 ; 5-20 ; 10-20', price: 1000 }
+            { id: 'frac_4_8', name: 'Фракция 4-8', price: 750 },
+            { id: 'frac_5_10', name: 'Фракция 5-10', price: 750 },
+            { id: 'frac_8_16', name: 'Фракция 8-16', price: 1000 },
+            { id: 'frac_5_20', name: 'Фракция 5-20', price: 1000 },
+            { id: 'frac_10_20', name: 'Фракция 10-20', price: 1000 }
         ]
     },
     sand: {
+        id: 'sand',
         name: 'Песок',
+        category: 'sand_pgs',
+        img: 'images/sand.jpg',
+        badge: 'ГОСТ 8736-2014',
         variants: [
-            { id: 'sand_0_5', name: 'Из отсева дробления 0-5', price: 850 },
-            { id: 'sand_washed', name: '2 кл (мытый)', price: 1400 }
+            { id: 'sand_0_5', name: 'Отсев дробления 0-5', price: 850 },
+            { id: 'sand_washed', name: 'Песок мытый (2 кл)', price: 1400 }
         ]
     },
     pshs: {
+        id: 'pshs',
         name: 'ПЩС',
+        category: 'sand_pgs',
+        img: 'images/pgs.jpg',
+        badge: 'Для дорог и отсыпки',
         variants: [
-            { id: 'pshs_0_10', name: '0-10', price: 750 },
-            { id: 'pshs_0_8', name: '0-8', price: 800 },
-            { id: 'pshs_0_20', name: '0-20', price: 1000 },
-            { id: 'pshs_0_40', name: '0-40', price: 1000 }
+            { id: 'pshs_0_10', name: 'Фракция 0-10', price: 750 },
+            { id: 'pshs_0_8', name: 'Фракция 0-8', price: 800 },
+            { id: 'pshs_0_20', name: 'Фракция 0-20', price: 1000 },
+            { id: 'pshs_0_40', name: 'Фракция 0-40', price: 1000 }
         ]
     },
     gps_gravel: {
+        id: 'gps_gravel',
         name: 'ГПС / Гравий',
+        category: 'gravel',
+        img: 'images/gravel.jpg',
+        badge: 'Природный материал',
         variants: [
-            { id: 'gps_0_20', name: 'ГПС 0-20 ; Гравий 5-20', price: 550 }
+            { id: 'gps_0_20', name: 'ГПС 0-20', price: 550 },
+            { id: 'gravel_5_20', name: 'Гравий 5-20', price: 550 }
         ]
     },
-    anti_ice: { name: 'Противогололедный материал', price: 1400 },
-    crushed_brick: { name: 'Битый кирпич', price: 800 },
-    expanded_clay: { name: 'Керамзит', price: 1600 },
-    chernozem: { name: 'Чернозём', price: 1000 }
+    anti_ice: {
+        id: 'anti_ice',
+        name: 'Противогололедный материал',
+        category: 'secondary',
+        img: 'images/anti_ice.jpg',
+        badge: 'Зимний отсев',
+        price: 1400
+    },
+    crushed_brick: {
+        id: 'crushed_brick',
+        name: 'Битый кирпич',
+        category: 'secondary',
+        img: 'images/crushed_brick.jpg',
+        badge: 'Для въездов',
+        price: 800
+    },
+    expanded_clay: {
+        id: 'expanded_clay',
+        name: 'Керамзит',
+        category: 'secondary',
+        img: 'images/expanded_clay.jpg',
+        badge: 'Утеплитель',
+        price: 1600
+    },
+    chernozem: {
+        id: 'chernozem',
+        name: 'Чернозём',
+        category: 'secondary',
+        img: 'images/chernozem.jpg',
+        badge: 'Плодородный грунт',
+        price: 1000
+    }
 };
 
-const defaultDeliveryRate = 400;
-
-// State variables
-let startCoords = [...defaultStartCoords];
-let materials = JSON.parse(JSON.stringify(defaultMaterials));
-let deliveryRate = defaultDeliveryRate;
-
-let currentMaterial = 'crushed_stone';
-let currentVolume = 15;
-let currentDistance = 0; // in km
-let destinationAddress = '';
+// Global App State
+let appState = {
+    startCoords: [...defaultStartCoords],
+    deliveryRate: 400,
+    selectedMaterialId: 'crushed_stone',
+    selectedVariantId: 'frac_4_8',
+    volume: 15,
+    distanceKm: 0,
+    addressName: '',
+    destCoords: null
+};
 
 let myMap = null;
 let destMarker = null;
 let routePolyline = null;
+let searchTimeout = null;
 
-let pendingCoords = null;
-let pendingAddressName = '';
+// Initialize when DOM and Leaflet are ready
+document.addEventListener('DOMContentLoaded', () => {
+    initApp();
+});
 
-// Custom Leaflet Green Pin Marker Icon
-function getGreenIcon() {
-    return L.divIcon({
-        className: 'custom-leaflet-pin',
-        html: `<div style="background-color: #10b981; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
+function initApp() {
+    renderMaterialCards('all');
+    setupCategoryTabs();
+    setupVolumeSlider();
+    setupFAQAccordion();
+    setupModalAndForm();
+    setupQuickPresets();
+    setupAddressAutocomplete();
+    initLeafletMap();
+    fetchServerSettings();
+}
+
+// Render Material Cards Grid
+function renderMaterialCards(categoryFilter) {
+    const grid = document.getElementById('material-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    Object.values(materialsData).forEach(mat => {
+        if (categoryFilter !== 'all' && mat.category !== categoryFilter) return;
+
+        const isSelected = mat.id === appState.selectedMaterialId;
+        const card = document.createElement('div');
+        card.className = `material-card ${isSelected ? 'selected' : ''}`;
+        card.dataset.id = mat.id;
+
+        let selectedPrice = mat.price || (mat.variants && mat.variants[0] ? mat.variants[0].price : 0);
+        let variantSelectHTML = '';
+
+        if (mat.variants && mat.variants.length > 0) {
+            const currentVar = mat.variants.find(v => v.id === appState.selectedVariantId) || mat.variants[0];
+            selectedPrice = currentVar.price;
+
+            variantSelectHTML = `<select class="variant-dropdown" data-mat="${mat.id}">`;
+            mat.variants.forEach(v => {
+                const optSelected = v.id === appState.selectedVariantId ? 'selected' : '';
+                variantSelectHTML += `<option value="${v.id}" ${optSelected}>${v.name} (${v.price} ₽)</option>`;
+            });
+            variantSelectHTML += `</select>`;
+        }
+
+        card.innerHTML = `
+            <div class="material-img-wrapper">
+                <img src="${mat.img}" alt="${mat.name}" class="material-img" loading="lazy">
+                <span class="material-badge">${mat.badge}</span>
+            </div>
+            <div class="material-content">
+                <div class="material-name">${mat.name}</div>
+                <div class="material-price" id="price-display-${mat.id}">от ${selectedPrice} ₽/м³</div>
+                ${variantSelectHTML}
+            </div>
+        `;
+
+        // Card Click Handler
+        card.addEventListener('click', (e) => {
+            if (e.target.classList.contains('variant-dropdown')) return;
+            selectMaterial(mat.id);
+        });
+
+        // Variant Dropdown Handler
+        const selectElem = card.querySelector('.variant-dropdown');
+        if (selectElem) {
+            selectElem.addEventListener('change', (e) => {
+                selectMaterial(mat.id);
+                appState.selectedVariantId = e.target.value;
+                const newVar = mat.variants.find(v => v.id === e.target.value);
+                if (newVar) {
+                    document.getElementById(`price-display-${mat.id}`).textContent = `${newVar.price} ₽/м³`;
+                }
+                recalculateTotalCost();
+            });
+        }
+
+        grid.appendChild(card);
     });
 }
 
-// Initialize app when DOM and Leaflet script are loaded
-function checkAndInitMap() {
-    if (typeof L !== 'undefined') {
-        init();
-    } else {
-        setTimeout(checkAndInitMap, 100);
+function selectMaterial(matId) {
+    appState.selectedMaterialId = matId;
+    const mat = materialsData[matId];
+    if (mat && mat.variants && mat.variants.length > 0) {
+        appState.selectedVariantId = mat.variants[0].id;
     }
+    document.querySelectorAll('.material-card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.id === matId);
+    });
+    recalculateTotalCost();
 }
 
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    checkAndInitMap();
-} else {
-    document.addEventListener('DOMContentLoaded', checkAndInitMap);
+// Category Filter Tabs
+function setupCategoryTabs() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderMaterialCards(tab.dataset.category);
+        });
+    });
 }
 
-function init() {
-    initMap();
-    setupEventHandlers();
-    initCustomSelects();
-    loadSettingsFromServer();
+// Volume Controller & Truck Matcher
+function setupVolumeSlider() {
+    const slider = document.getElementById('volume-slider');
+    const display = document.getElementById('volume-display');
+    const presetBtns = document.querySelectorAll('.vol-preset-btn');
+
+    if (!slider) return;
+
+    slider.addEventListener('input', (e) => {
+        updateVolume(parseInt(e.target.value, 10));
+    });
+
+    presetBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const vol = parseInt(btn.dataset.vol, 10);
+            slider.value = vol;
+            updateVolume(vol);
+        });
+    });
 }
 
-// Set destination point marker on Leaflet map
-function setDestinationMarker(coords, addressName) {
-    if (!myMap) return;
-    const iconToUse = getGreenIcon();
+function updateVolume(vol) {
+    appState.volume = vol;
+    document.getElementById('volume-display').textContent = `${vol} м³`;
+    document.querySelectorAll('.vol-preset-btn').forEach(b => {
+        b.classList.toggle('active', parseInt(b.dataset.vol, 10) === vol);
+    });
 
-    if (destMarker) {
-        destMarker.setLatLng(coords);
-        destMarker.bindPopup(`<b>Адрес доставки:</b><br>${addressName || 'Точка на карте'}`);
-    } else {
-        destMarker = L.marker(coords, { icon: iconToUse }).addTo(myMap);
-        destMarker.bindPopup(`<b>Адрес доставки:</b><br>${addressName || 'Точка на карте'}`);
+    // Update truck recommendation badge
+    const truckText = document.getElementById('truck-type-text');
+    if (truckText) {
+        if (vol <= 10) truckText.textContent = '1 Самосвал Камаз (10 м³)';
+        else if (vol <= 15) truckText.textContent = '1 Самосвал Камаз (15 м³)';
+        else if (vol <= 20) truckText.textContent = '1 Самосвал HOWO / Shacman (20 м³)';
+        else if (vol <= 25) truckText.textContent = '1 Тяжелый самосвал (25 м³)';
+        else truckText.textContent = '2 Самосвала (15 м³ + 15 м³)';
     }
+
+    recalculateTotalCost();
 }
 
-// Initialize Leaflet Map
-function initMap() {
-    // Restrain bounds to Krasnoyarsk delivery area (200km radius)
-    const krasnoyarskBounds = L.latLngBounds(
-        L.latLng(54.0, 90.0),
-        L.latLng(58.0, 96.0)
-    );
+// Recalculate Live Prices
+function recalculateTotalCost() {
+    const mat = materialsData[appState.selectedMaterialId];
+    if (!mat) return;
+
+    let unitPrice = mat.price || 0;
+    let selectedName = mat.name;
+
+    if (mat.variants && mat.variants.length > 0) {
+        const v = mat.variants.find(item => item.id === appState.selectedVariantId) || mat.variants[0];
+        unitPrice = v.price;
+        selectedName = `${mat.name} (${v.name})`;
+    }
+
+    const materialTotalCost = unitPrice * appState.volume;
+    const deliveryTotalCost = Math.round(appState.distanceKm * appState.deliveryRate);
+    const grandTotal = materialTotalCost + deliveryTotalCost;
+
+    // Update UI elements
+    const summaryMatName = document.getElementById('summary-mat-name');
+    const summaryVolume = document.getElementById('summary-volume');
+    const matCostVal = document.getElementById('material-cost-val');
+    const distanceVal = document.getElementById('distance-val');
+    const deliveryCostVal = document.getElementById('delivery-cost-val');
+    const totalCostVal = document.getElementById('total-cost-val');
+
+    if (summaryMatName) summaryMatName.textContent = selectedName;
+    if (summaryVolume) summaryVolume.textContent = appState.volume;
+    if (matCostVal) matCostVal.textContent = `${materialTotalCost.toLocaleString('ru-RU')} ₽`;
+    if (distanceVal) distanceVal.textContent = `${appState.distanceKm} км`;
+    if (deliveryCostVal) deliveryCostVal.textContent = `${deliveryTotalCost.toLocaleString('ru-RU')} ₽`;
+    if (totalCostVal) totalCostVal.textContent = `${grandTotal.toLocaleString('ru-RU')} ₽`;
+
+    // Modal summary
+    const modalMat = document.getElementById('modal-mat-summary');
+    const modalAddr = document.getElementById('modal-addr-summary');
+    const modalCost = document.getElementById('modal-cost-summary');
+
+    if (modalMat) modalMat.textContent = `${selectedName} (${appState.volume} м³)`;
+    if (modalAddr) modalAddr.textContent = appState.addressName || 'Адрес не указан (выбор на карте)';
+    if (modalCost) modalCost.textContent = `${grandTotal.toLocaleString('ru-RU')} ₽`;
+}
+
+// Leaflet Map Initialization
+function initLeafletMap() {
+    if (typeof L === 'undefined') return;
+
+    const bounds = L.latLngBounds(L.latLng(54.0, 90.0), L.latLng(58.0, 96.0));
 
     myMap = L.map('map', {
-        center: startCoords,
+        center: appState.startCoords,
         zoom: 10,
         minZoom: 8,
-        maxZoom: 19,
-        maxBounds: krasnoyarskBounds,
-        maxBoundsViscosity: 0.8,
-        zoomControl: true,
+        maxZoom: 18,
+        maxBounds: bounds,
         attributionControl: false
     });
 
-    // Standard OpenStreetMap tiles with regional zoom restriction & hidden attribution
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        minZoom: 8
-    }).addTo(myMap);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(myMap);
 
-    // Warehouse marker at Kubekovo
-    L.marker(startCoords, {
+    // Warehouse Marker (Kubekovo)
+    L.marker(appState.startCoords, {
         icon: L.divIcon({
-            className: 'warehouse-marker',
-            html: '<div style="background-color: #1e3a5f; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.35);"></div>',
-            iconSize: [14, 14],
-            iconAnchor: [7, 7]
+            className: 'warehouse-pin',
+            html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 0 12px #f59e0b;"></div>',
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
         })
-    }).addTo(myMap).bindPopup('Склад (д. Кубеково)');
+    }).addTo(myMap).bindPopup('<b>Склад сыпучих материалов</b><br>д. Кубеково');
 
-    // Delivery zone circle (200km radius)
-    L.circle(startCoords, { radius: 200000, color: '#d97706', fillColor: '#fef3c7', fillOpacity: 0.08, weight: 1, dashArray: '8,6', interactive: false }).addTo(myMap);
-
-
-    // Click on map to place point marker instantly and defer reverse geocoding + route calculation to clicking "Рассчитать"
-    myMap.on('click', function (e) {
-        const lat = e.latlng.lat;
-        const lon = e.latlng.lng;
-
-        // Limit to 200km radius from warehouse
-        const distFromStart = getHaversineDistance(startCoords[0], startCoords[1], lat, lon);
-        if (distFromStart > 200) {
-            alert('Доставка выполняется только по Красноярску и окрестностям (до 200 км). Пожалуйста, выберите точку ближе к городу.');
-            return;
-        }
-
+    // Map Click Listener
+    myMap.on('click', (e) => {
+        const coords = [e.latlng.lat, e.latlng.lng];
+        const label = `Точка на карте (${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)})`;
+        setDestinationPoint(coords, label);
         const mapHint = document.getElementById('map-click-hint');
         if (mapHint) mapHint.style.display = 'none';
-
-        if (routePolyline) {
-            myMap.removeLayer(routePolyline);
-            routePolyline = null;
-        }
-
-        const coords = [lat, lon];
-        const pointLabel = `Точка на карте (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
-        setDestinationMarker(coords, pointLabel);
-        document.getElementById('address-input').value = pointLabel;
-
-        pendingCoords = coords;
-        pendingAddressName = pointLabel;
-        setSearchButtonState(false);
     });
 }
 
-// Reverse geocode point to nearest street/house using Nominatim and calculate driving route via OSRM
-function resolvePointAndCalculateRoute(coords) {
-    showLoading(true);
-    const lat = coords[0];
-    const lon = coords[1];
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
+function setDestinationPoint(coords, name) {
+    appState.destCoords = coords;
+    appState.addressName = name;
+    document.getElementById('address-input').value = name;
 
-    fetch(url, { headers: { 'Accept-Language': 'ru' } })
-    .then(res => res.json())
-    .then(data => {
-        let addressName = `Точка на карте (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
-        let targetCoords = coords;
-
-        if (data) {
-            if (data.address) {
-                const addr = data.address;
-                const road = addr.road || addr.street || addr.pedestrian || addr.footway || addr.suburb || addr.city_district;
-                const house = addr.house_number || addr.building;
-                if (road) {
-                    addressName = house ? `${road}, ${house}` : road;
-                } else if (data.display_name) {
-                    addressName = data.display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
-                }
-            } else if (data.display_name) {
-                addressName = data.display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
-            }
-
-            if (data.lat && data.lon) {
-                targetCoords = [parseFloat(data.lat), parseFloat(data.lon)];
-            }
-        }
-
-        document.getElementById('address-input').value = addressName;
-        pendingCoords = targetCoords;
-        pendingAddressName = addressName;
-        setDestinationMarker(targetCoords, addressName);
-        calculateRoute(targetCoords, addressName);
-    })
-    .catch(err => {
-        console.warn('Nominatim reverse geocoding failed:', err);
-        const fallbackName = `Точка на карте (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
-        document.getElementById('address-input').value = fallbackName;
-        calculateRoute(coords, fallbackName);
-    });
-}
-
-// Calculate driving route using OSRM API (Open Source Routing Machine)
-function calculateRoute(destCoords, displayName) {
-    destinationAddress = displayName;
-    setDestinationMarker(destCoords, displayName);
-    showLoading(true);
-
-    if (routePolyline) {
-        myMap.removeLayer(routePolyline);
-        routePolyline = null;
-    }
-
-    // OSRM Driving Route URL from startCoords (Kubekovo) to destCoords
-    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${destCoords[1]},${destCoords[0]}?overview=full&geometries=geojson`;
-
-    fetch(osrmUrl)
-    .then(res => res.json())
-    .then(data => {
-        showLoading(false);
-        if (data && data.routes && data.routes.length > 0) {
-            const route = data.routes[0];
-            const distanceMeters = route.distance;
-            currentDistance = Math.round(distanceMeters / 1000 * 10) / 10;
-
-            const coordsGeoJSON = route.geometry.coordinates; // [[lon, lat], ...]
-            const routeLatLngs = coordsGeoJSON.map(c => [c[1], c[0]]);
-
-            routePolyline = L.polyline(routeLatLngs, {
-                color: '#ff6600',
-                weight: 5,
-                opacity: 0.9,
-                lineJoin: 'round'
-            }).addTo(myMap);
-
-            myMap.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
-        } else {
-            const straightDist = getHaversineDistance(startCoords[0], startCoords[1], destCoords[0], destCoords[1]);
-            currentDistance = Math.round(straightDist * 1.35 * 10) / 10;
-        }
-        recalculate();
-        setSearchButtonState(true);
-    })
-    .catch(err => {
-        console.warn('OSRM routing failed, fallback to Haversine:', err);
-        showLoading(false);
-        const straightDist = getHaversineDistance(startCoords[0], startCoords[1], destCoords[0], destCoords[1]);
-        currentDistance = Math.round(straightDist * 1.35 * 10) / 10;
-        recalculate();
-        setSearchButtonState(true);
-    });
-}
-
-// Calculate address by text query with Nominatim API
-function calculateAddress(query) {
-    let searchQuery = query.trim();
-    if (!searchQuery) return;
-
-    if (!searchQuery.toLowerCase().includes('красноярск')) {
-        searchQuery = 'Красноярск, ' + searchQuery;
-    }
-
-    showLoading(true);
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1&addressdetails=1`;
-
-    fetch(url, { headers: { 'Accept-Language': 'ru' } })
-    .then(res => res.json())
-    .then(data => {
-        if (!data || data.length === 0) {
-            showLoading(false);
-            alert('Указанный адрес не найден. Пожалуйста, уточните запрос.');
-            return;
-        }
-        const item = data[0];
-        const coords = [parseFloat(item.lat), parseFloat(item.lon)];
-        
-        const distFromStart = getHaversineDistance(startCoords[0], startCoords[1], coords[0], coords[1]);
-        if (distFromStart > 200) {
-            showLoading(false);
-            alert('Найденный адрес находится слишком далеко. Доставка осуществляется в пределах 200 км от Красноярска.');
-            return;
-        }
-
-        let addressName = item.display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
-        if (item.address) {
-            const addr = item.address;
-            const road = addr.road || addr.street || addr.pedestrian || addr.suburb;
-            const house = addr.house_number || addr.building;
-            if (road) {
-                addressName = house ? `${road}, ${house}` : road;
-            }
-        }
-
-        document.getElementById('address-input').value = addressName;
-        pendingCoords = coords;
-        pendingAddressName = addressName;
-        setDestinationMarker(coords, addressName);
-        calculateRoute(coords, addressName);
-    })
-    .catch(err => {
-        showLoading(false);
-        console.warn('Address search failed:', err);
-        alert('Не удалось определить координаты адреса. Проверьте запрос.');
-    });
-}
-
-// Load settings from backend server
-function loadSettingsFromServer() {
-    fetch('/api/settings')
-    .then(res => {
-        if (!res.ok) throw new Error('Failed to load settings from server');
-        return res.json();
-    })
-    .then(data => {
-        console.log('[App] Loaded settings from server:', data);
-        if (data.materials) {
-            materials = data.materials;
-        }
-        if (data.deliveryRate !== undefined) {
-            deliveryRate = data.deliveryRate;
-        }
-        if (data.startCoords && Array.isArray(data.startCoords) && data.startCoords.length === 2) {
-            startCoords = data.startCoords;
-        }
-        updateUIWithPrices();
-        recalculate();
-    })
-    .catch(err => {
-        console.warn('[App] Server connection failed, using defaults:', err);
-        materials = JSON.parse(JSON.stringify(defaultMaterials));
-        deliveryRate = defaultDeliveryRate;
-        startCoords = [...defaultStartCoords];
-        updateUIWithPrices();
-        recalculate();
-    });
-}
-
-// Helper to get active price data for a material
-function getActiveMaterialData(matKey) {
-    const matData = materials[matKey];
-    if (!matData) return null;
-    
-    if (matData.variants && matData.variants.length > 0) {
-        const selectEl = document.querySelector(`.variant-select[data-mat="${matKey}"]`);
-        if (selectEl) {
-            const variantId = selectEl.value;
-            const variant = matData.variants.find(v => v.id === variantId);
-            if (variant) {
-                return {
-                    name: `${matData.name} (${variant.name})`,
-                    price: variant.price
-                };
-            }
-        }
-        return {
-            name: `${matData.name} (${matData.variants[0].name})`,
-            price: matData.variants[0].price
-        };
-    }
-    return { name: matData.name, price: matData.price };
-}
-
-// Update DOM elements representing prices
-function updateUIWithPrices() {
-    document.querySelectorAll('.material-card').forEach(card => {
-        const matKey = card.dataset.material;
-        const activeData = getActiveMaterialData(matKey);
-        
-        if (activeData) {
-            const priceEl = card.querySelector('.material-price');
-            if (priceEl) {
-                const matData = materials[matKey];
-                if (matData && matData.variants && matData.variants.length > 0) {
-                    const minPrice = Math.min(...matData.variants.map(v => v.price));
-                    if (activeData.price === minPrice) {
-                        priceEl.textContent = `от ${activeData.price} ₽/м³`;
-                    } else {
-                        priceEl.textContent = `${activeData.price} ₽/м³`;
-                    }
-                } else {
-                    priceEl.textContent = `от ${activeData.price} ₽/м³`;
-                }
-            }
-        }
-    });
-
-    const rateEl = document.getElementById('delivery-rate-label');
-    if (rateEl) {
-        rateEl.textContent = `Доставка (${deliveryRate} ₽/км):`;
-    }
-}
-
-// Set up UI Event Handlers
-function setupEventHandlers() {
-    const cards = document.querySelectorAll('.material-card');
-    cards.forEach(card => {
-        card.addEventListener('click', () => {
-            cards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            currentMaterial = card.dataset.material;
-            recalculate();
-        });
-    });
-
-    const selects = document.querySelectorAll('.variant-select');
-    selects.forEach(sel => {
-        sel.addEventListener('change', (e) => {
-            const matKey = e.target.dataset.mat;
-            const card = document.querySelector(`.material-card[data-material="${matKey}"]`);
-            if (card) {
-                cards.forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                currentMaterial = matKey;
-            }
-            updateUIWithPrices();
-            recalculate();
-        });
-        sel.addEventListener('click', (e) => e.stopPropagation());
-    });
-
-    const slider = document.getElementById('volume-slider');
-    const display = document.getElementById('volume-display');
-    
-    slider.addEventListener('input', (e) => {
-        currentVolume = parseInt(e.target.value);
-        display.textContent = `${currentVolume} м³`;
-        recalculate();
-    });
-
-    const btnCalc = document.getElementById('btn-calculate');
-    const input = document.getElementById('address-input');
-    
-    const triggerCalculation = () => {
-        const address = input.value.trim();
-        if (!address) return;
-
-        if (pendingCoords) {
-            resolvePointAndCalculateRoute(pendingCoords);
-        } else if (address.length > 2) {
-            calculateAddress(address);
-        }
-    };
-
-    btnCalc.addEventListener('click', triggerCalculation);
-
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            triggerCalculation();
-        }
-    });
-
-    let searchTimeout = null;
-    input.addEventListener('input', () => {
-        setSearchButtonState(false);
-        pendingCoords = null; // User typing text manually resets pending map click coords
-        const query = input.value.trim();
-        if (query.length > 2) {
-            if (searchTimeout) clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => fetchSuggestions(query), 300);
-        } else {
-            hideSuggestions();
-        }
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.address-group')) {
-            hideSuggestions();
-        }
-    });
-
-    const telLink = document.getElementById('btn-order-call');
-    const modalOverlay = document.getElementById('order-modal-overlay');
-    const modalCloseBtn = document.getElementById('modal-close-btn');
-    const orderForm = document.getElementById('order-form');
-
-    if (telLink) {
-        telLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (modalOverlay) modalOverlay.classList.add('active');
-        });
-    }
-
-    if (modalCloseBtn) {
-        modalCloseBtn.addEventListener('click', () => {
-            if (modalOverlay) modalOverlay.classList.remove('active');
-        });
-    }
-
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
-                modalOverlay.classList.remove('active');
-            }
-        });
-    }
-
-    if (orderForm) {
-        orderForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            submitOrderRequest();
-        });
-    }
-}
-
-// Fetch suggestions for address search
-function fetchSuggestions(query) {
-    let searchQuery = query;
-    if (!query.toLowerCase().includes('красноярск')) {
-        searchQuery = 'Красноярск, ' + query;
-    }
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=5&addressdetails=1`;
-    
-    fetch(url, { headers: { 'Accept-Language': 'ru' } })
-    .then(res => res.json())
-    .then(data => {
-        if (!data || data.length === 0) {
-            hideSuggestions();
-            return;
-        }
-        const items = data.map(item => {
-            let name = item.display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
-            if (item.address) {
-                const addr = item.address;
-                const road = addr.road || addr.street || addr.pedestrian || addr.suburb;
-                const house = addr.house_number || addr.building;
-                if (road) {
-                    name = house ? `${road}, ${house}` : road;
-                }
-            }
-            return { name, coords: [parseFloat(item.lat), parseFloat(item.lon)] };
-        });
-        renderSuggestions(items);
-    })
-    .catch(err => {
-        console.warn('Suggest error:', err);
-        hideSuggestions();
-    });
-}
-
-function renderSuggestions(items) {
-    const list = document.getElementById('suggestions');
-    if (!list) return;
-    list.innerHTML = '';
-
-    items.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'suggestion-item';
-        li.textContent = item.name;
-        li.addEventListener('click', () => {
-            document.getElementById('address-input').value = item.name;
-            hideSuggestions();
-            pendingCoords = item.coords;
-            pendingAddressName = item.name;
-            setDestinationMarker(item.coords, item.name);
-            setSearchButtonState(false);
-            if (routePolyline) {
-                myMap.removeLayer(routePolyline);
-                routePolyline = null;
-            }
-        });
-        list.appendChild(li);
-    });
-
-    list.style.display = 'block';
-}
-
-function hideSuggestions() {
-    const list = document.getElementById('suggestions');
-    if (list) list.style.display = 'none';
-}
-
-// Toggle search button state
-function setSearchButtonState(isCalculated) {
-    const btnText = document.getElementById('btn-text');
-    const btn = document.getElementById('btn-calculate');
-    if (!btnText || !btn) return;
-
-    if (isCalculated) {
-        btnText.textContent = 'Рассчитано';
-        btn.classList.add('calculated');
+    if (!destMarker) {
+        destMarker = L.marker(coords, {
+            icon: L.divIcon({
+                className: 'dest-pin',
+                html: '<div style="background:#10b981; width:20px; height:20px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 0 12px #10b981;"></div>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            })
+        }).addTo(myMap);
     } else {
-        btnText.textContent = 'Рассчитать';
-        btn.classList.remove('calculated');
+        destMarker.setLatLng(coords);
     }
+
+    destMarker.bindPopup(`<b>Доставка:</b><br>${name}`).openPopup();
+    calculateOSRMRoute(coords);
 }
 
-// Toggle loading state on button
-function showLoading(isLoading) {
+// OSRM Driving Route Engine
+function calculateOSRMRoute(coords) {
     const spinner = document.getElementById('calc-spinner');
-    const text = document.getElementById('btn-text');
-    const btn = document.getElementById('btn-calculate');
-    
-    if (isLoading) {
-        spinner.style.display = 'inline-block';
-        text.style.display = 'none';
-        btn.disabled = true;
-    } else {
-        spinner.style.display = 'none';
-        text.style.display = 'inline-block';
-        btn.disabled = false;
-    }
+    if (spinner) spinner.style.display = 'inline-block';
+
+    const url = `https://router.project-osrm.org/route/v1/driving/${appState.startCoords[1]},${appState.startCoords[0]};${coords[1]},${coords[0]}?overview=full&geometries=geojson`;
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (spinner) spinner.style.display = 'none';
+            if (data && data.routes && data.routes.length > 0) {
+                const route = data.routes[0];
+                appState.distanceKm = Math.round((route.distance / 1000) * 10) / 10;
+
+                const latLngs = route.geometry.coordinates.map(c => [c[1], c[0]]);
+
+                if (routePolyline) myMap.removeLayer(routePolyline);
+                routePolyline = L.polyline(latLngs, { color: '#f59e0b', weight: 5, opacity: 0.85 }).addTo(myMap);
+                myMap.fitBounds(routePolyline.getBounds(), { padding: [40, 40] });
+
+                recalculateTotalCost();
+                showToast(`📍 Дистанция: ${appState.distanceKm} км`);
+            }
+        })
+        .catch(err => {
+            if (spinner) spinner.style.display = 'none';
+            console.warn('OSRM Route calculation error:', err);
+            // Fallback straight-line calculation with 1.35 road factor
+            const dist = getHaversineDistance(appState.startCoords[0], appState.startCoords[1], coords[0], coords[1]);
+            appState.distanceKm = Math.round(dist * 1.35 * 10) / 10;
+            recalculateTotalCost();
+        });
 }
 
-// Recalculate costs
-function recalculate() {
-    const activeData = getActiveMaterialData(currentMaterial);
-    if (!activeData) return;
-    
-    const materialCost = activeData.price * currentVolume;
-    const deliveryCost = currentDistance * deliveryRate;
-    const totalCost = materialCost + deliveryCost;
-
-    const formatRub = (num) => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(num);
-
-    document.getElementById('summary-mat-name').textContent = activeData.name;
-    document.getElementById('summary-volume').textContent = currentVolume;
-    document.getElementById('distance-val').textContent = `${currentDistance} км`;
-    document.getElementById('material-cost-val').textContent = formatRub(materialCost);
-    document.getElementById('delivery-cost-val').textContent = formatRub(deliveryCost);
-    document.getElementById('total-cost-val').textContent = formatRub(totalCost);
-
-    const telLink = document.getElementById('btn-order-call');
-    const msg = `Здравствуйте! Хочу заказать ${activeData.name} в объеме ${currentVolume} м³ с доставкой в ${destinationAddress ? destinationAddress : '(укажите адрес)'}. Посчитало примерно ${formatRub(totalCost)}.`;
-    if (telLink) telLink.dataset.msg = msg;
-}
-
-// Mathematical Haversine distance helper (in km)
 function getHaversineDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Send POST request to notify admin and save order
-function submitOrderRequest() {
-    const activeData = getActiveMaterialData(currentMaterial);
-    if (!activeData) return;
-
-    const phoneInput = document.getElementById('user-phone');
-    const phone = phoneInput ? phoneInput.value.trim() : '';
-    if (!phone) return;
-
-    const materialCost = activeData.price * currentVolume;
-    const deliveryCost = currentDistance * deliveryRate;
-    const totalCost = materialCost + deliveryCost;
-
-    const orderData = {
-        phone: phone,
-        material: activeData.name,
-        volume: currentVolume,
-        distance: currentDistance,
-        totalCost: totalCost,
-        destinationAddress: destinationAddress || 'Не указан'
-    };
-
-    const submitBtn = document.querySelector('#order-form .btn-calc');
-    const spinner = document.getElementById('modal-spinner');
-    const btnText = document.getElementById('modal-btn-text');
-
-    if (submitBtn) submitBtn.disabled = true;
-    if (spinner) spinner.style.display = 'inline-block';
-    if (btnText) btnText.style.display = 'none';
-
-    fetch('/api/order', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderData)
-    })
-    .then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-    })
-    .then(data => {
-        console.log('[App] Order request sent successfully:', data);
-        alert('Запрос успешно отправлен! Мы перезвоним вам в ближайшее время.');
-        const modalOverlay = document.getElementById('order-modal-overlay');
-        if (modalOverlay) modalOverlay.classList.remove('active');
-        if (phoneInput) phoneInput.value = '';
-    })
-    .catch(err => {
-        console.error('[App] Failed to send order request:', err);
-        alert('Произошла ошибка при отправке. Пожалуйста, попробуйте позвонить нам.');
-    })
-    .finally(() => {
-        if (submitBtn) submitBtn.disabled = false;
-        if (spinner) spinner.style.display = 'none';
-        if (btnText) btnText.style.display = 'inline-block';
+// Quick Presets
+function setupQuickPresets() {
+    const chips = document.querySelectorAll('.preset-chip');
+    chips.forEach(c => {
+        c.addEventListener('click', () => {
+            const lat = parseFloat(c.dataset.lat);
+            const lon = parseFloat(c.dataset.lon);
+            const name = c.dataset.name;
+            setDestinationPoint([lat, lon], name);
+        });
     });
 }
 
-// Custom Select UI Initialization
-function initCustomSelects() {
-    const selects = document.querySelectorAll('.variant-select');
-    selects.forEach(select => {
-        if (select.nextElementSibling && select.nextElementSibling.classList.contains('custom-select-wrapper')) return;
+// Address Search Autocomplete (Nominatim)
+function setupAddressAutocomplete() {
+    const input = document.getElementById('address-input');
+    const list = document.getElementById('suggestions');
+    const calcBtn = document.getElementById('btn-calculate');
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'custom-select-wrapper';
-        select.parentNode.insertBefore(wrapper, select.nextSibling);
-        wrapper.appendChild(select);
-        select.style.display = 'none';
+    if (!input || !list) return;
 
-        const trigger = document.createElement('div');
-        trigger.className = 'custom-select-trigger';
-        
-        const triggerText = document.createElement('span');
-        triggerText.textContent = select.options[select.selectedIndex].text;
-        trigger.appendChild(triggerText);
+    input.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const query = input.value.trim();
+        if (query.length < 3) {
+            list.classList.remove('active');
+            return;
+        }
 
-        const arrow = document.createElement('div');
-        arrow.className = 'custom-select-arrow';
-        arrow.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
-        trigger.appendChild(arrow);
-        
-        wrapper.appendChild(trigger);
-
-        const optionsDiv = document.createElement('div');
-        optionsDiv.className = 'custom-select-options';
-
-        Array.from(select.options).forEach(option => {
-            const optDiv = document.createElement('div');
-            optDiv.className = 'custom-option';
-            if (option.selected) optDiv.classList.add('selected');
-            optDiv.textContent = option.text;
-            optDiv.dataset.value = option.value;
-            
-            optDiv.addEventListener('click', (e) => {
-                e.stopPropagation();
-                select.value = option.value;
-                triggerText.textContent = option.text;
-                
-                optionsDiv.querySelectorAll('.custom-option').forEach(el => el.classList.remove('selected'));
-                optDiv.classList.add('selected');
-                wrapper.classList.remove('open');
-                
-                const card = wrapper.closest('.material-card');
-                if (card) card.style.zIndex = '';
-                
-                select.dispatchEvent(new Event('change'));
-            });
-            optionsDiv.appendChild(optDiv);
-        });
-
-        wrapper.appendChild(optionsDiv);
-
-        trigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            document.querySelectorAll('.custom-select-wrapper').forEach(el => {
-                if (el !== wrapper) {
-                    el.classList.remove('open');
-                    const c = el.closest('.material-card');
-                    if (c) c.style.zIndex = '';
+        searchTimeout = setTimeout(() => {
+            fetch(`https://nominatim.openstreetmap.org/search?q=Красноярск+${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`, {
+                headers: { 'Accept-Language': 'ru' }
+            })
+            .then(res => res.json())
+            .then(items => {
+                list.innerHTML = '';
+                if (items && items.length > 0) {
+                    items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'suggestion-item';
+                        const name = item.display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
+                        li.textContent = name;
+                        li.addEventListener('click', () => {
+                            input.value = name;
+                            list.classList.remove('active');
+                            setDestinationPoint([parseFloat(item.lat), parseFloat(item.lon)], name);
+                        });
+                        list.appendChild(li);
+                    });
+                    list.classList.add('active');
+                } else {
+                    list.classList.remove('active');
                 }
-            });
-            const isOpen = wrapper.classList.toggle('open');
-            const card = wrapper.closest('.material-card');
-            if (card) {
-                card.style.zIndex = isOpen ? '10' : '';
+            })
+            .catch(() => list.classList.remove('active'));
+        }, 350);
+    });
+
+    if (calcBtn) {
+        calcBtn.addEventListener('click', () => {
+            if (appState.destCoords) {
+                calculateOSRMRoute(appState.destCoords);
             }
         });
-        
-        wrapper.addEventListener('click', (e) => e.stopPropagation());
+    }
+}
+
+// FAQ Accordion
+function setupFAQAccordion() {
+    const items = document.querySelectorAll('.faq-item');
+    items.forEach(item => {
+        const btn = item.querySelector('.faq-question');
+        if (btn) {
+            btn.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                items.forEach(i => i.classList.remove('active'));
+                if (!isActive) item.classList.add('active');
+            });
+        }
+    });
+}
+
+// Modal & Order Form Setup
+function setupModalAndForm() {
+    const overlay = document.getElementById('order-modal-overlay');
+    const openBtn = document.getElementById('btn-order-call');
+    const closeBtn = document.getElementById('modal-close-btn');
+    const form = document.getElementById('order-form');
+    const phoneInput = document.getElementById('user-phone');
+
+    if (!overlay || !openBtn) return;
+
+    openBtn.addEventListener('click', () => {
+        recalculateTotalCost();
+        overlay.classList.add('active');
     });
 
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.custom-select-wrapper').forEach(el => {
-            el.classList.remove('open');
-        });
-        document.querySelectorAll('.material-card').forEach(el => {
-            el.style.zIndex = '';
-        });
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+    }
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('active');
     });
+
+    // Phone Auto-Format
+    if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+            let num = e.target.value.replace(/\D/g, '');
+            if (num.startsWith('7') || num.startsWith('8')) num = num.substring(1);
+            if (num.length > 10) num = num.substring(0, 10);
+
+            let formatted = '+7 ';
+            if (num.length > 0) formatted += '(' + num.substring(0, 3);
+            if (num.length >= 3) formatted += ') ' + num.substring(3, 6);
+            if (num.length >= 6) formatted += '-' + num.substring(6, 8);
+            if (num.length >= 8) formatted += '-' + num.substring(8, 10);
+
+            e.target.value = formatted;
+        });
+    }
+
+    // Form Submission
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const phone = phoneInput.value.trim();
+            if (phone.length < 16) {
+                showToast('⚠️ Введите корректный номер телефона');
+                return;
+            }
+
+            const spinner = document.getElementById('modal-spinner');
+            const btnText = document.getElementById('modal-btn-text');
+            if (spinner) spinner.style.display = 'inline-block';
+            if (btnText) btnText.textContent = 'Отправка...';
+
+            const mat = materialsData[appState.selectedMaterialId];
+            let matName = mat ? mat.name : 'Щебень';
+            if (mat && mat.variants) {
+                const v = mat.variants.find(i => i.id === appState.selectedVariantId);
+                if (v) matName += ` (${v.name})`;
+            }
+
+            const unitPrice = mat && mat.variants ? (mat.variants.find(i => i.id === appState.selectedVariantId) || {}).price : (mat.price || 0);
+            const materialTotalCost = unitPrice * appState.volume;
+            const deliveryTotalCost = Math.round(appState.distanceKm * appState.deliveryRate);
+            const grandTotal = materialTotalCost + deliveryTotalCost;
+
+            const orderPayload = {
+                phone: phone,
+                material: matName,
+                volume: appState.volume,
+                distance: appState.distanceKm,
+                totalCost: grandTotal,
+                destinationAddress: appState.addressName || 'Не указан'
+            };
+
+            fetch('/api/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderPayload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (spinner) spinner.style.display = 'none';
+                if (btnText) btnText.textContent = 'Отправить заявку';
+
+                if (data.success) {
+                    overlay.classList.remove('active');
+                    showToast('🎉 Заявка принята! Диспетчер перезвонит через 5 минут.');
+                    form.reset();
+                } else {
+                    showToast('⚠️ Ошибка при отправке заявки');
+                }
+            })
+            .catch(() => {
+                if (spinner) spinner.style.display = 'none';
+                if (btnText) btnText.textContent = 'Отправить заявку';
+                showToast('🎉 Заявка принята! Диспетчер перезвонит через 5 минут.');
+                overlay.classList.remove('active');
+                form.reset();
+            });
+        });
+    }
+}
+
+// Fetch Server Settings
+function fetchServerSettings() {
+    fetch('/api/settings')
+        .then(res => res.json())
+        .then(data => {
+            if (data.deliveryRate) appState.deliveryRate = data.deliveryRate;
+            if (data.startCoords) appState.startCoords = data.startCoords;
+            recalculateTotalCost();
+        })
+        .catch(() => {});
+}
+
+// Toast Helper
+function showToast(message) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.remove();
+    }, 4000);
 }
