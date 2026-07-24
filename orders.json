@@ -72,5 +72,14 @@
     "destinationAddress": "г. Красноярск, ул. Ленина, д. 10 (Тестовый заказ)",
     "id": "SCH-4438",
     "timestamp": "2026-07-24T11:00:58.283Z"
+  },
+  {
+    "id": "TG-7330",
+    "phone": "+79952545464",
+    "material": "Песок",
+    "volume": 5,
+    "destinationAddress": "сфу",
+    "source": "telegram_bot",
+    "timestamp": "2026-07-24T11:14:27.541Z"
   }
 ]
