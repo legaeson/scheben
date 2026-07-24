@@ -55,14 +55,6 @@ const materialsData = {
             { id: 'gravel_5_20', name: 'Гравий 5-20', price: 550 }
         ]
     },
-    anti_ice: {
-        id: 'anti_ice',
-        name: 'Противогололедный материал',
-        category: 'secondary',
-        img: 'images/anti_ice.jpg',
-        badge: 'Зимний отсев',
-        price: 1400
-    },
     crushed_brick: {
         id: 'crushed_brick',
         name: 'Битый кирпич',
@@ -294,18 +286,32 @@ function updateVolume(vol) {
     // Update truck recommendation text
     const truckText = document.getElementById('truck-type-text');
     if (truckText) {
-        if (vol <= 10) truckText.textContent = '1 Самосвал ЗИЛ / КаМАЗ (10 м³)';
-        else if (vol <= 15) truckText.textContent = '1 Самосвал КаМАЗ (15 м³)';
-        else if (vol <= 20) truckText.textContent = '1 Трехосный самосвал (20 м³)';
-        else if (vol <= 25) truckText.textContent = '1 Тяжелый самосвал (25 м³)';
-        else if (vol <= 30) truckText.textContent = '1 Крупнотоннажный Тонар (30 м³)';
-        else {
-            const count = Math.ceil(vol / 20);
-            truckText.textContent = `${count} Самосвала (автопарк ${vol} м³)`;
+        const truckCount = Math.ceil(vol / 20);
+        if (truckCount === 1) {
+            truckText.textContent = `1 Самосвал (до 20 м³) — 1 рейс`;
+        } else if (truckCount <= 4) {
+            truckText.textContent = `${truckCount} Самосвала (по 20 м³) — ${truckCount} рейса`;
+        } else {
+            truckText.textContent = `${truckCount} Самосвалов (по 20 м³) — ${truckCount} рейсов`;
         }
     }
 
     recalculateTotalCost();
+}
+
+// Helper for calculating delivery cost per truck trip:
+// - Minimum fee: 8,000 ₽ (even for short distances like Berezovka)
+// - Average city fee: ~15,000 - 16,000 ₽
+// - Maximum fee cap: 18,000 ₽ (suburban locations like Yemelyanovo)
+function calculateDeliveryCostPerTrip(distanceKm) {
+    if (!distanceKm || distanceKm <= 0) return 0;
+
+    const MIN_TRIP_FEE = 8000;
+    const MAX_TRIP_FEE = 18000;
+
+    let rawFee = MIN_TRIP_FEE + (distanceKm * 320);
+    let fee = Math.min(Math.max(rawFee, MIN_TRIP_FEE), MAX_TRIP_FEE);
+    return Math.round(fee / 100) * 100;
 }
 
 // Recalculate Live Prices
@@ -324,7 +330,8 @@ function recalculateTotalCost() {
 
     const materialTotalCost = unitPrice * appState.volume;
     const truckCount = appState.volume <= 20 ? 1 : Math.ceil(appState.volume / 20);
-    const deliveryTotalCost = Math.round(appState.distanceKm * appState.deliveryRate * truckCount);
+    const singleTripCost = calculateDeliveryCostPerTrip(appState.distanceKm);
+    const deliveryTotalCost = singleTripCost * truckCount;
     const grandTotal = materialTotalCost + deliveryTotalCost;
 
     // Update UI elements
@@ -342,7 +349,11 @@ function recalculateTotalCost() {
     if (matCostVal) matCostVal.textContent = formatCurrency(materialTotalCost);
 
     if (deliveryRateLabel) {
-        deliveryRateLabel.textContent = truckCount > 1 ? `${appState.deliveryRate} ₽/км × ${truckCount} рейса` : `${appState.deliveryRate} ₽/км`;
+        if (appState.distanceKm > 0) {
+            deliveryRateLabel.textContent = truckCount > 1 ? `${formatCurrency(singleTripCost)} / рейс × ${truckCount} рейса` : `${formatCurrency(singleTripCost)} / рейс`;
+        } else {
+            deliveryRateLabel.textContent = `рейс самосвала`;
+        }
     }
 
     if (appState.distanceKm > 0) {
@@ -804,7 +815,9 @@ function setupModalsAndForm() {
 
             const unitPrice = mat && mat.variants ? (mat.variants.find(i => i.id === appState.selectedVariantId) || {}).price : (mat.price || 0);
             const materialTotalCost = unitPrice * appState.volume;
-            const deliveryTotalCost = Math.round(appState.distanceKm * appState.deliveryRate);
+            const truckCount = appState.volume <= 20 ? 1 : Math.ceil(appState.volume / 20);
+            const singleTripCost = calculateDeliveryCostPerTrip(appState.distanceKm);
+            const deliveryTotalCost = singleTripCost * truckCount;
             const grandTotal = materialTotalCost + deliveryTotalCost;
             const notesInput = document.getElementById('user-notes');
 
