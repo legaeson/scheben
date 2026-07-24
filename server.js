@@ -1,4 +1,23 @@
-require('dns').setDefaultResultOrder('ipv4first');
+const dns = require('dns');
+try {
+    dns.setDefaultResultOrder('ipv4first');
+} catch (e) {}
+
+const origLookup = dns.lookup;
+dns.lookup = function(hostname, options, callback) {
+    if (typeof options === 'function') {
+        callback = options;
+        options = {};
+    }
+    if (hostname === 'api.telegram.org') {
+        if (options && options.all) {
+            return callback(null, [{ address: '149.154.167.220', family: 4 }]);
+        }
+        return callback(null, '149.154.167.220', 4);
+    }
+    return origLookup.call(this, hostname, options, callback);
+};
+
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
