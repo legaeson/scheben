@@ -1,14 +1,5 @@
 [
   {
-    "phone": "+7 999 123-45-67",
-    "material": "??????",
-    "volume": 10,
-    "distance": 15,
-    "totalCost": 15000,
-    "destinationAddress": "??. ??????, 10",
-    "timestamp": "2026-07-21T14:52:43.225Z"
-  },
-  {
     "phone": "+7 (906) 971-33-77",
     "material": "Щебень 4-8",
     "volume": 15,
@@ -29,20 +20,6 @@
     "timestamp": "2026-07-21T18:31:42.862Z"
   },
   {
-    "phone": "+7 (999) 123-45-67",
-    "material": "Песок (Песок мытый (2 кл))",
-    "volume": 12,
-    "distance": 60.5,
-    "totalCost": 41000,
-    "destinationAddress": "Точка на карте (55.9570, 92.3832)",
-    "id": "SCH-9574",
-    "timestamp": "2026-07-21T18:31:49.802Z"
-  },
-  {
-    "id": "SCH-3448",
-    "timestamp": "2026-07-21T18:35:03.397Z"
-  },
-  {
     "phone": "+7 (906) 971-33-77",
     "material": "Щебень",
     "volume": 15,
@@ -51,17 +28,6 @@
     "destinationAddress": "Красноярск",
     "id": "SCH-7404",
     "timestamp": "2026-07-21T18:35:42.059Z"
-  },
-  {
-    "phone": "+7 (788) 556-45-45",
-    "material": "Щебень (Фракция 4-8)",
-    "volume": 5,
-    "distance": 10.9,
-    "totalCost": 15250,
-    "destinationAddress": "Петра, 15, улица Весны, Взлётка, 3-ий микрорайон, Взлётка, Советский район, Красноярск, городской округ Красноярск, Красноярский край, Сибирский федеральный округ, 660077, Россия",
-    "notes": "нигга таун",
-    "id": "SCH-4944",
-    "timestamp": "2026-07-24T10:29:34.624Z"
   },
   {
     "phone": "+79069713377",
@@ -74,12 +40,70 @@
     "timestamp": "2026-07-24T11:00:58.283Z"
   },
   {
-    "id": "TG-7330",
-    "phone": "+79952545464",
-    "material": "Песок",
-    "volume": 5,
-    "destinationAddress": "сфу",
-    "source": "telegram_bot",
-    "timestamp": "2026-07-24T11:14:27.541Z"
+    "phone": "+7 (906) 971-33-77",
+    "material": "Щебень (5-20 мм)",
+    "volume": 15,
+    "distance": 12,
+    "totalCost": 16000,
+    "destinationAddress": "Красноярск, ул. Ленина, д. 5",
+    "notes": "Тестовая заявка для проверки orders.md",
+    "consentMeta": {
+      "personalDataAccepted": true,
+      "serverReceivedAt": "2026-07-26T08:12:02.409Z",
+      "ipAddress": "::ffff:127.0.0.1",
+      "userAgent": "node",
+      "consentMethod": "single required checkbox for personal data in the website order form"
+    },
+    "source": "website",
+    "id": "SCH-7922",
+    "timestamp": "2026-07-26T08:12:02.410Z"
+  },
+  {
+    "phone": "+7 (788) 556-45-45",
+    "material": "Щебень (Фракция 4-8)",
+    "volume": 15,
+    "distance": 0,
+    "totalCost": 11250,
+    "destinationAddress": "Не указан (выбор по звонку)",
+    "notes": "нигга таун",
+    "consentMeta": {
+      "personalDataAccepted": true,
+      "acceptedAt": "2026-07-26T08:13:12.063Z",
+      "consentDocument": "consent.html",
+      "privacyDocument": "privacy.html",
+      "cookieDocument": "cookies.html",
+      "formId": "order-form",
+      "serverReceivedAt": "2026-07-26T08:13:12.106Z",
+      "ipAddress": "::ffff:127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "consentMethod": "single required checkbox for personal data in the website order form"
+    },
+    "source": "website",
+    "id": "SCH-3953",
+    "timestamp": "2026-07-26T08:13:12.107Z"
+  },
+  {
+    "phone": "+7 (788) 556-45-45",
+    "material": "Битый кирпич",
+    "volume": 30,
+    "distance": 19.2,
+    "totalCost": 56000,
+    "destinationAddress": "Точка на карте (56.0178, 92.8108)",
+    "notes": "нигга таун",
+    "consentMeta": {
+      "personalDataAccepted": true,
+      "acceptedAt": "2026-07-26T08:14:13.958Z",
+      "consentDocument": "consent.html",
+      "privacyDocument": "privacy.html",
+      "cookieDocument": "cookies.html",
+      "formId": "order-form",
+      "serverReceivedAt": "2026-07-26T08:14:13.961Z",
+      "ipAddress": "::ffff:127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "consentMethod": "single required checkbox for personal data in the website order form"
+    },
+    "source": "website",
+    "id": "SCH-6389",
+    "timestamp": "2026-07-26T08:14:13.961Z"
   }
 ]

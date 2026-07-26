@@ -1,5 +1,5 @@
 // ==========================================================================
-// шебень.рф — Interactive Application Logic (Leaflet, Nominatim, OSRM & API)
+// шебень.рф — Interactive Application Logic (Yandex Maps API & Express API)
 // ==========================================================================
 
 // Internal reference coordinates for Krasnoyarsk routing calculations (Base warehouse)
@@ -96,7 +96,7 @@ let appState = {
 let myMap = null;
 let originMarker = null;
 let destMarker = null;
-let routeLine = null;
+let multiRoute = null;
 let searchTimeout = null;
 let activeSuggestionIndex = -1;
 
@@ -115,8 +115,9 @@ function initApp() {
     setupAddressSearch();
     setupMobileNav();
     setupScrollSpyAndBackToTop();
-    initLeafletMap();
+    initYandexMap();
     fetchServerSettings();
+    setupCookieConsent();
 }
 
 // Utility: Number formatter
@@ -300,16 +301,21 @@ function updateVolume(vol) {
 }
 
 // Helper for calculating delivery cost per truck trip:
-// - Minimum fee: 8,000 ₽ (even for short distances like Berezovka)
-// - Average city fee: ~15,000 - 16,000 ₽
+// - Minimum fee: 13,000 ₽ for regular materials, 16,000 ₽ for crushed brick
+// - Average city fee: ~13,000 ₽ (regular) / ~16,000 ₽ (crushed brick)
 // - Maximum fee cap: 18,000 ₽ (suburban locations like Yemelyanovo)
 function calculateDeliveryCostPerTrip(distanceKm) {
     if (!distanceKm || distanceKm <= 0) return 0;
 
-    const MIN_TRIP_FEE = 8000;
+    const isBrick = appState.selectedMaterialId === 'crushed_brick' || 
+                    (materialsData[appState.selectedMaterialId] && 
+                     materialsData[appState.selectedMaterialId].name.toLowerCase().includes('кирпич'));
+
+    const MIN_TRIP_FEE = isBrick ? 16000 : 13000;
     const MAX_TRIP_FEE = 18000;
 
-    let rawFee = MIN_TRIP_FEE + (distanceKm * 320);
+    const ratePerKm = appState.deliveryRate || 320;
+    let rawFee = 8000 + (distanceKm * ratePerKm);
     let fee = Math.min(Math.max(rawFee, MIN_TRIP_FEE), MAX_TRIP_FEE);
     return Math.round(fee / 100) * 100;
 }
@@ -381,46 +387,58 @@ function recalculateTotalCost() {
     if (modalCost) modalCost.textContent = appState.distanceKm > 0 ? formatCurrency(grandTotal) : `${formatCurrency(materialTotalCost)} (+ доставка)`;
 }
 
-// Leaflet Map Initialization
-function initLeafletMap() {
-    if (typeof L === 'undefined') return;
+// Yandex Maps Initialization
+function initYandexMap() {
+    if (typeof ymaps === 'undefined') return;
 
-    const bounds = L.latLngBounds(L.latLng(54.0, 90.0), L.latLng(58.0, 96.0));
+    ymaps.ready(() => {
+        myMap = new ymaps.Map('map', {
+            center: [56.0105, 92.8525], // Center on Krasnoyarsk
+            zoom: 11,
+            controls: ['zoomControl', 'geolocationControl', 'typeSelector', 'fullscreenControl']
+        }, {
+            suppressMapOpenBlock: true
+        });
 
-    myMap = L.map('map', {
-        center: [56.0105, 92.8525], // Center on Krasnoyarsk
-        zoom: 11,
-        minZoom: 8,
-        maxZoom: 18,
-        maxBounds: bounds,
-        attributionControl: false
+        // Base Warehouse Origin Pin
+        originMarker = new ymaps.Placemark(appState.startCoords, {
+            hintContent: 'База погрузки: г. Красноярск',
+            balloonContent: '<b>База погрузки:</b><br>г. Красноярск'
+        }, {
+            preset: 'islands#orangeFactoryIcon'
+        });
+        myMap.geoObjects.add(originMarker);
+
+        // Map Click Listener - Reverse Geocoding via Yandex Geocoder
+        myMap.events.add('click', (e) => {
+            const coords = e.get('coords');
+            
+            if (typeof ymaps !== 'undefined' && ymaps.geocode) {
+                ymaps.geocode(coords).then((res) => {
+                    const firstGeoObject = res.geoObjects.get(0);
+                    let label = '';
+                    if (firstGeoObject) {
+                        label = firstGeoObject.getAddressLine().replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
+                    } else {
+                        label = `Точка на карте (${coords[0].toFixed(4)}, ${coords[1].toFixed(4)})`;
+                    }
+                    setDestinationPoint(coords, label);
+                }).catch(() => {
+                    const label = `Точка на карте (${coords[0].toFixed(4)}, ${coords[1].toFixed(4)})`;
+                    setDestinationPoint(coords, label);
+                });
+            } else {
+                const label = `Точка на карте (${coords[0].toFixed(4)}, ${coords[1].toFixed(4)})`;
+                setDestinationPoint(coords, label);
+            }
+        });
+
+        // Reset Calc Button Listener
+        const resetBtn = document.getElementById('btn-reset-calc');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', resetCalculatorState);
+        }
     });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(myMap);
-
-    // Base Warehouse Origin Pin
-    originMarker = L.marker(appState.startCoords, {
-        icon: L.divIcon({
-            className: 'origin-pin',
-            html: '<div style="background:#d97706; width:24px; height:24px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 2px 10px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:800;">🏭</div>',
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-        })
-    }).addTo(myMap);
-    originMarker.bindPopup('<b>База погрузки:</b><br>г. Красноярск').openPopup();
-
-    // Map Click Listener
-    myMap.on('click', (e) => {
-        const coords = [e.latlng.lat, e.latlng.lng];
-        const label = `Точка на карте (${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)})`;
-        setDestinationPoint(coords, label);
-    });
-
-    // Reset Calc Button Listener
-    const resetBtn = document.getElementById('btn-reset-calc');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', resetCalculatorState);
-    }
 }
 
 function resetCalculatorState() {
@@ -437,19 +455,20 @@ function resetCalculatorState() {
     const mapHint = document.getElementById('map-click-hint');
     if (mapHint) mapHint.style.display = 'flex';
 
-    if (destMarker) {
-        myMap.removeLayer(destMarker);
-        destMarker = null;
-    }
-
-    if (routeLine) {
-        myMap.removeLayer(routeLine);
-        routeLine = null;
+    if (myMap) {
+        if (destMarker) {
+            myMap.geoObjects.remove(destMarker);
+            destMarker = null;
+        }
+        if (multiRoute) {
+            myMap.geoObjects.remove(multiRoute);
+            multiRoute = null;
+        }
+        myMap.setCenter([56.0105, 92.8525], 11, { duration: 300 });
     }
 
     document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
 
-    myMap.setView([56.0105, 92.8525], 11, { animate: true });
     recalculateTotalCost();
     showToast('Параметры доставки сброшены');
 }
@@ -468,81 +487,77 @@ function setDestinationPoint(coords, name) {
     const mapHint = document.getElementById('map-click-hint');
     if (mapHint) mapHint.style.display = 'none';
 
-    if (!destMarker) {
-        destMarker = L.marker(coords, {
-            icon: L.divIcon({
-                className: 'dest-pin',
-                html: '<div style="background:#059669; width:24px; height:24px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 2px 10px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:800;">📍</div>',
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            })
-        }).addTo(myMap);
-    } else {
-        destMarker.setLatLng(coords);
+    if (myMap) {
+        if (destMarker) {
+            myMap.geoObjects.remove(destMarker);
+        }
+
+        destMarker = new ymaps.Placemark(coords, {
+            hintContent: name,
+            balloonContent: `<b>Точка доставки:</b><br>${name}`
+        }, {
+            preset: 'islands#greenDotIconWithCaption'
+        });
+
+        myMap.geoObjects.add(destMarker);
+        destMarker.balloon.open();
     }
 
-    destMarker.bindPopup(`<b>Точка доставки:</b><br>${name}`).openPopup();
-    calculateOSRMRoute(coords);
+    calculateYandexRoute(coords);
 }
 
-// OSRM Driving Distance Calculation & Polyline Geometry Drawing
-function calculateOSRMRoute(coords) {
+// Yandex MultiRoute Driving Distance Calculation & Route Drawing
+function calculateYandexRoute(coords) {
     const spinner = document.getElementById('calc-spinner');
     if (spinner) spinner.style.display = 'inline-block';
 
-    const url = `https://router.project-osrm.org/route/v1/driving/${appState.startCoords[1]},${appState.startCoords[0]};${coords[1]},${coords[0]}?overview=full&geometries=geojson`;
+    if (typeof ymaps === 'undefined' || !myMap) {
+        if (spinner) spinner.style.display = 'none';
+        return;
+    }
 
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            if (spinner) spinner.style.display = 'none';
-            if (data && data.routes && data.routes.length > 0) {
-                const route = data.routes[0];
-                appState.distanceKm = Math.round((route.distance / 1000) * 10) / 10;
+    if (multiRoute) {
+        myMap.geoObjects.remove(multiRoute);
+        multiRoute = null;
+    }
 
-                // Remove existing route line if present
-                if (routeLine) {
-                    myMap.removeLayer(routeLine);
-                }
+    multiRoute = new ymaps.multiRouter.MultiRoute({
+        referencePoints: [
+            appState.startCoords,
+            coords
+        ],
+        params: {
+            routingMode: 'auto'
+        }
+    }, {
+        boundsAutoApply: true,
+        wayPointVisible: false,
+        routeActiveStrokeWidth: 5,
+        routeActiveStrokeColor: '#059669',
+        routeActiveStrokeStyle: 'solid'
+    });
 
-                // Draw new polyline on map
-                if (route.geometry) {
-                    routeLine = L.geoJSON(route.geometry, {
-                        style: {
-                            color: '#059669',
-                            weight: 5,
-                            opacity: 0.85,
-                            dashArray: '8, 8'
-                        }
-                    }).addTo(myMap);
+    myMap.geoObjects.add(multiRoute);
 
-                    const bounds = L.latLngBounds([appState.startCoords, coords]);
-                    myMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 15, animate: true });
-                } else {
-                    myMap.setView(coords, 13, { animate: true });
-                }
-
-                recalculateTotalCost();
-                showToast(`Расстояние доставки: ${appState.distanceKm} км`);
-            }
-        })
-        .catch(err => {
-            if (spinner) spinner.style.display = 'none';
-            console.warn('OSRM Distance calculation error:', err);
-            const dist = getHaversineDistance(appState.startCoords[0], appState.startCoords[1], coords[0], coords[1]);
-            appState.distanceKm = Math.round(dist * 1.35 * 10) / 10;
-
-            if (routeLine) myMap.removeLayer(routeLine);
-            routeLine = L.polyline([appState.startCoords, coords], {
-                color: '#059669',
-                weight: 4,
-                opacity: 0.7,
-                dashArray: '6, 6'
-            }).addTo(myMap);
-
-            myMap.fitBounds([appState.startCoords, coords], { padding: [40, 40] });
+    multiRoute.model.events.add('requestsuccess', () => {
+        if (spinner) spinner.style.display = 'none';
+        const activeRoute = multiRoute.getActiveRoute();
+        if (activeRoute) {
+            const distanceMeters = activeRoute.properties.get("distance").value;
+            appState.distanceKm = Math.round((distanceMeters / 1000) * 10) / 10;
             recalculateTotalCost();
-        });
+            showToast(`Расстояние доставки: ${appState.distanceKm} км`);
+        }
+    });
+
+    multiRoute.model.events.add('requestfail', () => {
+        if (spinner) spinner.style.display = 'none';
+        console.warn('Yandex MultiRoute error, calculating fallback distance');
+        const dist = getHaversineDistance(appState.startCoords[0], appState.startCoords[1], coords[0], coords[1]);
+        appState.distanceKm = Math.round(dist * 1.35 * 10) / 10;
+        recalculateTotalCost();
+        showToast(`Расстояние (расчётное): ${appState.distanceKm} км`);
+    });
 }
 
 function getHaversineDistance(lat1, lon1, lat2, lon2) {
@@ -570,7 +585,7 @@ function setupQuickPresets() {
     });
 }
 
-// Address Search Autocomplete (Nominatim + Keyboard Nav + Clear Button)
+// Address Search Autocomplete (Yandex Suggest + Geocode + Keyboard Nav)
 function setupAddressSearch() {
     const input = document.getElementById('address-input');
     const list = document.getElementById('suggestions');
@@ -585,43 +600,43 @@ function setupAddressSearch() {
 
         if (clearBtn) clearBtn.style.display = query.length > 0 ? 'block' : 'none';
 
-        if (query.length < 3) {
+        if (query.length < 2) {
             list.classList.remove('active');
             activeSuggestionIndex = -1;
             return;
         }
 
         searchTimeout = setTimeout(() => {
-            fetch(`https://nominatim.openstreetmap.org/search?q=Красноярск+${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`, {
-                headers: { 'Accept-Language': 'ru' }
-            })
-            .then(res => res.json())
-            .then(items => {
-                list.innerHTML = '';
-                activeSuggestionIndex = -1;
+            if (typeof ymaps !== 'undefined' && ymaps.suggest) {
+                const fullQuery = query.toLowerCase().includes('красноярск') ? query : `Красноярск, ${query}`;
+                ymaps.suggest(fullQuery).then((items) => {
+                    list.innerHTML = '';
+                    activeSuggestionIndex = -1;
 
-                if (items && items.length > 0) {
-                    items.forEach((item, idx) => {
-                        const li = document.createElement('li');
-                        li.className = 'suggestion-item';
-                        li.setAttribute('role', 'option');
-                        li.dataset.index = idx;
-                        const name = item.display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
-                        li.textContent = name;
-                        li.addEventListener('click', () => {
-                            input.value = name;
-                            list.classList.remove('active');
-                            setDestinationPoint([parseFloat(item.lat), parseFloat(item.lon)], name);
+                    if (items && items.length > 0) {
+                        items.forEach((item, idx) => {
+                            const li = document.createElement('li');
+                            li.className = 'suggestion-item';
+                            li.setAttribute('role', 'option');
+                            li.dataset.index = idx;
+                            const name = item.displayName.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
+                            li.textContent = name;
+                            li.addEventListener('click', () => {
+                                input.value = name;
+                                list.classList.remove('active');
+                                geocodeAndSetAddress(item.value || name);
+                            });
+                            list.appendChild(li);
                         });
-                        list.appendChild(li);
-                    });
-                    list.classList.add('active');
-                } else {
-                    list.classList.remove('active');
-                }
-            })
-            .catch(() => list.classList.remove('active'));
-        }, 280);
+                        list.classList.add('active');
+                    } else {
+                        list.classList.remove('active');
+                    }
+                }).catch(() => list.classList.remove('active'));
+            } else {
+                list.classList.remove('active');
+            }
+        }, 250);
     });
 
     if (clearBtn) {
@@ -653,7 +668,7 @@ function setupAddressSearch() {
                 items[activeSuggestionIndex].click();
             } else if (items.length > 0) {
                 items[0].click();
-            } else if (input.value.trim().length >= 3) {
+            } else if (input.value.trim().length >= 2) {
                 geocodeAndSetAddress(input.value.trim());
             }
         } else if (e.key === 'Escape') {
@@ -664,8 +679,8 @@ function setupAddressSearch() {
     if (calcBtn) {
         calcBtn.addEventListener('click', () => {
             if (appState.destCoords) {
-                calculateOSRMRoute(appState.destCoords);
-            } else if (input.value.trim().length >= 3) {
+                calculateYandexRoute(appState.destCoords);
+            } else if (input.value.trim().length >= 2) {
                 geocodeAndSetAddress(input.value.trim());
             } else {
                 showToast('Введите адрес или выберите точку на карте');
@@ -685,22 +700,28 @@ function geocodeAndSetAddress(query) {
     const spinner = document.getElementById('calc-spinner');
     if (spinner) spinner.style.display = 'inline-block';
 
-    fetch(`https://nominatim.openstreetmap.org/search?q=Красноярск+${encodeURIComponent(query)}&format=json&limit=1`, {
-        headers: { 'Accept-Language': 'ru' }
-    })
-    .then(res => res.json())
-    .then(items => {
+    if (typeof ymaps === 'undefined' || !ymaps.geocode) {
         if (spinner) spinner.style.display = 'none';
-        if (items && items[0]) {
-            const name = items[0].display_name.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
-            setDestinationPoint([parseFloat(items[0].lat), parseFloat(items[0].lon)], name);
+        showToast('Ошибка сервиса Яндекс Карт');
+        return;
+    }
+
+    const searchQuery = query.toLowerCase().includes('красноярск') ? query : `Красноярск, ${query}`;
+
+    ymaps.geocode(searchQuery, { results: 1 }).then((res) => {
+        if (spinner) spinner.style.display = 'none';
+        const firstGeoObject = res.geoObjects.get(0);
+        if (firstGeoObject) {
+            const coords = firstGeoObject.geometry.getCoordinates();
+            const name = firstGeoObject.getAddressLine().replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
+            setDestinationPoint(coords, name);
             if (list) list.classList.remove('active');
         } else {
             showToast('Адрес не найден. Попробуйте кликнуть на карте');
         }
-    })
-    .catch(() => {
+    }).catch((err) => {
         if (spinner) spinner.style.display = 'none';
+        console.error('Yandex geocode error:', err);
         showToast('Ошибка поиска адреса');
     });
 }
@@ -731,10 +752,27 @@ function setupModalsAndForm() {
     const copyOrderBtn = document.getElementById('btn-copy-order');
     const form = document.getElementById('order-form');
     const phoneInput = document.getElementById('user-phone');
+    const personalDataConsent = document.getElementById('pd-consent-checkbox');
+    const submitBtn = document.getElementById('order-submit-btn');
+
+    const updateSubmitAvailability = () => {
+        if (!submitBtn) return;
+        submitBtn.disabled = !(personalDataConsent && personalDataConsent.checked);
+    };
+
+    if (personalDataConsent) {
+        personalDataConsent.addEventListener('change', () => {
+            personalDataConsent.closest('.legal-consent-item')?.classList.remove('consent-error');
+            updateSubmitAvailability();
+        });
+    }
+    updateSubmitAvailability();
 
     if (openBtn && orderOverlay) {
         openBtn.addEventListener('click', () => {
             recalculateTotalCost();
+            if (personalDataConsent) personalDataConsent.checked = false;
+            updateSubmitAvailability();
             orderOverlay.classList.add('active');
             if (phoneInput) setTimeout(() => phoneInput.focus(), 150);
         });
@@ -800,6 +838,11 @@ function setupModalsAndForm() {
                 showToast('Введите полный номер телефона: +7 (XXX) XXX-XX-XX');
                 return;
             }
+            if (!personalDataConsent || !personalDataConsent.checked) {
+                personalDataConsent?.closest('.legal-consent-item')?.classList.add('consent-error');
+                showToast('Подтвердите согласие на обработку персональных данных');
+                return;
+            }
 
             const spinner = document.getElementById('modal-spinner');
             const btnText = document.getElementById('modal-btn-text');
@@ -828,7 +871,15 @@ function setupModalsAndForm() {
                 distance: appState.distanceKm,
                 totalCost: grandTotal,
                 destinationAddress: appState.addressName || 'Не указан (выбор по звонку)',
-                notes: notesInput ? notesInput.value.trim() : ''
+                notes: notesInput ? notesInput.value.trim() : '',
+                consentMeta: {
+                    personalDataAccepted: true,
+                    acceptedAt: new Date().toISOString(),
+                    consentDocument: 'consent.html',
+                    privacyDocument: 'privacy.html',
+                    cookieDocument: 'cookies.html',
+                    formId: 'order-form'
+                }
             };
 
             fetch('/api/order', {
@@ -836,7 +887,14 @@ function setupModalsAndForm() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderPayload)
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(data => {
+                        throw new Error(data.message || 'Не удалось отправить заявку');
+                    });
+                }
+                return res.json();
+            })
             .then(data => {
                 if (spinner) spinner.style.display = 'none';
                 if (btnText) btnText.textContent = 'Отправить заявку';
@@ -845,6 +903,7 @@ function setupModalsAndForm() {
 
                 orderOverlay.classList.remove('active');
                 form.reset();
+                updateSubmitAvailability();
 
                 // Open Success Modal
                 document.getElementById('success-order-id').textContent = `#${createdId}`;
@@ -858,18 +917,7 @@ function setupModalsAndForm() {
             .catch(() => {
                 if (spinner) spinner.style.display = 'none';
                 if (btnText) btnText.textContent = 'Отправить заявку';
-
-                const fallbackId = `SCH-${Math.floor(1000 + Math.random() * 9000)}`;
-                orderOverlay.classList.remove('active');
-                form.reset();
-
-                document.getElementById('success-order-id').textContent = `#${fallbackId}`;
-                document.getElementById('success-mat-text').textContent = `${matName} (${appState.volume} м³)`;
-                document.getElementById('success-addr-text').textContent = appState.addressName || 'Согласование по телефону';
-                document.getElementById('success-cost-text').textContent = formatCurrency(grandTotal);
-
-                if (successOverlay) successOverlay.classList.add('active');
-                showToast(`Заявка #${fallbackId} успешно принята!`);
+                showToast('Заявка не отправлена. Позвоните диспетчеру или попробуйте еще раз.');
             });
         });
     }
@@ -956,4 +1004,36 @@ function showToast(message) {
     setTimeout(() => {
         toast.remove();
     }, 4000);
+}
+
+// Cookie Consent Banner Handling (152-ФЗ & Роскомнадзор)
+function setupCookieConsent() {
+    const banner = document.getElementById('cookie-banner');
+    const acceptBtn = document.getElementById('cookie-accept-btn');
+    const essentialBtn = document.getElementById('cookie-essential-btn');
+    if (!banner || !acceptBtn || !essentialBtn) return;
+
+    const consentValue = localStorage.getItem('cookieConsent_scheben_rf');
+    if (!consentValue) {
+        setTimeout(() => {
+            banner.classList.add('show');
+        }, 1200);
+    } else {
+        banner.style.display = 'none';
+    }
+
+    const saveCookieChoice = (status) => {
+        localStorage.setItem('cookieConsent_scheben_rf', JSON.stringify({
+            status,
+            acceptedAt: new Date().toISOString(),
+            policy: 'cookies.html'
+        }));
+        banner.classList.remove('show');
+        setTimeout(() => {
+            banner.style.display = 'none';
+        }, 400);
+    };
+
+    acceptBtn.addEventListener('click', () => saveCookieChoice('accepted'));
+    essentialBtn.addEventListener('click', () => saveCookieChoice('essential_only'));
 }

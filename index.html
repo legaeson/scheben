@@ -39,14 +39,11 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'><path d='M16 2L4 8L16 14L28 8L16 2Z' fill='%2334d399'/><path d='M4 8V22L16 28V14L4 8Z' fill='%23059669'/><path d='M28 8V22L16 28V14L28 8Z' fill='%2310b981'/></svg>">
     
-    <!-- Fonts & CSS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- Leaflet CSS & JS for OpenStreetMap -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <!-- Yandex Maps API v2.1 -->
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
 </head>
 <body>
 
@@ -67,10 +64,6 @@
             </nav>
 
             <div class="header-actions">
-                <a href="https://t.me/kraspesokbot" target="_blank" rel="noopener" class="tg-button" id="header-tg-link" aria-label="Telegram бот" title="Связаться в Telegram">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2L2 9.5l7.5 3 2.5 7.5 3.5-4.5 5 4.5z"/><path d="M9.5 12.5l9-8"/></svg>
-                    <span class="tg-text">Telegram-бот</span>
-                </a>
                 <a href="tel:+79069713377" class="phone-button" id="header-phone-link" aria-label="Позвонить диспетчеру">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     <span class="phone-text">+7 (906) 971-33-77</span>
@@ -88,7 +81,6 @@
                 <li><a href="#specs-section" class="mobile-nav-link">Характеристики материалов</a></li>
                 <li><a href="#faq-section" class="mobile-nav-link">Частые вопросы (FAQ)</a></li>
                 <li><a href="#contacts-section" class="mobile-nav-link">Контакты и адрес</a></li>
-                <li><a href="https://t.me/kraspesokbot" target="_blank" rel="noopener" class="mobile-nav-link tg-accent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2L2 9.5l7.5 3 2.5 7.5 3.5-4.5 5 4.5z"/><path d="M9.5 12.5l9-8"/></svg> Telegram-бот @kraspesokbot</a></li>
                 <li><a href="tel:+79069713377" class="mobile-nav-link call-accent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Позвонить +7 (906) 971-33-77</a></li>
             </ul>
         </div>
@@ -162,7 +154,7 @@
                 </div>
             </div>
 
-            <!-- Right Panel: Address Search, Leaflet Route Map & Price Summary -->
+            <!-- Right Panel: Address Search, Yandex Route Map & Price Summary -->
             <div class="panel-card">
                 <div class="panel-header">
                     <h2 class="panel-title">
@@ -246,8 +238,13 @@
 
                     <p class="order-notice">
                         Диспетчер перезвонит в течение 5 минут для уточнения деталей.<br>
-                        Нажимая кнопку, вы соглашаетесь на обработку персональных данных (<a href="privacy.html" target="_blank" style="color: var(--primary); text-decoration: underline;">152-ФЗ</a>).
+                        Перед отправкой заявки нужно отдельно подтвердить <a href="consent.html" target="_blank" style="color: var(--primary); text-decoration: underline; text-underline-offset: 3px;">согласие на обработку персональных данных</a> и ознакомиться с <a href="privacy.html" target="_blank" style="color: var(--primary); text-decoration: underline; text-underline-offset: 3px;">политикой конфиденциальности</a>.
                     </p>
+
+                    <div style="margin-top: 1rem; background: rgba(245, 158, 11, 0.08); border-left: 4px solid #f59e0b; padding: 0.85rem 1rem; border-radius: 6px; font-size: 0.86rem; color: var(--text-dark); line-height: 1.5;">
+                        <strong>⚠️ Обратите внимание:</strong> Все указанные цены и расчеты носят предположительный и ориентировочный характер. Точная стоимость материалов и автодоставки утверждается <strong>исключительно диспетчером</strong> при согласовании заказа по телефону (не является публичной офертой, ст. 437 ГК РФ).
+                    </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -310,11 +307,21 @@
             <div class="faq-grid">
                 <div class="faq-item">
                     <button type="button" class="faq-question">
+                        <span>Является ли стоимость в онлайн-калькуляторе окончательной?</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Нет. Все цены и суммы на сайте носят исключительно предположительный и ориентировочный характер. Они служат для первичной ознакомительной оценки. Окончательная и точная стоимость материалов и автодоставки утверждается <strong>исключительно диспетчером</strong> при согласовании заказа по телефону. Информация на сайте не является публичной офертой (ст. 437 ГК РФ).
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
                         <span>Как рассчитывается точная стоимость доставки?</span>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </button>
                     <div class="faq-answer">
-                        Стоимость рассчитывается за рейс самосвала КАМАЗ (вместимость 20 м³). Минимальная стоимость доставки — 8 000 ₽ за рейс, по г. Красноярску доставка составляет в среднем 15 000 – 16 000 ₽ за рейс, а максимальный загородный тариф — 18 000 ₽ за 1 рейс. При заказе более 20 м³ доставка автоматически рассчитывается исходя из количества рейсов КАМАЗа (например, 25 м³ = 2 рейса).
+                        Стоимость рассчитывается за рейс самосвала КАМАЗ (вместимость 20 м³). Минимальная стоимость доставки — 13 000 ₽ за рейс (для битого кирпича — 16 000 ₽ за рейс), по г. Красноярску доставка составляет в среднем 13 000 ₽ за рейс (битый кирпич — в среднем 16 000 ₽ за рейс), а максимальный загородный тариф — 18 000 ₽ за 1 рейс. При заказе более 20 м³ доставка автоматически рассчитывается исходя из количества рейсов КАМАЗа (например, 25 м³ = 2 рейса).
                     </div>
                 </div>
 
@@ -374,20 +381,6 @@
                     </a>
                 </div>
 
-                <!-- Telegram Bot Card -->
-                <div class="contact-card">
-                    <div class="contact-icon-badge tg-badge">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2L2 9.5l7.5 3 2.5 7.5 3.5-4.5 5 4.5z"/><path d="M9.5 12.5l9-8"/></svg>
-                    </div>
-                    <h3 class="contact-card-title">Telegram-бот</h3>
-                    <p class="contact-card-value">@kraspesokbot</p>
-                    <p class="contact-card-desc">Быстрый заказ и консультации 24/7. Связывайтесь напрямую с диспетчером через бот в Telegram.</p>
-                    <a href="https://t.me/kraspesokbot" target="_blank" rel="noopener" class="btn-contact btn-tg-action">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2L2 9.5l7.5 3 2.5 7.5 3.5-4.5 5 4.5z"/><path d="M9.5 12.5l9-8"/></svg>
-                        Написать в Telegram
-                    </a>
-                </div>
-
                 <!-- Delivery Conditions Card -->
                 <div class="contact-card">
                     <div class="contact-icon-badge address-badge">
@@ -425,14 +418,18 @@
                     <input type="text" id="user-notes" class="form-input" placeholder="Например: удобный въезд со двора...">
                 </div>
 
-                <button type="submit" class="btn-order-cta" style="margin-top: 1rem;">
+                <div class="legal-consent-list" aria-label="Согласия пользователя">
+                    <label class="legal-consent-item" for="pd-consent-checkbox">
+                        <input type="checkbox" id="pd-consent-checkbox" required>
+                        <span>Я даю отдельное <a href="consent.html" target="_blank">согласие на обработку персональных данных</a> для расчета заявки, обратной связи и доставки.</span>
+                    </label>
+                    <p class="legal-consent-note">Согласие можно отозвать по адресу info@kraspesok.ru. Условия обработки описаны в <a href="privacy.html" target="_blank">политике конфиденциальности</a>.</p>
+                </div>
+
+                <button type="submit" class="btn-order-cta" id="order-submit-btn" style="margin-top: 1rem;" disabled>
                     <span class="spinner" id="modal-spinner" style="display: none; border-top-color: #fff;"></span>
                     <span id="modal-btn-text">Отправить заявку</span>
                 </button>
-
-                <p style="font-size: 0.72rem; color: var(--text-subtle); margin-top: 0.75rem; text-align: center;">
-                    Нажимая кнопку, вы даете согласие на обработку персональных данных (<a href="privacy.html" target="_blank" style="color: var(--primary);">152-ФЗ</a>).
-                </p>
 
                 <div class="modal-call-divider"><span>или звоните сразу диспетчеру</span></div>
 
@@ -517,9 +514,10 @@
                 <h4 class="footer-heading">Контакты и доставка</h4>
                 <ul class="footer-links">
                     <li><a href="tel:+79069713377" style="display: inline-flex; align-items: center; gap: 0.45rem;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> +7 (906) 971-33-77</a></li>
-                    <li><a href="https://t.me/kraspesokbot" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 0.45rem;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2L2 9.5l7.5 3 2.5 7.5 3.5-4.5 5 4.5z"/><path d="M9.5 12.5l9-8"/></svg> Telegram-бот (@kraspesokbot)</a></li>
                     <li style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem; display: flex; align-items: flex-start; gap: 0.45rem;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink: 0; margin-top: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <span>г. Красноярск и пригородные районы (Только доставка)</span></li>
                     <li style="margin-top: 0.4rem;"><a href="privacy.html" target="_blank">Политика конфиденциальности (152-ФЗ)</a></li>
+                    <li><a href="cookies.html" target="_blank">Политика обработки файлов Cookie</a></li>
+                    <li><a href="consent.html" target="_blank">Согласие на обработку персональных данных</a></li>
                 </ul>
             </div>
         </div>
@@ -529,8 +527,23 @@
             <p style="font-size: 0.76rem; opacity: 0.85; margin-top: 0.4rem; max-width: 750px; margin-left: auto; margin-right: auto; line-height: 1.45;">
                 Информация на сайте и онлайн-расчет стоимости носят ознакомительный характер и не являются публичной офертой (ст. 437 ГК РФ). Окончательная стоимость и условия доставки утверждаются диспетчером при согласовании заявки.
             </p>
-        </div>
     </footer>
+
+    <!-- Cookie Consent Banner (152-ФЗ & Роскомнадзор) -->
+    <div class="cookie-banner" id="cookie-banner">
+        <div class="cookie-banner-content">
+            <div class="cookie-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+            </div>
+            <p class="cookie-text">
+                Мы используем необходимые технологии для работы сайта. Аналитические cookie и запоминание выбора применяются только после вашего решения. Подробнее — в <a href="cookies.html" target="_blank">Политике обработки Cookie</a>.
+            </p>
+        </div>
+        <div class="cookie-actions">
+            <button type="button" class="btn-cookie-essential" id="cookie-essential-btn">Только необходимые</button>
+            <button type="button" class="btn-cookie-accept" id="cookie-accept-btn">Разрешить cookie</button>
+        </div>
+    </div>
 
     <!-- App JS -->
     <script src="app.js"></script>
