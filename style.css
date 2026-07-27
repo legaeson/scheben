@@ -2085,3 +2085,237 @@ body {
     padding: 0.85rem 1rem;
   }
 }
+
+/* ==========================================================================
+   Delivery Zone Selector & Call Operator Button Styles
+   ========================================================================== */
+.delivery-zone-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.zone-section-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 0.75rem;
+}
+
+.delivery-zone-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.zone-card-btn {
+  background: var(--bg-surface);
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  outline: none;
+}
+
+.zone-card-btn:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.zone-card-btn.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.15);
+}
+
+.zone-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.zone-icon {
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zone-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  flex-grow: 1;
+}
+
+.zone-check {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.zone-card-btn.active .zone-check {
+  opacity: 1;
+}
+
+.zone-price {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.zone-price small {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.zone-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+/* Call Operator Primary CTA Button */
+.btn-call-operator-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1.1rem 1.5rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  border: none;
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.35);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.btn-call-operator-primary:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.45);
+}
+
+.btn-call-operator-primary:active {
+  transform: translateY(0);
+}
+
+.disclaimer-box {
+  margin-top: 1.25rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  font-size: 0.83rem;
+  color: var(--text-subtle);
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .delivery-zone-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Special Promo Banner Styles (Crushed Brick Offer)
+   ========================================================================== */
+.promo-section {
+  padding: 1.5rem 0 0.5rem;
+}
+
+.promo-card {
+  background: linear-gradient(135deg, #fffbebfb 0%, #fef3c7 100%);
+  border: 2px solid #f59e0b;
+  border-radius: var(--radius-md);
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 10px 30px -5px rgba(245, 158, 11, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.promo-badge-tag {
+  display: inline-block;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.5px;
+  margin-bottom: 0.45rem;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+
+.promo-body {
+  flex-grow: 1;
+}
+
+.promo-card-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #92400e;
+  margin-bottom: 0.35rem;
+}
+
+.promo-card-desc {
+  font-size: 0.95rem;
+  color: #78350f;
+  line-height: 1.45;
+}
+
+.promo-call-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #d97706;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.85rem 1.4rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
+  transition: all 0.2s ease;
+}
+
+.promo-call-btn:hover {
+  background: #b45309;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.45);
+}
+
+@media (max-width: 768px) {
+  .promo-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.5rem 1.25rem;
+    gap: 1rem;
+  }
+  .promo-call-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+

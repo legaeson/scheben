@@ -42,8 +42,7 @@
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- Yandex Maps API v2.1 -->
-    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+
 </head>
 <body>
 
@@ -94,7 +93,26 @@
                 <span>Быстрая доставка по Красноярску и пригороду</span>
             </div>
             <h1 class="hero-title">Доставка сыпучих грузов <span class="animated-text">в Красноярске</span></h1>
-            <p class="hero-subtitle">Рассчитайте точную стоимость доставки до вашего объекта за 10 секунд на интерактивной карте с учётом реального километража.</p>
+            <p class="hero-subtitle">Рассчитайте ориентировочную стоимость материалов (от 750 ₽/м³) и доставки по городу (от 13 000 ₽) или за город (от 15 000 ₽). Оформите заказ прямым звонком оператору!</p>
+        </div>
+    </section>
+
+    <!-- Special Promo Banner Section -->
+    <section class="promo-section">
+        <div class="container">
+            <div class="promo-card">
+                <div class="promo-body">
+                    <div class="promo-badge-tag">🔥 СПЕЦАКЦИЯ НА БОЙ КИРПИЧА</div>
+                    <h3 class="promo-card-title">Бой кирпича (20 тонн) — ВСЕГО от 16 000 ₽ с доставкой!</h3>
+                    <p class="promo-card-desc">
+                        Супер-выгодная акционная цена на отсыпку дороги или участка: полный самосвал <strong>20 тонн (20 м³) от 16 000 ₽</strong> с доставкой по городу или <strong>от 18 000 ₽</strong> за город!
+                    </p>
+                </div>
+                <a href="tel:+79069713377" class="promo-call-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    Позвонить и заказать
+                </a>
+            </div>
         </div>
     </section>
 
@@ -109,7 +127,7 @@
                         <span class="step-num">1</span>
                         Выберите материал и объём
                     </h2>
-                    <span class="panel-subtitle">Цены за м³ (ГОСТ)</span>
+                    <span class="panel-subtitle">Ориентировочные цены (от за м³)</span>
                 </div>
 
                 <!-- Category Tabs -->
@@ -129,20 +147,20 @@
                 <!-- Volume Controller Card -->
                 <div class="volume-card">
                     <div class="volume-header">
-                        <span class="volume-title">Требуемый объём (в кубах):</span>
+                        <span class="volume-title">Требуемый объём (в кубах / тоннах):</span>
                         <div class="volume-input-wrapper">
-                            <input type="number" id="volume-num-input" class="volume-num-input" value="15" min="1" max="200" step="1" title="Введите точный объем">
+                            <input type="number" id="volume-num-input" class="volume-num-input" value="20" min="1" max="200" step="1" title="Введите точный объем">
                             <span class="unit-tag">м³</span>
                         </div>
                     </div>
 
-                    <input type="range" id="volume-slider" class="range-slider" min="5" max="50" step="1" value="15" aria-label="Выбор объёма материала">
+                    <input type="range" id="volume-slider" class="range-slider" min="5" max="50" step="1" value="20" aria-label="Выбор объёма материала">
 
                     <div class="volume-presets">
                         <button type="button" class="vol-preset-btn" data-vol="5">5 м³</button>
                         <button type="button" class="vol-preset-btn" data-vol="10">10 м³</button>
-                        <button type="button" class="vol-preset-btn active" data-vol="15">15 м³</button>
-                        <button type="button" class="vol-preset-btn" data-vol="20">20 м³</button>
+                        <button type="button" class="vol-preset-btn" data-vol="15">15 м³</button>
+                        <button type="button" class="vol-preset-btn active" data-vol="20">20 м³</button>
                         <button type="button" class="vol-preset-btn" data-vol="25">25 м³</button>
                         <button type="button" class="vol-preset-btn" data-vol="30">30 м³</button>
                     </div>
@@ -154,50 +172,42 @@
                 </div>
             </div>
 
-            <!-- Right Panel: Address Search, Yandex Route Map & Price Summary -->
+            <!-- Right Panel: Delivery Zone Selector & Price Summary -->
             <div class="panel-card">
                 <div class="panel-header">
                     <h2 class="panel-title">
                         <span class="step-num">2</span>
-                        Укажите локацию и расчёт
+                        Выберите вариант доставки
                     </h2>
-                    <button type="button" id="btn-reset-calc" class="btn-reset" title="Сбросить выбранную точку и очистить адрес">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                        Сброс
-                    </button>
                 </div>
 
-                <!-- Address Input Box -->
-                <div class="address-search-box">
-                    <div class="search-input-wrapper">
-                        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="address-input" class="address-input" placeholder="Адрес доставки в Красноярске..." autocomplete="off">
-                        <button type="button" id="btn-clear-address" class="btn-clear-address" title="Очистить адрес" style="display: none;">&times;</button>
-                    </div>
-                    <ul id="suggestions" class="suggestions-dropdown" role="listbox"></ul>
-                </div>
+                <!-- Delivery Zone Selection Grid -->
+                <div class="delivery-zone-wrapper">
+                    <span class="zone-section-label">Выберите район или зону доставки:</span>
+                    <div class="delivery-zone-grid">
+                        <button type="button" class="zone-card-btn active" data-zone="city" data-rate="13000">
+                            <div class="zone-card-head">
+                                <div class="zone-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                </div>
+                                <span class="zone-name">По городу</span>
+                                <span class="zone-check">✓</span>
+                            </div>
+                            <div class="zone-price">от 13 000 ₽ <small>/ рейс</small></div>
+                            <div class="zone-subtitle">Красноярск (все районы)</div>
+                        </button>
 
-                <!-- Quick Location Presets -->
-                <div class="presets-label">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                    <span>Быстрый выбор района доставки:</span>
-                </div>
-                <div class="location-presets">
-                    <button type="button" class="preset-chip" data-lat="56.0105" data-lon="92.8525" data-name="Красноярск (Центр)">Красноярск (Центр)</button>
-                    <button type="button" class="preset-chip" data-lat="56.0711" data-lon="92.9348" data-name="мкрн. Солнечный">Солнечный</button>
-                    <button type="button" class="preset-chip" data-lat="55.9922" data-lon="92.7661" data-name="мкрн. Удачный">Удачный</button>
-                    <button type="button" class="preset-chip" data-lat="56.0375" data-lon="93.1114" data-name="п. Берёзовка">Берёзовка</button>
-                    <button type="button" class="preset-chip" data-lat="56.1419" data-lon="93.3533" data-name="г. Сосновоборск">Сосновоборск</button>
-                    <button type="button" class="preset-chip" data-lat="56.1739" data-lon="92.8052" data-name="п. Емельяново">Емельяново</button>
-                    <button type="button" class="preset-chip" data-lat="55.9556" data-lon="92.3789" data-name="г. Дивногорск">Дивногорск</button>
-                </div>
-
-                <!-- Leaflet Route Map -->
-                <div class="map-container-wrapper">
-                    <div id="map"></div>
-                    <div class="map-click-hint" id="map-click-hint">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                        <span>Нажмите на карту для выбора точки доставки</span>
+                        <button type="button" class="zone-card-btn" data-zone="suburb" data-rate="15000">
+                            <div class="zone-card-head">
+                                <div class="zone-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"></path><path d="M16 8h4l3 3v5h-7V8z"></path><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                                </div>
+                                <span class="zone-name">За город</span>
+                                <span class="zone-check">✓</span>
+                            </div>
+                            <div class="zone-price">от 15 000 ₽ <small>/ рейс</small></div>
+                            <div class="zone-subtitle">Пригород и дачные поселки</div>
+                        </button>
                     </div>
                 </div>
 
@@ -205,46 +215,35 @@
                 <div class="price-panel">
                     <div class="summary-rows">
                         <div class="summary-row">
-                            <span>Расстояние доставки:</span>
-                            <strong id="distance-val">Укажите адрес</strong>
+                            <span>Вариант доставки:</span>
+                            <strong id="summary-zone-name">По городу (от 13 000 ₽ / рейс)</strong>
                         </div>
                         <div class="summary-row">
-                            <span>Материал (<span id="summary-mat-name">Щебень 4-8</span>, <span id="summary-volume">15</span> м³):</span>
-                            <strong id="material-cost-val">11 250 ₽</strong>
+                            <span>Материал (<span id="summary-mat-name">Битый кирпич (Спецакция 🔥)</span>, <span id="summary-volume">20</span> м³):</span>
+                            <strong id="material-cost-val">от 3 000 ₽ (акция)</strong>
                         </div>
                         <div class="summary-row">
-                            <span>Доставка (<span id="delivery-rate-label">рейс самосвала</span>):</span>
-                            <strong id="delivery-cost-val">Укажите адрес на карте</strong>
+                            <span>Автодоставка (<span id="delivery-rate-label">1 рейс самосвала</span>):</span>
+                            <strong id="delivery-cost-val">от 13 000 ₽</strong>
                         </div>
                         <div class="summary-row total">
                             <span class="total-label">Итого ориентировочно:</span>
                             <div class="total-price-wrapper">
-                                <span class="total-val" id="total-cost-val">11 250 ₽</span>
-                                <span class="delivery-notice-badge" id="delivery-notice-badge">(+ доставка)</span>
+                                <span class="total-val" id="total-cost-val">от 16 000 ₽</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="calculator-action-buttons">
-                        <button type="button" class="btn-order-cta" id="btn-order-call">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                            Оформить заказ / Запросить звонок
-                        </button>
-                        <a href="tel:+79069713377" class="btn-direct-call">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                            Позвонить напрямую (+7 906 971-33-77)
+                        <a href="tel:+79069713377" class="btn-call-operator-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            Позвонить оператору
                         </a>
                     </div>
 
-                    <p class="order-notice">
-                        Диспетчер перезвонит в течение 5 минут для уточнения деталей.<br>
-                        Перед отправкой заявки нужно отдельно подтвердить <a href="consent.html" target="_blank" style="color: var(--primary); text-decoration: underline; text-underline-offset: 3px;">согласие на обработку персональных данных</a> и ознакомиться с <a href="privacy.html" target="_blank" style="color: var(--primary); text-decoration: underline; text-underline-offset: 3px;">политикой конфиденциальности</a>.
-                    </p>
-
-                    <div style="margin-top: 1rem; background: rgba(245, 158, 11, 0.08); border-left: 4px solid #f59e0b; padding: 0.85rem 1rem; border-radius: 6px; font-size: 0.86rem; color: var(--text-dark); line-height: 1.5;">
-                        <strong>⚠️ Обратите внимание:</strong> Все указанные цены и расчеты носят предположительный и ориентировочный характер. Точная стоимость материалов и автодоставки утверждается <strong>исключительно диспетчером</strong> при согласовании заказа по телефону (не является публичной офертой, ст. 437 ГК РФ).
+                    <div class="disclaimer-box">
+                        <strong>Предположительный расчёт:</strong> Все указанные на сайте цены, тарифы и спецпредложения носят исключительно <strong>ориентировочный, примерный и предположительный характер</strong> для первичного ознакомления и <strong>не являются публичной офертой</strong> (ст. 437 ГК РФ). Окончательная точная стоимость материалов и доставки не фиксирована — об итоговой цене всегда <strong>можно договориться напрямую с оператором по телефону</strong> при оформлении заказа!
                     </div>
-                </div>
                 </div>
             </div>
         </div>
@@ -321,7 +320,17 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </button>
                     <div class="faq-answer">
-                        Стоимость рассчитывается за рейс самосвала КАМАЗ (вместимость 20 м³). Минимальная стоимость доставки — 13 000 ₽ за рейс (для битого кирпича — 16 000 ₽ за рейс), по г. Красноярску доставка составляет в среднем 13 000 ₽ за рейс (битый кирпич — в среднем 16 000 ₽ за рейс), а максимальный загородный тариф — 18 000 ₽ за 1 рейс. При заказе более 20 м³ доставка автоматически рассчитывается исходя из количества рейсов КАМАЗа (например, 25 м³ = 2 рейса).
+                        Доставка осуществляется самосвалами (вместимость до 20 м³). Стоимость автодоставки рассчитывается исходя из зоны: в среднем по г. Красноярску — <strong>13 000 ₽</strong> за рейс, за город — <strong>15 000 ₽</strong> за рейс. При заказе более 20 м³ доставка рассчитывается исходя из количества необходимых рейсов (например, 25 м³ = 2 рейса).
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>Как оформить заказ на доставку?</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="faq-answer">
+                        Для максимального удобства и отсутствия необходимости заполнять формы с персональными данными, заказ оформляется напрямую по телефону. Просто нажмите кнопку <strong>«Позвонить оператору»</strong> или наберите <strong>+7 (906) 971-33-77</strong>.
                     </div>
                 </div>
 
@@ -363,7 +372,7 @@
         <div class="container">
             <div class="section-head">
                 <span class="section-tag">Связь и оформление заказа</span>
-                <h2 class="section-title-large">Контакты и адрес базы</h2>
+                <h2 class="section-title-large">Контакты оператора</h2>
             </div>
 
             <div class="contacts-grid">
@@ -372,12 +381,12 @@
                     <div class="contact-icon-badge phone-badge">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     </div>
-                    <h3 class="contact-card-title">Телефон диспетчера</h3>
+                    <h3 class="contact-card-title">Телефон оператора</h3>
                     <p class="contact-card-value">+7 (906) 971-33-77</p>
                     <p class="contact-card-desc">Приём заявок и консультации по выбору сыпучих материалов круглосуточно (24/7).</p>
                     <a href="tel:+79069713377" class="btn-contact btn-phone-action">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                        Позвонить
+                        Позвонить оператору
                     </a>
                 </div>
 
@@ -393,90 +402,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Order Callback Modal -->
-    <div class="modal-overlay" id="order-modal-overlay">
-        <div class="modal-box">
-            <button type="button" class="modal-close" id="modal-close-btn" aria-label="Закрыть модальное окно">&times;</button>
-            <h3 class="modal-title">Оформление заказа</h3>
-            <p class="modal-desc">Оставьте номер телефона, и диспетчер сразу свяжется с вами для согласования точного времени доставки.</p>
-            
-            <div class="modal-summary-chip">
-                <div>Материал: <strong id="modal-mat-summary">Щебень (15 м³)</strong></div>
-                <div>Адрес: <span id="modal-addr-summary">Адрес не указан</span></div>
-                <div>Ориентировочно: <strong id="modal-cost-summary" style="color: var(--primary);">11 250 ₽</strong></div>
-            </div>
-
-            <form id="order-form">
-                <div class="form-group">
-                    <label class="form-label" for="user-phone">Ваш номер телефона:*</label>
-                    <input type="tel" id="user-phone" class="form-input" placeholder="+7 (999) 000-00-00" required autocomplete="tel">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="user-notes">Комментарий к заказу (необязательно):</label>
-                    <input type="text" id="user-notes" class="form-input" placeholder="Например: удобный въезд со двора...">
-                </div>
-
-                <div class="legal-consent-list" aria-label="Согласия пользователя">
-                    <label class="legal-consent-item" for="pd-consent-checkbox">
-                        <input type="checkbox" id="pd-consent-checkbox" required>
-                        <span>Я даю отдельное <a href="consent.html" target="_blank">согласие на обработку персональных данных</a> для расчета заявки, обратной связи и доставки.</span>
-                    </label>
-                    <p class="legal-consent-note">Согласие можно отозвать по адресу info@kraspesok.ru. Условия обработки описаны в <a href="privacy.html" target="_blank">политике конфиденциальности</a>.</p>
-                </div>
-
-                <button type="submit" class="btn-order-cta" id="order-submit-btn" style="margin-top: 1rem;" disabled>
-                    <span class="spinner" id="modal-spinner" style="display: none; border-top-color: #fff;"></span>
-                    <span id="modal-btn-text">Отправить заявку</span>
-                </button>
-
-                <div class="modal-call-divider"><span>или звоните сразу диспетчеру</span></div>
-
-                <a href="tel:+79069713377" class="btn-direct-call">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    Позвонить: +7 (906) 971-33-77
-                </a>
-            </form>
-        </div>
-    </div>
-
-    <!-- Success Confirmation Modal -->
-    <div class="modal-overlay" id="success-modal-overlay">
-        <div class="modal-box success-box">
-            <button type="button" class="modal-close" id="success-close-btn" aria-label="Закрыть">&times;</button>
-            <div class="success-icon-badge">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            </div>
-            <h3 class="modal-title">Заявка принята!</h3>
-            <p class="modal-desc">Спасибо за обращение. Номер вашей заявки: <strong id="success-order-id" class="order-id-badge">#SCH-0000</strong></p>
-
-            <div class="success-details-card">
-                <div class="success-detail-row">
-                    <span>Материал:</span>
-                    <strong id="success-mat-text">-</strong>
-                </div>
-                <div class="success-detail-row">
-                    <span>Адрес:</span>
-                    <strong id="success-addr-text">-</strong>
-                </div>
-                <div class="success-detail-row">
-                    <span>Сумма:</span>
-                    <strong id="success-cost-text" style="color: var(--primary);">-</strong>
-                </div>
-            </div>
-
-            <div class="callback-timer-box" style="display: flex; align-items: center; justify-content: center; gap: 0.45rem;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>Диспетчер свяжется с вами в течение <strong>5 минут</strong>.</span>
-            </div>
-
-            <div class="success-actions">
-                <button type="button" class="btn-secondary" id="btn-copy-order">Копировать № заявки</button>
-                <button type="button" class="btn-order-cta" id="btn-success-done">Понятно, спасибо</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toast-container"></div>
@@ -506,18 +431,15 @@
                     <li><a href="#calculator-section">Калькулятор доставки</a></li>
                     <li><a href="#specs-section">Характеристики материалов</a></li>
                     <li><a href="#faq-section">Вопросы и ответы</a></li>
-                    <li><a href="#contacts-section">Контакты и адрес</a></li>
+                    <li><a href="#contacts-section">Контакты</a></li>
                 </ul>
             </div>
 
             <div>
-                <h4 class="footer-heading">Контакты и доставка</h4>
+                <h4 class="footer-heading">Контакты и оператор</h4>
                 <ul class="footer-links">
                     <li><a href="tel:+79069713377" style="display: inline-flex; align-items: center; gap: 0.45rem;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> +7 (906) 971-33-77</a></li>
-                    <li style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem; display: flex; align-items: flex-start; gap: 0.45rem;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink: 0; margin-top: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <span>г. Красноярск и пригородные районы (Только доставка)</span></li>
-                    <li style="margin-top: 0.4rem;"><a href="privacy.html" target="_blank">Политика конфиденциальности (152-ФЗ)</a></li>
-                    <li><a href="cookies.html" target="_blank">Политика обработки файлов Cookie</a></li>
-                    <li><a href="consent.html" target="_blank">Согласие на обработку персональных данных</a></li>
+                    <li style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem; display: flex; align-items: flex-start; gap: 0.45rem;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink: 0; margin-top: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <span>г. Красноярск и пригородные районы (Доставка самосвалами)</span></li>
                 </ul>
             </div>
         </div>
@@ -525,25 +447,10 @@
         <div class="container footer-bottom">
             <p>&copy; 2026 КрасПесок.рф. Все права защищены.</p>
             <p style="font-size: 0.76rem; opacity: 0.85; margin-top: 0.4rem; max-width: 750px; margin-left: auto; margin-right: auto; line-height: 1.45;">
-                Информация на сайте и онлайн-расчет стоимости носят ознакомительный характер и не являются публичной офертой (ст. 437 ГК РФ). Окончательная стоимость и условия доставки утверждаются диспетчером при согласовании заявки.
+                Информация на сайте и онлайн-расчет стоимости носят ознакомительный характер и не являются публичной офертой (ст. 437 ГК РФ). Окончательная стоимость и условия доставки утверждаются оператором по телефону.
             </p>
+        </div>
     </footer>
-
-    <!-- Cookie Consent Banner (152-ФЗ & Роскомнадзор) -->
-    <div class="cookie-banner" id="cookie-banner">
-        <div class="cookie-banner-content">
-            <div class="cookie-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
-            </div>
-            <p class="cookie-text">
-                Мы используем необходимые технологии для работы сайта. Аналитические cookie и запоминание выбора применяются только после вашего решения. Подробнее — в <a href="cookies.html" target="_blank">Политике обработки Cookie</a>.
-            </p>
-        </div>
-        <div class="cookie-actions">
-            <button type="button" class="btn-cookie-essential" id="cookie-essential-btn">Только необходимые</button>
-            <button type="button" class="btn-cookie-accept" id="cookie-accept-btn">Разрешить cookie</button>
-        </div>
-    </div>
 
     <!-- App JS -->
     <script src="app.js"></script>

@@ -1,24 +1,15 @@
 // ==========================================================================
-// шебень.рф — Interactive Application Logic (Yandex Maps API & Express API)
+// КрасПесок.рф — Калькулятор материалов и доставки
 // ==========================================================================
 
-// Internal reference coordinates for Krasnoyarsk routing calculations (Base warehouse)
-const defaultStartCoords = [56.0355, 93.0085];
-
 const materialsData = {
-    crushed_stone: {
-        id: 'crushed_stone',
-        name: 'Щебень',
-        category: 'crushed',
-        img: 'images/crushed_stone.jpg',
-        badge: 'ГОСТ 8267-93',
-        variants: [
-            { id: 'frac_4_8', name: 'Фракция 4-8', price: 750 },
-            { id: 'frac_5_10', name: 'Фракция 5-10', price: 750 },
-            { id: 'frac_8_16', name: 'Фракция 8-16', price: 1000 },
-            { id: 'frac_5_20', name: 'Фракция 5-20', price: 1000 },
-            { id: 'frac_10_20', name: 'Фракция 10-20', price: 1000 }
-        ]
+    crushed_brick: {
+        id: 'crushed_brick',
+        name: 'Битый кирпич',
+        category: 'secondary',
+        img: 'images/crushed_brick.jpg',
+        badge: '🔥 АКЦИЯ! 20т от 16 000 ₽ с доставкой',
+        price: 800
     },
     sand: {
         id: 'sand',
@@ -55,13 +46,19 @@ const materialsData = {
             { id: 'gravel_5_20', name: 'Гравий 5-20', price: 550 }
         ]
     },
-    crushed_brick: {
-        id: 'crushed_brick',
-        name: 'Битый кирпич',
-        category: 'secondary',
-        img: 'images/crushed_brick.jpg',
-        badge: 'Для въездов',
-        price: 800
+    crushed_stone: {
+        id: 'crushed_stone',
+        name: 'Щебень',
+        category: 'crushed',
+        img: 'images/crushed_stone.jpg',
+        badge: 'ГОСТ 8267-93',
+        variants: [
+            { id: 'frac_4_8', name: 'Фракция 4-8', price: 750 },
+            { id: 'frac_5_10', name: 'Фракция 5-10', price: 750 },
+            { id: 'frac_8_16', name: 'Фракция 8-16', price: 1000 },
+            { id: 'frac_5_20', name: 'Фракция 5-20', price: 1000 },
+            { id: 'frac_10_20', name: 'Фракция 10-20', price: 1000 }
+        ]
     },
     expanded_clay: {
         id: 'expanded_clay',
@@ -83,22 +80,11 @@ const materialsData = {
 
 // Global App State
 let appState = {
-    startCoords: [...defaultStartCoords],
-    deliveryRate: 400,
-    selectedMaterialId: 'crushed_stone',
-    selectedVariantId: 'frac_4_8',
-    volume: 15,
-    distanceKm: 0,
-    addressName: '',
-    destCoords: null
+    selectedMaterialId: 'crushed_brick',
+    selectedVariantId: null,
+    volume: 20,
+    deliveryZone: 'city' // 'city' (13000 ₽) or 'suburb' (15000 ₽)
 };
-
-let myMap = null;
-let originMarker = null;
-let destMarker = null;
-let multiRoute = null;
-let searchTimeout = null;
-let activeSuggestionIndex = -1;
 
 // Initialize when DOM ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -109,20 +95,16 @@ function initApp() {
     renderMaterialCards('all');
     setupCategoryTabs();
     setupVolumeControls();
+    setupDeliveryZoneControls();
     setupFAQAccordion();
-    setupModalsAndForm();
-    setupQuickPresets();
-    setupAddressSearch();
     setupMobileNav();
     setupScrollSpyAndBackToTop();
-    initYandexMap();
-    fetchServerSettings();
-    setupCookieConsent();
+    recalculateTotalCost();
 }
 
-// Utility: Number formatter
+// Utility: Currency formatter (always includes 'от' for approximate benchmark prices)
 function formatCurrency(val) {
-    return `${Math.round(val).toLocaleString('ru-RU')} ₽`;
+    return `от ${Math.round(val).toLocaleString('ru-RU')} ₽`;
 }
 
 // Render Material Cards Grid
@@ -300,24 +282,17 @@ function updateVolume(vol) {
     recalculateTotalCost();
 }
 
-// Helper for calculating delivery cost per truck trip:
-// - Minimum fee: 13,000 ₽ for regular materials, 16,000 ₽ for crushed brick
-// - Average city fee: ~13,000 ₽ (regular) / ~16,000 ₽ (crushed brick)
-// - Maximum fee cap: 18,000 ₽ (suburban locations like Yemelyanovo)
-function calculateDeliveryCostPerTrip(distanceKm) {
-    if (!distanceKm || distanceKm <= 0) return 0;
-
-    const isBrick = appState.selectedMaterialId === 'crushed_brick' || 
-                    (materialsData[appState.selectedMaterialId] && 
-                     materialsData[appState.selectedMaterialId].name.toLowerCase().includes('кирпич'));
-
-    const MIN_TRIP_FEE = isBrick ? 16000 : 13000;
-    const MAX_TRIP_FEE = 18000;
-
-    const ratePerKm = appState.deliveryRate || 320;
-    let rawFee = 8000 + (distanceKm * ratePerKm);
-    let fee = Math.min(Math.max(rawFee, MIN_TRIP_FEE), MAX_TRIP_FEE);
-    return Math.round(fee / 100) * 100;
+// Delivery Zone Controls
+function setupDeliveryZoneControls() {
+    const zoneBtns = document.querySelectorAll('.zone-card-btn');
+    zoneBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            zoneBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            appState.deliveryZone = btn.dataset.zone || 'city';
+            recalculateTotalCost();
+        });
+    });
 }
 
 // Recalculate Live Prices
@@ -334,396 +309,54 @@ function recalculateTotalCost() {
         selectedName = `${mat.name} (${v.name})`;
     }
 
-    const materialTotalCost = unitPrice * appState.volume;
-    const truckCount = appState.volume <= 20 ? 1 : Math.ceil(appState.volume / 20);
-    const singleTripCost = calculateDeliveryCostPerTrip(appState.distanceKm);
-    const deliveryTotalCost = singleTripCost * truckCount;
-    const grandTotal = materialTotalCost + deliveryTotalCost;
+    const isBrick = appState.selectedMaterialId === 'crushed_brick';
+    const isSuburb = appState.deliveryZone === 'suburb';
+
+    const truckCount = Math.ceil(appState.volume / 20);
+    let materialTotalCost = 0;
+    let deliveryTotalCost = 0;
+    let grandTotal = 0;
+
+    if (isBrick) {
+        // Brick Promo Package: 20 tons (1 truck) = 16 000 ₽ (city) or 18 000 ₽ (suburb) including delivery!
+        const packageRatePerTruck = isSuburb ? 18000 : 16000;
+        grandTotal = truckCount * packageRatePerTruck;
+        deliveryTotalCost = (isSuburb ? 15000 : 13000) * truckCount;
+        materialTotalCost = Math.max(0, grandTotal - deliveryTotalCost);
+    } else {
+        materialTotalCost = unitPrice * appState.volume;
+        const ratePerTrip = isSuburb ? 15000 : 13000;
+        deliveryTotalCost = ratePerTrip * truckCount;
+        grandTotal = materialTotalCost + deliveryTotalCost;
+    }
 
     // Update UI elements
+    const summaryZoneName = document.getElementById('summary-zone-name');
     const summaryMatName = document.getElementById('summary-mat-name');
     const summaryVolume = document.getElementById('summary-volume');
     const matCostVal = document.getElementById('material-cost-val');
-    const distanceVal = document.getElementById('distance-val');
     const deliveryRateLabel = document.getElementById('delivery-rate-label');
     const deliveryCostVal = document.getElementById('delivery-cost-val');
     const totalCostVal = document.getElementById('total-cost-val');
-    const deliveryNoticeBadge = document.getElementById('delivery-notice-badge');
 
-    if (summaryMatName) summaryMatName.textContent = selectedName;
+    if (summaryZoneName) {
+        summaryZoneName.textContent = isSuburb ? 
+            `За город (${formatCurrency(15000)} / рейс)` : 
+            `По городу (${formatCurrency(13000)} / рейс)`;
+    }
+
+    if (summaryMatName) summaryMatName.textContent = isBrick ? `${selectedName} (Спецакция 🔥)` : selectedName;
     if (summaryVolume) summaryVolume.textContent = appState.volume;
-    if (matCostVal) matCostVal.textContent = formatCurrency(materialTotalCost);
+    if (matCostVal) matCostVal.textContent = isBrick ? `${formatCurrency(materialTotalCost)} (акция)` : formatCurrency(materialTotalCost);
 
     if (deliveryRateLabel) {
-        if (appState.distanceKm > 0) {
-            deliveryRateLabel.textContent = truckCount > 1 ? `${formatCurrency(singleTripCost)} / рейс × ${truckCount} рейса` : `${formatCurrency(singleTripCost)} / рейс`;
-        } else {
-            deliveryRateLabel.textContent = `рейс самосвала`;
-        }
+        deliveryRateLabel.textContent = truckCount > 1 ? 
+            `${truckCount} рейса самосвала` : 
+            `1 рейс самосвала`;
     }
 
-    if (appState.distanceKm > 0) {
-        if (distanceVal) distanceVal.textContent = `${appState.distanceKm} км`;
-        if (deliveryCostVal) deliveryCostVal.textContent = formatCurrency(deliveryTotalCost);
-        if (totalCostVal) totalCostVal.textContent = formatCurrency(grandTotal);
-        if (deliveryNoticeBadge) deliveryNoticeBadge.style.display = 'none';
-    } else {
-        if (distanceVal) distanceVal.textContent = `Укажите адрес`;
-        if (deliveryCostVal) deliveryCostVal.textContent = `Укажите адрес на карте`;
-        if (totalCostVal) totalCostVal.textContent = formatCurrency(materialTotalCost);
-        if (deliveryNoticeBadge) {
-            deliveryNoticeBadge.style.display = 'inline-block';
-            deliveryNoticeBadge.textContent = '(+ доставка)';
-        }
-    }
-
-    // Modal summary
-    const modalMat = document.getElementById('modal-mat-summary');
-    const modalAddr = document.getElementById('modal-addr-summary');
-    const modalCost = document.getElementById('modal-cost-summary');
-
-    if (modalMat) modalMat.textContent = `${selectedName} (${appState.volume} м³)`;
-    if (modalAddr) modalAddr.textContent = appState.addressName || 'Адрес не указан (согласование с диспетчером)';
-    if (modalCost) modalCost.textContent = appState.distanceKm > 0 ? formatCurrency(grandTotal) : `${formatCurrency(materialTotalCost)} (+ доставка)`;
-}
-
-// Yandex Maps Initialization
-function initYandexMap() {
-    if (typeof ymaps === 'undefined') return;
-
-    ymaps.ready(() => {
-        myMap = new ymaps.Map('map', {
-            center: [56.0105, 92.8525], // Center on Krasnoyarsk
-            zoom: 11,
-            controls: ['zoomControl', 'geolocationControl', 'typeSelector', 'fullscreenControl']
-        }, {
-            suppressMapOpenBlock: true
-        });
-
-        // Base Warehouse Origin Pin
-        originMarker = new ymaps.Placemark(appState.startCoords, {
-            hintContent: 'База погрузки: г. Красноярск',
-            balloonContent: '<b>База погрузки:</b><br>г. Красноярск'
-        }, {
-            preset: 'islands#orangeFactoryIcon'
-        });
-        myMap.geoObjects.add(originMarker);
-
-        // Map Click Listener - Reverse Geocoding via Yandex Geocoder
-        myMap.events.add('click', (e) => {
-            const coords = e.get('coords');
-            
-            if (typeof ymaps !== 'undefined' && ymaps.geocode) {
-                ymaps.geocode(coords).then((res) => {
-                    const firstGeoObject = res.geoObjects.get(0);
-                    let label = '';
-                    if (firstGeoObject) {
-                        label = firstGeoObject.getAddressLine().replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
-                    } else {
-                        label = `Точка на карте (${coords[0].toFixed(4)}, ${coords[1].toFixed(4)})`;
-                    }
-                    setDestinationPoint(coords, label);
-                }).catch(() => {
-                    const label = `Точка на карте (${coords[0].toFixed(4)}, ${coords[1].toFixed(4)})`;
-                    setDestinationPoint(coords, label);
-                });
-            } else {
-                const label = `Точка на карте (${coords[0].toFixed(4)}, ${coords[1].toFixed(4)})`;
-                setDestinationPoint(coords, label);
-            }
-        });
-
-        // Reset Calc Button Listener
-        const resetBtn = document.getElementById('btn-reset-calc');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', resetCalculatorState);
-        }
-    });
-}
-
-function resetCalculatorState() {
-    appState.destCoords = null;
-    appState.addressName = '';
-    appState.distanceKm = 0;
-
-    const input = document.getElementById('address-input');
-    if (input) input.value = '';
-
-    const clearBtn = document.getElementById('btn-clear-address');
-    if (clearBtn) clearBtn.style.display = 'none';
-
-    const mapHint = document.getElementById('map-click-hint');
-    if (mapHint) mapHint.style.display = 'flex';
-
-    if (myMap) {
-        if (destMarker) {
-            myMap.geoObjects.remove(destMarker);
-            destMarker = null;
-        }
-        if (multiRoute) {
-            myMap.geoObjects.remove(multiRoute);
-            multiRoute = null;
-        }
-        myMap.setCenter([56.0105, 92.8525], 11, { duration: 300 });
-    }
-
-    document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-
-    recalculateTotalCost();
-    showToast('Параметры доставки сброшены');
-}
-
-function setDestinationPoint(coords, name) {
-    appState.destCoords = coords;
-    appState.addressName = name;
-    
-    const input = document.getElementById('address-input');
-    if (input) input.value = name;
-
-    const clearBtn = document.getElementById('btn-clear-address');
-    if (clearBtn) clearBtn.style.display = 'block';
-
-    // Hide map hint on destination selection
-    const mapHint = document.getElementById('map-click-hint');
-    if (mapHint) mapHint.style.display = 'none';
-
-    if (myMap) {
-        if (destMarker) {
-            myMap.geoObjects.remove(destMarker);
-        }
-
-        destMarker = new ymaps.Placemark(coords, {
-            hintContent: name,
-            balloonContent: `<b>Точка доставки:</b><br>${name}`
-        }, {
-            preset: 'islands#greenDotIconWithCaption'
-        });
-
-        myMap.geoObjects.add(destMarker);
-        destMarker.balloon.open();
-    }
-
-    calculateYandexRoute(coords);
-}
-
-// Yandex MultiRoute Driving Distance Calculation & Route Drawing
-function calculateYandexRoute(coords) {
-    const spinner = document.getElementById('calc-spinner');
-    if (spinner) spinner.style.display = 'inline-block';
-
-    if (typeof ymaps === 'undefined' || !myMap) {
-        if (spinner) spinner.style.display = 'none';
-        return;
-    }
-
-    if (multiRoute) {
-        myMap.geoObjects.remove(multiRoute);
-        multiRoute = null;
-    }
-
-    multiRoute = new ymaps.multiRouter.MultiRoute({
-        referencePoints: [
-            appState.startCoords,
-            coords
-        ],
-        params: {
-            routingMode: 'auto'
-        }
-    }, {
-        boundsAutoApply: true,
-        wayPointVisible: false,
-        routeActiveStrokeWidth: 5,
-        routeActiveStrokeColor: '#059669',
-        routeActiveStrokeStyle: 'solid'
-    });
-
-    myMap.geoObjects.add(multiRoute);
-
-    multiRoute.model.events.add('requestsuccess', () => {
-        if (spinner) spinner.style.display = 'none';
-        const activeRoute = multiRoute.getActiveRoute();
-        if (activeRoute) {
-            const distanceMeters = activeRoute.properties.get("distance").value;
-            appState.distanceKm = Math.round((distanceMeters / 1000) * 10) / 10;
-            recalculateTotalCost();
-            showToast(`Расстояние доставки: ${appState.distanceKm} км`);
-        }
-    });
-
-    multiRoute.model.events.add('requestfail', () => {
-        if (spinner) spinner.style.display = 'none';
-        console.warn('Yandex MultiRoute error, calculating fallback distance');
-        const dist = getHaversineDistance(appState.startCoords[0], appState.startCoords[1], coords[0], coords[1]);
-        appState.distanceKm = Math.round(dist * 1.35 * 10) / 10;
-        recalculateTotalCost();
-        showToast(`Расстояние (расчётное): ${appState.distanceKm} км`);
-    });
-}
-
-function getHaversineDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-// Quick Location Presets
-function setupQuickPresets() {
-    const chips = document.querySelectorAll('.preset-chip');
-    chips.forEach(c => {
-        c.addEventListener('click', () => {
-            chips.forEach(other => other.classList.remove('active'));
-            c.classList.add('active');
-            const lat = parseFloat(c.dataset.lat);
-            const lon = parseFloat(c.dataset.lon);
-            const name = c.dataset.name;
-            setDestinationPoint([lat, lon], name);
-        });
-    });
-}
-
-// Address Search Autocomplete (Yandex Suggest + Geocode + Keyboard Nav)
-function setupAddressSearch() {
-    const input = document.getElementById('address-input');
-    const list = document.getElementById('suggestions');
-    const calcBtn = document.getElementById('btn-calculate');
-    const clearBtn = document.getElementById('btn-clear-address');
-
-    if (!input || !list) return;
-
-    input.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        const query = input.value.trim();
-
-        if (clearBtn) clearBtn.style.display = query.length > 0 ? 'block' : 'none';
-
-        if (query.length < 2) {
-            list.classList.remove('active');
-            activeSuggestionIndex = -1;
-            return;
-        }
-
-        searchTimeout = setTimeout(() => {
-            if (typeof ymaps !== 'undefined' && ymaps.suggest) {
-                const fullQuery = query.toLowerCase().includes('красноярск') ? query : `Красноярск, ${query}`;
-                ymaps.suggest(fullQuery).then((items) => {
-                    list.innerHTML = '';
-                    activeSuggestionIndex = -1;
-
-                    if (items && items.length > 0) {
-                        items.forEach((item, idx) => {
-                            const li = document.createElement('li');
-                            li.className = 'suggestion-item';
-                            li.setAttribute('role', 'option');
-                            li.dataset.index = idx;
-                            const name = item.displayName.replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
-                            li.textContent = name;
-                            li.addEventListener('click', () => {
-                                input.value = name;
-                                list.classList.remove('active');
-                                geocodeAndSetAddress(item.value || name);
-                            });
-                            list.appendChild(li);
-                        });
-                        list.classList.add('active');
-                    } else {
-                        list.classList.remove('active');
-                    }
-                }).catch(() => list.classList.remove('active'));
-            } else {
-                list.classList.remove('active');
-            }
-        }, 250);
-    });
-
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            input.value = '';
-            clearBtn.style.display = 'none';
-            list.classList.remove('active');
-            input.focus();
-        });
-    }
-
-    // Keyboard Arrow Navigation & Enter / Escape handler
-    input.addEventListener('keydown', (e) => {
-        const items = list.querySelectorAll('.suggestion-item');
-
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            if (items.length === 0) return;
-            activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
-            highlightSuggestion(items);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            if (items.length === 0) return;
-            activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
-            highlightSuggestion(items);
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (activeSuggestionIndex >= 0 && items[activeSuggestionIndex]) {
-                items[activeSuggestionIndex].click();
-            } else if (items.length > 0) {
-                items[0].click();
-            } else if (input.value.trim().length >= 2) {
-                geocodeAndSetAddress(input.value.trim());
-            }
-        } else if (e.key === 'Escape') {
-            list.classList.remove('active');
-        }
-    });
-
-    if (calcBtn) {
-        calcBtn.addEventListener('click', () => {
-            if (appState.destCoords) {
-                calculateYandexRoute(appState.destCoords);
-            } else if (input.value.trim().length >= 2) {
-                geocodeAndSetAddress(input.value.trim());
-            } else {
-                showToast('Введите адрес или выберите точку на карте');
-            }
-        });
-    }
-}
-
-function highlightSuggestion(items) {
-    items.forEach((item, idx) => {
-        item.classList.toggle('highlighted', idx === activeSuggestionIndex);
-    });
-}
-
-function geocodeAndSetAddress(query) {
-    const list = document.getElementById('suggestions');
-    const spinner = document.getElementById('calc-spinner');
-    if (spinner) spinner.style.display = 'inline-block';
-
-    if (typeof ymaps === 'undefined' || !ymaps.geocode) {
-        if (spinner) spinner.style.display = 'none';
-        showToast('Ошибка сервиса Яндекс Карт');
-        return;
-    }
-
-    const searchQuery = query.toLowerCase().includes('красноярск') ? query : `Красноярск, ${query}`;
-
-    ymaps.geocode(searchQuery, { results: 1 }).then((res) => {
-        if (spinner) spinner.style.display = 'none';
-        const firstGeoObject = res.geoObjects.get(0);
-        if (firstGeoObject) {
-            const coords = firstGeoObject.geometry.getCoordinates();
-            const name = firstGeoObject.getAddressLine().replace('Россия, Красноярский край, ', '').replace('Россия, ', '');
-            setDestinationPoint(coords, name);
-            if (list) list.classList.remove('active');
-        } else {
-            showToast('Адрес не найден. Попробуйте кликнуть на карте');
-        }
-    }).catch((err) => {
-        if (spinner) spinner.style.display = 'none';
-        console.error('Yandex geocode error:', err);
-        showToast('Ошибка поиска адреса');
-    });
+    if (deliveryCostVal) deliveryCostVal.textContent = formatCurrency(deliveryTotalCost);
+    if (totalCostVal) totalCostVal.textContent = formatCurrency(grandTotal);
 }
 
 // FAQ Accordion
@@ -739,188 +372,6 @@ function setupFAQAccordion() {
             });
         }
     });
-}
-
-// Modals & Order Form Setup
-function setupModalsAndForm() {
-    const orderOverlay = document.getElementById('order-modal-overlay');
-    const successOverlay = document.getElementById('success-modal-overlay');
-    const openBtn = document.getElementById('btn-order-call');
-    const closeBtn = document.getElementById('modal-close-btn');
-    const successCloseBtn = document.getElementById('success-close-btn');
-    const successDoneBtn = document.getElementById('btn-success-done');
-    const copyOrderBtn = document.getElementById('btn-copy-order');
-    const form = document.getElementById('order-form');
-    const phoneInput = document.getElementById('user-phone');
-    const personalDataConsent = document.getElementById('pd-consent-checkbox');
-    const submitBtn = document.getElementById('order-submit-btn');
-
-    const updateSubmitAvailability = () => {
-        if (!submitBtn) return;
-        submitBtn.disabled = !(personalDataConsent && personalDataConsent.checked);
-    };
-
-    if (personalDataConsent) {
-        personalDataConsent.addEventListener('change', () => {
-            personalDataConsent.closest('.legal-consent-item')?.classList.remove('consent-error');
-            updateSubmitAvailability();
-        });
-    }
-    updateSubmitAvailability();
-
-    if (openBtn && orderOverlay) {
-        openBtn.addEventListener('click', () => {
-            recalculateTotalCost();
-            if (personalDataConsent) personalDataConsent.checked = false;
-            updateSubmitAvailability();
-            orderOverlay.classList.add('active');
-            if (phoneInput) setTimeout(() => phoneInput.focus(), 150);
-        });
-    }
-
-    if (closeBtn) closeBtn.addEventListener('click', () => orderOverlay.classList.remove('active'));
-    if (successCloseBtn) successCloseBtn.addEventListener('click', () => successOverlay.classList.remove('active'));
-    if (successDoneBtn) successDoneBtn.addEventListener('click', () => successOverlay.classList.remove('active'));
-
-    [orderOverlay, successOverlay].forEach(overlay => {
-        if (!overlay) return;
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) overlay.classList.remove('active');
-        });
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            if (orderOverlay && orderOverlay.classList.contains('active')) orderOverlay.classList.remove('active');
-            if (successOverlay && successOverlay.classList.contains('active')) successOverlay.classList.remove('active');
-        }
-    });
-
-    // Copy Order ID Button
-    if (copyOrderBtn) {
-        copyOrderBtn.addEventListener('click', () => {
-            const orderIdText = document.getElementById('success-order-id').textContent;
-            navigator.clipboard.writeText(orderIdText).then(() => {
-                showToast(`Номер заявки скопирован: ${orderIdText}`);
-            });
-        });
-    }
-
-    // Phone Auto-Format (Robust handling)
-    if (phoneInput) {
-        phoneInput.addEventListener('input', (e) => {
-            phoneInput.classList.remove('input-error');
-            let inputVal = e.target.value;
-            let num = inputVal.replace(/\D/g, '');
-
-            if (num.startsWith('7') || num.startsWith('8')) {
-                num = num.substring(1);
-            }
-            if (num.length > 10) num = num.substring(0, 10);
-
-            let formatted = '+7 ';
-            if (num.length > 0) formatted += '(' + num.substring(0, 3);
-            if (num.length >= 3) formatted += ') ' + num.substring(3, 6);
-            if (num.length >= 6) formatted += '-' + num.substring(6, 8);
-            if (num.length >= 8) formatted += '-' + num.substring(8, 10);
-
-            e.target.value = formatted;
-        });
-    }
-
-    // Form Submission
-    if (form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const phone = phoneInput.value.trim();
-            if (phone.length < 16) {
-                if (phoneInput) phoneInput.classList.add('input-error');
-                showToast('Введите полный номер телефона: +7 (XXX) XXX-XX-XX');
-                return;
-            }
-            if (!personalDataConsent || !personalDataConsent.checked) {
-                personalDataConsent?.closest('.legal-consent-item')?.classList.add('consent-error');
-                showToast('Подтвердите согласие на обработку персональных данных');
-                return;
-            }
-
-            const spinner = document.getElementById('modal-spinner');
-            const btnText = document.getElementById('modal-btn-text');
-            if (spinner) spinner.style.display = 'inline-block';
-            if (btnText) btnText.textContent = 'Отправка...';
-
-            const mat = materialsData[appState.selectedMaterialId];
-            let matName = mat ? mat.name : 'Щебень';
-            if (mat && mat.variants) {
-                const v = mat.variants.find(i => i.id === appState.selectedVariantId);
-                if (v) matName += ` (${v.name})`;
-            }
-
-            const unitPrice = mat && mat.variants ? (mat.variants.find(i => i.id === appState.selectedVariantId) || {}).price : (mat.price || 0);
-            const materialTotalCost = unitPrice * appState.volume;
-            const truckCount = appState.volume <= 20 ? 1 : Math.ceil(appState.volume / 20);
-            const singleTripCost = calculateDeliveryCostPerTrip(appState.distanceKm);
-            const deliveryTotalCost = singleTripCost * truckCount;
-            const grandTotal = materialTotalCost + deliveryTotalCost;
-            const notesInput = document.getElementById('user-notes');
-
-            const orderPayload = {
-                phone: phone,
-                material: matName,
-                volume: appState.volume,
-                distance: appState.distanceKm,
-                totalCost: grandTotal,
-                destinationAddress: appState.addressName || 'Не указан (выбор по звонку)',
-                notes: notesInput ? notesInput.value.trim() : '',
-                consentMeta: {
-                    personalDataAccepted: true,
-                    acceptedAt: new Date().toISOString(),
-                    consentDocument: 'consent.html',
-                    privacyDocument: 'privacy.html',
-                    cookieDocument: 'cookies.html',
-                    formId: 'order-form'
-                }
-            };
-
-            fetch('/api/order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderPayload)
-            })
-            .then(res => {
-                if (!res.ok) {
-                    return res.json().then(data => {
-                        throw new Error(data.message || 'Не удалось отправить заявку');
-                    });
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (spinner) spinner.style.display = 'none';
-                if (btnText) btnText.textContent = 'Отправить заявку';
-
-                const createdId = data.orderId || `SCH-${Math.floor(1000 + Math.random() * 9000)}`;
-
-                orderOverlay.classList.remove('active');
-                form.reset();
-                updateSubmitAvailability();
-
-                // Open Success Modal
-                document.getElementById('success-order-id').textContent = `#${createdId}`;
-                document.getElementById('success-mat-text').textContent = `${matName} (${appState.volume} м³)`;
-                document.getElementById('success-addr-text').textContent = appState.addressName || 'Согласование по телефону';
-                document.getElementById('success-cost-text').textContent = formatCurrency(grandTotal);
-
-                if (successOverlay) successOverlay.classList.add('active');
-                showToast(`Заявка #${createdId} успешно принята!`);
-            })
-            .catch(() => {
-                if (spinner) spinner.style.display = 'none';
-                if (btnText) btnText.textContent = 'Отправить заявку';
-                showToast('Заявка не отправлена. Позвоните диспетчеру или попробуйте еще раз.');
-            });
-        });
-    }
 }
 
 // Mobile Menu Drawer Navigation
@@ -973,67 +424,4 @@ function setupScrollSpyAndBackToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
-}
-
-// Fetch Server Settings
-function fetchServerSettings() {
-    fetch('/api/settings')
-        .then(res => res.json())
-        .then(data => {
-            if (data.deliveryRate) appState.deliveryRate = data.deliveryRate;
-            if (data.startCoords) appState.startCoords = data.startCoords;
-            recalculateTotalCost();
-        })
-        .catch(() => {});
-}
-
-// Toast Helper with max 3 limit
-function showToast(message) {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
-    while (container.children.length >= 3) {
-        container.removeChild(container.firstChild);
-    }
-
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.remove();
-    }, 4000);
-}
-
-// Cookie Consent Banner Handling (152-ФЗ & Роскомнадзор)
-function setupCookieConsent() {
-    const banner = document.getElementById('cookie-banner');
-    const acceptBtn = document.getElementById('cookie-accept-btn');
-    const essentialBtn = document.getElementById('cookie-essential-btn');
-    if (!banner || !acceptBtn || !essentialBtn) return;
-
-    const consentValue = localStorage.getItem('cookieConsent_scheben_rf');
-    if (!consentValue) {
-        setTimeout(() => {
-            banner.classList.add('show');
-        }, 1200);
-    } else {
-        banner.style.display = 'none';
-    }
-
-    const saveCookieChoice = (status) => {
-        localStorage.setItem('cookieConsent_scheben_rf', JSON.stringify({
-            status,
-            acceptedAt: new Date().toISOString(),
-            policy: 'cookies.html'
-        }));
-        banner.classList.remove('show');
-        setTimeout(() => {
-            banner.style.display = 'none';
-        }, 400);
-    };
-
-    acceptBtn.addEventListener('click', () => saveCookieChoice('accepted'));
-    essentialBtn.addEventListener('click', () => saveCookieChoice('essential_only'));
 }
