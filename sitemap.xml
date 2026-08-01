@@ -8,7 +8,19 @@
   </url>
   <url>
     <loc>https://xn--e1afkchfhgl0e.xn--p1ai/privacy.html</loc>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://xn--e1afkchfhgl0e.xn--p1ai/cookies.html</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://xn--e1afkchfhgl0e.xn--p1ai/consent.html</loc>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

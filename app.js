@@ -1,92 +1,80 @@
 // ==========================================================================
-// КрасПесок.рф — Калькулятор материалов и доставки
+// КрасПесок.рф — Каталог материалов и быстрая связь с диспетчером
 // ==========================================================================
 
 const materialsData = {
-    crushed_brick: {
-        id: 'crushed_brick',
-        name: 'Битый кирпич',
-        category: 'secondary',
-        img: 'images/crushed_brick.jpg',
-        badge: '🔥 АКЦИЯ! 20т от 16 000 ₽ с доставкой',
-        price: 800
-    },
-    sand: {
-        id: 'sand',
-        name: 'Песок',
-        category: 'sand_pgs',
-        img: 'images/sand.jpg',
-        badge: 'ГОСТ 8736-2014',
-        variants: [
-            { id: 'sand_0_5', name: 'Отсев дробления 0-5', price: 850 },
-            { id: 'sand_washed', name: 'Песок мытый (2 кл)', price: 1400 }
-        ]
-    },
-    pshs: {
-        id: 'pshs',
-        name: 'ПЩС',
-        category: 'sand_pgs',
-        img: 'images/pgs.jpg',
-        badge: 'Для дорог и отсыпки',
-        variants: [
-            { id: 'pshs_0_10', name: 'Фракция 0-10', price: 750 },
-            { id: 'pshs_0_8', name: 'Фракция 0-8', price: 800 },
-            { id: 'pshs_0_20', name: 'Фракция 0-20', price: 1000 },
-            { id: 'pshs_0_40', name: 'Фракция 0-40', price: 1000 }
-        ]
-    },
-    gps_gravel: {
-        id: 'gps_gravel',
-        name: 'ГПС / Гравий',
-        category: 'gravel',
-        img: 'images/gravel.jpg',
-        badge: 'Природный материал',
-        variants: [
-            { id: 'gps_0_20', name: 'ГПС 0-20', price: 550 },
-            { id: 'gravel_5_20', name: 'Гравий 5-20', price: 550 }
-        ]
-    },
     crushed_stone: {
         id: 'crushed_stone',
-        name: 'Щебень',
+        name: 'Щебень (гранитный / диоритовый)',
         category: 'crushed',
         img: 'images/crushed_stone.jpg',
         badge: 'ГОСТ 8267-93',
-        variants: [
-            { id: 'frac_4_8', name: 'Фракция 4-8', price: 750 },
-            { id: 'frac_5_10', name: 'Фракция 5-10', price: 750 },
-            { id: 'frac_8_16', name: 'Фракция 8-16', price: 1000 },
-            { id: 'frac_5_20', name: 'Фракция 5-20', price: 1000 },
-            { id: 'frac_10_20', name: 'Фракция 10-20', price: 1000 }
-        ]
+        price: 750,
+        unit: 'м³',
+        desc: 'Фракции: 4-8, 5-20, 20-40, 40-70 мм. Высокая прочность М1200. Подходит для бетона и фундаментов.'
+    },
+    sand: {
+        id: 'sand',
+        name: 'Песок строительный (отсев / мытый)',
+        category: 'sand_pgs',
+        img: 'images/sand.jpg',
+        badge: 'ГОСТ 8736-2014',
+        price: 850,
+        unit: 'м³',
+        desc: 'Чистый сеяный и мытый песок 0-5 мм без глины. Для кладки, штукатурки и стяжки пола.'
+    },
+    pshs: {
+        id: 'pshs',
+        name: 'ПЩС (Песчано-щебёночная смесь)',
+        category: 'sand_pgs',
+        img: 'images/pgs.jpg',
+        badge: 'Хит отсыпки',
+        price: 750,
+        unit: 'м³',
+        desc: 'Фракции 0-20, 0-40 мм. Идеальное решение для отсыпки дорог, парковок и подушек под фундамент.'
+    },
+    gps_gravel: {
+        id: 'gps_gravel',
+        name: 'Гравий и ГПС',
+        category: 'gravel',
+        img: 'images/gravel.jpg',
+        badge: 'Природный',
+        price: 550,
+        unit: 'м³',
+        desc: 'Речной промытый гравий фракций 5-20 мм и ГПС. Для дренажа, бетонирования и ландшафта.'
+    },
+    crushed_brick: {
+        id: 'crushed_brick',
+        name: 'Бой кирпича (Вторичный)',
+        category: 'secondary',
+        img: 'images/crushed_brick.jpg',
+        badge: '🔥 АКЦИЯ',
+        price: 800,
+        unit: 'м³',
+        desc: 'Дробленый кирпичный бой для временных дорог, укрепления грунта и засыпки котлованов.'
     },
     expanded_clay: {
         id: 'expanded_clay',
-        name: 'Керамзит',
+        name: 'Керамзит (все фракции)',
         category: 'secondary',
         img: 'images/expanded_clay.jpg',
         badge: 'Утеплитель',
-        price: 1600
+        price: 1600,
+        unit: 'м³',
+        desc: 'Фракции 10-20, 20-40 мм. Легкий пористый материал для теплоизоляции полов и перекрытий.'
     },
     chernozem: {
         id: 'chernozem',
-        name: 'Чернозём',
+        name: 'Чернозём плодородный',
         category: 'secondary',
         img: 'images/chernozem.jpg',
-        badge: 'Плодородный грунт',
-        price: 1000
+        badge: 'Сеяный грунт',
+        price: 1000,
+        unit: 'м³',
+        desc: 'Верховой сеяный чернозем без сорняков и камней. Для газонов, теплиц и огородов.'
     }
 };
 
-// Global App State
-let appState = {
-    selectedMaterialId: 'crushed_brick',
-    selectedVariantId: null,
-    volume: 20,
-    deliveryZone: 'city' // 'city' (13000 ₽) or 'suburb' (15000 ₽)
-};
-
-// Initialize when DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
@@ -94,20 +82,19 @@ document.addEventListener('DOMContentLoaded', () => {
 function initApp() {
     renderMaterialCards('all');
     setupCategoryTabs();
-    setupVolumeControls();
-    setupDeliveryZoneControls();
-    setupFAQAccordion();
     setupMobileNav();
+    setupOrderForm();
+    setupFaqAccordion();
     setupScrollSpyAndBackToTop();
-    recalculateTotalCost();
+    setupPhoneMask();
 }
 
-// Utility: Currency formatter (always includes 'от' for approximate benchmark prices)
+// Format currency
 function formatCurrency(val) {
     return `от ${Math.round(val).toLocaleString('ru-RU')} ₽`;
 }
 
-// Render Material Cards Grid
+// Render Avito-Style Material Catalog
 function renderMaterialCards(categoryFilter) {
     const grid = document.getElementById('material-grid');
     if (!grid) return;
@@ -116,56 +103,43 @@ function renderMaterialCards(categoryFilter) {
     Object.values(materialsData).forEach(mat => {
         if (categoryFilter !== 'all' && mat.category !== categoryFilter) return;
 
-        const isSelected = mat.id === appState.selectedMaterialId;
         const card = document.createElement('div');
-        card.className = `material-card ${isSelected ? 'selected' : ''}`;
-        card.dataset.id = mat.id;
-
-        let selectedPrice = mat.price || (mat.variants && mat.variants[0] ? mat.variants[0].price : 0);
-        let variantSelectHTML = '';
-        let priceText = '';
-
-        if (mat.variants && mat.variants.length > 0) {
-            const currentVar = mat.variants.find(v => v.id === appState.selectedVariantId) || mat.variants[0];
-            selectedPrice = currentVar.price;
-            priceText = `${formatCurrency(selectedPrice)}/м³`;
-
-            variantSelectHTML = `<select class="variant-dropdown" data-mat="${mat.id}" aria-label="Выбор фракции для ${mat.name}">`;
-            mat.variants.forEach(v => {
-                const optSelected = (isSelected && v.id === appState.selectedVariantId) || (!isSelected && v.id === mat.variants[0].id) ? 'selected' : '';
-                variantSelectHTML += `<option value="${v.id}" ${optSelected}>${v.name} (${formatCurrency(v.price)})</option>`;
-            });
-            variantSelectHTML += `</select>`;
-        } else {
-            priceText = `${formatCurrency(mat.price)}/м³`;
-        }
+        card.className = 'material-card avito-card';
 
         card.innerHTML = `
             <div class="material-img-wrapper">
                 <img src="${mat.img}" alt="${mat.name}" class="material-img" loading="lazy">
-                <span class="material-badge">${mat.badge}</span>
-                <span class="selected-check">✓</span>
+                ${mat.badge ? `<span class="material-badge">${mat.badge}</span>` : ''}
             </div>
             <div class="material-content">
-                <div class="material-name">${mat.name}</div>
-                <div class="material-price" id="price-display-${mat.id}">${priceText}</div>
-                ${variantSelectHTML}
+                <h3 class="material-name">${mat.name}</h3>
+                <div class="material-price-tag">${formatCurrency(mat.price)} <span class="unit">/ ${mat.unit}</span></div>
+                <p class="material-desc-short">${mat.desc}</p>
+                
+                <div class="card-actions">
+                    <a href="tel:+79069713377" class="btn-card-call">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <span>Позвонить</span>
+                    </a>
+                    <button type="button" class="btn-card-order" data-material="${mat.name}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        <span>Написать</span>
+                    </button>
+                </div>
             </div>
         `;
 
-        // Card Click Handler
-        card.addEventListener('click', (e) => {
-            if (e.target.classList.contains('variant-dropdown')) return;
-            selectMaterial(mat.id);
-        });
-
-        // Variant Dropdown Handler
-        const selectElem = card.querySelector('.variant-dropdown');
-        if (selectElem) {
-            selectElem.addEventListener('change', (e) => {
-                const newVarId = e.target.value;
-                appState.selectedVariantId = newVarId;
-                selectMaterial(mat.id, newVarId);
+        // Card button handler -> save selected material and scroll to quick order form
+        const orderBtn = card.querySelector('.btn-card-order');
+        if (orderBtn) {
+            orderBtn.addEventListener('click', () => {
+                window.lastSelectedMaterial = mat.name;
+                const formSection = document.getElementById('quick-order-section');
+                if (formSection) {
+                    formSection.scrollIntoView({ behavior: 'smooth' });
+                }
+                const phoneInput = document.getElementById('order-phone');
+                if (phoneInput) phoneInput.focus();
             });
         }
 
@@ -173,41 +147,7 @@ function renderMaterialCards(categoryFilter) {
     });
 }
 
-function selectMaterial(matId, explicitVariantId = null) {
-    appState.selectedMaterialId = matId;
-    const mat = materialsData[matId];
-    if (mat && mat.variants && mat.variants.length > 0) {
-        if (explicitVariantId) {
-            appState.selectedVariantId = explicitVariantId;
-        } else {
-            const cardSelect = document.querySelector(`.material-card[data-id="${matId}"] .variant-dropdown`);
-            appState.selectedVariantId = cardSelect ? cardSelect.value : mat.variants[0].id;
-        }
-    } else {
-        appState.selectedVariantId = null;
-    }
-
-    // Update active class on cards
-    document.querySelectorAll('.material-card').forEach(c => {
-        const selected = c.dataset.id === matId;
-        c.classList.toggle('selected', selected);
-        if (selected) {
-            const priceDisp = c.querySelector(`#price-display-${matId}`);
-            if (priceDisp && mat) {
-                let p = mat.price;
-                if (mat.variants) {
-                    const v = mat.variants.find(i => i.id === appState.selectedVariantId) || mat.variants[0];
-                    p = v.price;
-                }
-                priceDisp.textContent = `${formatCurrency(p)}/м³`;
-            }
-        }
-    });
-
-    recalculateTotalCost();
-}
-
-// Category Filter Tabs
+// Category Tabs
 function setupCategoryTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(tab => {
@@ -219,162 +159,7 @@ function setupCategoryTabs() {
     });
 }
 
-// Volume Controller (Slider & Numeric Input & Preset Buttons)
-function setupVolumeControls() {
-    const slider = document.getElementById('volume-slider');
-    const numInput = document.getElementById('volume-num-input');
-    const presetBtns = document.querySelectorAll('.vol-preset-btn');
-
-    if (!slider || !numInput) return;
-
-    slider.addEventListener('input', (e) => {
-        const val = parseInt(e.target.value, 10);
-        numInput.value = val;
-        updateVolume(val);
-    });
-
-    numInput.addEventListener('input', (e) => {
-        let val = parseInt(e.target.value, 10);
-        if (isNaN(val) || val < 1) val = 1;
-        if (val > 200) val = 200;
-        slider.value = Math.min(val, 50);
-        updateVolume(val);
-    });
-
-    numInput.addEventListener('blur', () => {
-        if (!numInput.value || parseInt(numInput.value, 10) < 1) {
-            numInput.value = 5;
-            slider.value = 5;
-            updateVolume(5);
-        }
-    });
-
-    presetBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const vol = parseInt(btn.dataset.vol, 10);
-            slider.value = vol;
-            numInput.value = vol;
-            updateVolume(vol);
-        });
-    });
-}
-
-function updateVolume(vol) {
-    appState.volume = vol;
-
-    document.querySelectorAll('.vol-preset-btn').forEach(b => {
-        b.classList.toggle('active', parseInt(b.dataset.vol, 10) === vol);
-    });
-
-    // Update truck recommendation text
-    const truckText = document.getElementById('truck-type-text');
-    if (truckText) {
-        const truckCount = Math.ceil(vol / 20);
-        if (truckCount === 1) {
-            truckText.textContent = `1 Самосвал (до 20 м³) — 1 рейс`;
-        } else if (truckCount <= 4) {
-            truckText.textContent = `${truckCount} Самосвала (по 20 м³) — ${truckCount} рейса`;
-        } else {
-            truckText.textContent = `${truckCount} Самосвалов (по 20 м³) — ${truckCount} рейсов`;
-        }
-    }
-
-    recalculateTotalCost();
-}
-
-// Delivery Zone Controls
-function setupDeliveryZoneControls() {
-    const zoneBtns = document.querySelectorAll('.zone-card-btn');
-    zoneBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            zoneBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            appState.deliveryZone = btn.dataset.zone || 'city';
-            recalculateTotalCost();
-        });
-    });
-}
-
-// Recalculate Live Prices
-function recalculateTotalCost() {
-    const mat = materialsData[appState.selectedMaterialId];
-    if (!mat) return;
-
-    let unitPrice = mat.price || 0;
-    let selectedName = mat.name;
-
-    if (mat.variants && mat.variants.length > 0) {
-        const v = mat.variants.find(item => item.id === appState.selectedVariantId) || mat.variants[0];
-        unitPrice = v.price;
-        selectedName = `${mat.name} (${v.name})`;
-    }
-
-    const isBrick = appState.selectedMaterialId === 'crushed_brick';
-    const isSuburb = appState.deliveryZone === 'suburb';
-
-    const truckCount = Math.ceil(appState.volume / 20);
-    let materialTotalCost = 0;
-    let deliveryTotalCost = 0;
-    let grandTotal = 0;
-
-    if (isBrick) {
-        // Brick Promo Package: 20 tons (1 truck) = 16 000 ₽ (city) or 18 000 ₽ (suburb) including delivery!
-        const packageRatePerTruck = isSuburb ? 18000 : 16000;
-        grandTotal = truckCount * packageRatePerTruck;
-        deliveryTotalCost = (isSuburb ? 15000 : 13000) * truckCount;
-        materialTotalCost = Math.max(0, grandTotal - deliveryTotalCost);
-    } else {
-        materialTotalCost = unitPrice * appState.volume;
-        const ratePerTrip = isSuburb ? 15000 : 13000;
-        deliveryTotalCost = ratePerTrip * truckCount;
-        grandTotal = materialTotalCost + deliveryTotalCost;
-    }
-
-    // Update UI elements
-    const summaryZoneName = document.getElementById('summary-zone-name');
-    const summaryMatName = document.getElementById('summary-mat-name');
-    const summaryVolume = document.getElementById('summary-volume');
-    const matCostVal = document.getElementById('material-cost-val');
-    const deliveryRateLabel = document.getElementById('delivery-rate-label');
-    const deliveryCostVal = document.getElementById('delivery-cost-val');
-    const totalCostVal = document.getElementById('total-cost-val');
-
-    if (summaryZoneName) {
-        summaryZoneName.textContent = isSuburb ? 
-            `За город (${formatCurrency(15000)} / рейс)` : 
-            `По городу (${formatCurrency(13000)} / рейс)`;
-    }
-
-    if (summaryMatName) summaryMatName.textContent = isBrick ? `${selectedName} (Спецакция 🔥)` : selectedName;
-    if (summaryVolume) summaryVolume.textContent = appState.volume;
-    if (matCostVal) matCostVal.textContent = isBrick ? `${formatCurrency(materialTotalCost)} (акция)` : formatCurrency(materialTotalCost);
-
-    if (deliveryRateLabel) {
-        deliveryRateLabel.textContent = truckCount > 1 ? 
-            `${truckCount} рейса самосвала` : 
-            `1 рейс самосвала`;
-    }
-
-    if (deliveryCostVal) deliveryCostVal.textContent = formatCurrency(deliveryTotalCost);
-    if (totalCostVal) totalCostVal.textContent = formatCurrency(grandTotal);
-}
-
-// FAQ Accordion
-function setupFAQAccordion() {
-    const items = document.querySelectorAll('.faq-item');
-    items.forEach(item => {
-        const btn = item.querySelector('.faq-question');
-        if (btn) {
-            btn.addEventListener('click', () => {
-                const isActive = item.classList.contains('active');
-                items.forEach(i => i.classList.remove('active'));
-                if (!isActive) item.classList.add('active');
-            });
-        }
-    });
-}
-
-// Mobile Menu Drawer Navigation
+// Mobile Menu Drawer
 function setupMobileNav() {
     const toggleBtn = document.getElementById('mobile-toggle');
     const drawer = document.getElementById('mobile-nav-drawer');
@@ -392,7 +177,153 @@ function setupMobileNav() {
     });
 }
 
-// ScrollSpy & Back To Top Button
+// Phone Input Formatting
+function setupPhoneMask() {
+    const phoneInput = document.getElementById('order-phone');
+    if (!phoneInput) return;
+
+    phoneInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.length === 0) {
+            e.target.value = '';
+            return;
+        }
+        if (val.startsWith('7') || val.startsWith('8')) {
+            val = val.substring(1);
+        }
+        let formatted = '+7 ';
+        if (val.length > 0) formatted += '(' + val.substring(0, 3);
+        if (val.length >= 3) formatted += ') ' + val.substring(3, 6);
+        if (val.length >= 6) formatted += '-' + val.substring(6, 8);
+        if (val.length >= 8) formatted += '-' + val.substring(8, 10);
+        e.target.value = formatted;
+    });
+}
+
+// Fast Order Form Handler (POST to /api/order)
+function setupOrderForm() {
+    const form = document.getElementById('quick-order-form');
+    if (!form) return;
+
+    const phoneInput = document.getElementById('order-phone');
+    const phoneErrorEl = document.getElementById('phone-error-msg');
+
+    if (phoneInput) {
+        phoneInput.addEventListener('input', () => {
+            phoneInput.classList.remove('input-error');
+        });
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const addressInput = document.getElementById('order-address');
+        const consentCheck = document.getElementById('order-consent');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        const phoneDigits = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
+        if (!phoneInput || !phoneInput.value.trim() || phoneDigits.length < 11) {
+            if (phoneInput) {
+                phoneInput.classList.remove('input-error');
+                void phoneInput.offsetWidth; // Trigger reflow for animation
+                phoneInput.classList.add('input-error');
+                phoneInput.focus();
+            }
+            showToast('Укажите корректный номер телефона для связи', 'error');
+            return;
+        }
+
+        if (consentCheck && !consentCheck.checked) {
+            showToast('Необходимо согласие на обработку персональных данных', 'error');
+            return;
+        }
+
+        const originalBtnText = submitBtn ? submitBtn.innerText : 'Отправить';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Отправка...';
+        }
+
+        const payload = {
+            phone: phoneInput.value.trim(),
+            material: window.lastSelectedMaterial || 'Запрос по звонку',
+            volume: 20,
+            destinationAddress: addressInput ? addressInput.value.trim() : 'Запрос перезвона диспетчера',
+            consentMeta: {
+                personalDataAccepted: true,
+                consentTimestamp: new Date().toISOString()
+            }
+        };
+
+        try {
+            const res = await fetch('/api/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                showToast(`Спасибо! Заявка №${data.orderId} принята. Диспетчер перезвонит в течение 3 минут.`, 'success');
+                form.reset();
+            } else {
+                showToast(data.message || 'Ошибка отправки заявки', 'error');
+            }
+        } catch (err) {
+            console.error('Order submission error:', err);
+            showToast('Ошибка соединения с сервером. Пожалуйста, позвоните напрямую по +7 (906) 971-33-77', 'error');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalBtnText;
+            }
+        }
+    });
+}
+
+// FAQ Accordion Handler
+function setupFaqAccordion() {
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        if (!question) return;
+
+        question.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isCurrentlyActive = item.classList.contains('active');
+
+            // Close all items
+            faqItems.forEach(i => i.classList.remove('active'));
+
+            // Toggle clicked item
+            if (!isCurrentlyActive) {
+                item.classList.add('active');
+            }
+        };
+    });
+}
+
+// Toast Notifications
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerText = message;
+
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 4500);
+}
+
+// ScrollSpy & Back To Top
 function setupScrollSpyAndBackToTop() {
     const backToTopBtn = document.getElementById('back-to-top');
     const sections = document.querySelectorAll('section[id], main[id]');
@@ -425,3 +356,50 @@ function setupScrollSpyAndBackToTop() {
         });
     }
 }
+
+// Mobile Sticky CTA Smart Hiding (hides when form is visible or field focused)
+function setupMobileStickyCtaBehavior() {
+    const stickyCta = document.querySelector('.mobile-sticky-cta');
+    const orderSection = document.getElementById('quick-order-section');
+    if (!stickyCta) return;
+
+    const updateVisibility = () => {
+        if (window.innerWidth > 768) return;
+
+        const activeEl = document.activeElement;
+        const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT' || activeEl.tagName === 'TEXTAREA');
+
+        let inFormSection = false;
+        if (orderSection) {
+            const rect = orderSection.getBoundingClientRect();
+            inFormSection = rect.top <= window.innerHeight * 0.75 && rect.bottom >= 50;
+        }
+
+        if (isInputFocused || inFormSection) {
+            stickyCta.style.opacity = '0';
+            stickyCta.style.pointerEvents = 'none';
+            stickyCta.style.transform = 'translateY(100%)';
+        } else {
+            stickyCta.style.opacity = '1';
+            stickyCta.style.pointerEvents = 'auto';
+            stickyCta.style.transform = 'translateY(0)';
+        }
+    };
+
+    window.addEventListener('scroll', updateVisibility, { passive: true });
+    window.addEventListener('resize', updateVisibility);
+    document.addEventListener('focusin', updateVisibility);
+    document.addEventListener('focusout', () => setTimeout(updateVisibility, 100));
+    updateVisibility();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupMobileNav();
+    renderMaterialCards('all');
+    setupCategoryTabs();
+    setupPhoneMask();
+    setupOrderForm();
+    setupFaqAccordion();
+    setupScrollSpyAndBackToTop();
+    setupMobileStickyCtaBehavior();
+});

@@ -105,5 +105,36 @@
     "source": "website",
     "id": "SCH-6389",
     "timestamp": "2026-07-26T08:14:13.961Z"
+  },
+  {
+    "phone": "+7 (906) 971-33-77",
+    "material": "Песок",
+    "consentMeta": {
+      "personalDataAccepted": true,
+      "serverReceivedAt": "2026-08-01T14:17:24.994Z",
+      "ipAddress": "::ffff:127.0.0.1",
+      "userAgent": "",
+      "consentMethod": "single required checkbox for personal data in the website order form"
+    },
+    "source": "website",
+    "id": "SCH-3910",
+    "timestamp": "2026-08-01T14:17:24.997Z"
+  },
+  {
+    "phone": "+7 (995) 088-55-55",
+    "material": "Запрос по звонку",
+    "volume": 20,
+    "destinationAddress": "",
+    "consentMeta": {
+      "personalDataAccepted": true,
+      "consentTimestamp": "2026-08-01T14:36:57.189Z",
+      "serverReceivedAt": "2026-08-01T14:36:57.192Z",
+      "ipAddress": "::ffff:127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "consentMethod": "single required checkbox for personal data in the website order form"
+    },
+    "source": "website",
+    "id": "SCH-7511",
+    "timestamp": "2026-08-01T14:36:57.192Z"
   }
 ]

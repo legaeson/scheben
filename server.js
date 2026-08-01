@@ -17,7 +17,22 @@ const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'change-me-in-env';
 
 app.set('trust proxy', 1);
 app.use(express.json());
-app.use(express.static(__dirname));
+
+// Security middleware to protect internal data and source files
+const forbiddenFiles = ['server.js', 'package.json', 'package-lock.json', 'orders.json', 'orders.md', 'settings.json', '.env'];
+
+app.use((req, res, next) => {
+    const filename = path.basename(req.path).toLowerCase();
+    if (filename.startsWith('.') || forbiddenFiles.includes(filename) || req.path.includes('/node_modules/')) {
+        return res.status(403).send('Forbidden: Access to this file is restricted');
+    }
+    next();
+});
+
+app.use(express.static(__dirname, {
+    dotfiles: 'ignore',
+    index: 'index.html'
+}));
 
 // Load Settings Helper
 function getSettings() {
