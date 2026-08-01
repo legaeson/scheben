@@ -4104,7 +4104,7 @@ p, li { font-size: 1rem; line-height: 1.65; }
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
-    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    background: #059669 !important;
     color: #ffffff;
     font-weight: 700;
     font-size: 0.92rem;
@@ -4152,7 +4152,7 @@ p, li { font-size: 1rem; line-height: 1.65; }
 /* Quick Order Section */
 .quick-order-section {
     padding: 4rem 0;
-    background: linear-gradient(180deg, var(--bg-surface, #f9fafb) 0%, var(--bg-body, #ffffff) 100%);
+    background: #ffffff !important;
 }
 
 .quick-order-card {
@@ -4307,6 +4307,8 @@ p, li { font-size: 1rem; line-height: 1.65; }
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
 .faq-question,
 .faq-question * {
     user-select: none !important;
@@ -4372,27 +4374,39 @@ p, li { font-size: 1rem; line-height: 1.65; }
     }
 }
 
+/* Global Text Selection & Caret Cursor Fix */
+*:not(input):not(textarea):not([contenteditable="true"]) {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
+input, textarea, [contenteditable="true"] {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+}
+
 .live-status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    color: #047857;
-    font-size: 0.82rem;
-    font-weight: 700;
-    padding: 0.4rem 0.85rem;
-    border-radius: 20px;
-    margin-bottom: 0.85rem;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.55rem !important;
+    background: #ecfdf5 !important;
+    border: 1px solid #a7f3d0 !important;
+    color: #047857 !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    padding: 0.4rem 0.85rem !important;
+    border-radius: 20px !important;
+    margin-bottom: 0.85rem !important;
 }
 
 .live-pulse-dot {
-    width: 8px;
-    height: 8px;
-    background: #10b981;
-    border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-    animation: pulse-green-dot 2s infinite;
+    width: 8px !important;
+    height: 8px !important;
+    background: #10b981 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7) !important;
+    animation: pulse-green-dot 2s infinite !important;
+    display: inline-block !important;
 }
 
 @keyframes pulse-green-dot {
@@ -4431,39 +4445,39 @@ p, li { font-size: 1rem; line-height: 1.65; }
 }
 
 .quick-benefits-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-bottom: 1.75rem;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.6rem !important;
+    margin-bottom: 1.75rem !important;
 }
 
 .benefit-item-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    padding: 0.45rem 0.85rem;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #334155;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 0.45rem 0.85rem !important;
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
 }
 
 .quick-call-direct {
     display: flex !important;
     flex-direction: column !important;
     gap: 0.35rem !important;
-    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%) !important;
+    background: #f0fdf4 !important;
     border: 1px solid #a7f3d0 !important;
     padding: 1.15rem 1.35rem !important;
     border-radius: 12px !important;
 }
 
 .direct-label {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #047857;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #047857 !important;
 }
 
 .direct-phone-link {
@@ -4481,30 +4495,6 @@ p, li { font-size: 1rem; line-height: 1.65; }
     color: #047857 !important;
 }
 
-.input-with-icon {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-.input-icon {
-    position: absolute;
-    left: 1.1rem;
-    color: #94a3b8;
-    pointer-events: none;
-    transition: color 0.2s ease;
-    z-index: 2;
-}
-
-.input-with-icon .form-input {
-    padding-left: 3rem !important;
-}
-
-.input-with-icon:focus-within .input-icon {
-    color: #059669;
-}
-
 .form-input {
     width: 100% !important;
     height: 50px !important;
@@ -4515,6 +4505,31 @@ p, li { font-size: 1rem; line-height: 1.65; }
     background: #ffffff !important;
     color: #0f172a !important;
     transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+}
+
+.input-with-icon {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+}
+
+.input-icon {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    left: 1.1rem !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #059669 !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+}
+
+.input-with-icon .form-input {
+    width: 100% !important;
+    height: 50px !important;
+    padding-left: 3.2rem !important;
     box-sizing: border-box !important;
 }
 
@@ -4577,20 +4592,10 @@ select.form-input {
     display: flex;
 }
 
-/* Glassmorphism Frosted Glass Badges */
+/* Completely Hide Material Badges */
 .material-badge,
 .avito-card .material-badge {
-    background: rgba(15, 23, 42, 0.45) !important;
-    backdrop-filter: blur(12px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    color: #ffffff !important;
-    font-size: 0.73rem !important;
-    font-weight: 700 !important;
-    padding: 0.3rem 0.7rem !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
-    letter-spacing: 0.02em !important;
+    display: none !important;
 }
 
 /* Mobile Optimization & Responsive Overlap Fixes */
@@ -4687,6 +4692,34 @@ select.form-input {
         align-items: stretch !important;
         padding: 1.25rem !important;
     }
+}
+
+/* Modern Typography Overrides (Inter & Manrope) */
+body, button, input, select, textarea {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    letter-spacing: -0.011em !important;
+}
+
+h1, h2, h3, h4, h5, h6,
+.hero-title,
+.quick-order-title,
+.section-title,
+.material-name,
+.category-chip,
+.filter-chip,
+.btn,
+.btn-card-call,
+.btn-submit-full {
+    font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.category-chip,
+.filter-chip,
+.category-pills button {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em !important;
+    font-size: 0.9rem !important;
 }
 
 
