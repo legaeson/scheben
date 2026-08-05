@@ -2,7 +2,7 @@
    шебень.рф — Master Design System, Micro-Interactions & Responsive Layout
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* Local system & modern font stacks for privacy and zero latency */
 
 :root {
   /* Emerald Green Palette */
@@ -4311,8 +4311,6 @@ p, li { font-size: 1rem; line-height: 1.65; }
 
 .faq-question,
 .faq-question * {
-    user-select: none !important;
-    -webkit-user-select: none !important;
     outline: none !important;
     cursor: pointer !important;
 }
@@ -4374,15 +4372,10 @@ p, li { font-size: 1rem; line-height: 1.65; }
     }
 }
 
-/* Global Text Selection & Caret Cursor Fix */
-*:not(input):not(textarea):not([contenteditable="true"]) {
-    user-select: none !important;
-    -webkit-user-select: none !important;
-}
-
-input, textarea, [contenteditable="true"] {
-    user-select: text !important;
-    -webkit-user-select: text !important;
+/* Global Text Selection Enabled */
+* {
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 .live-status-pill {

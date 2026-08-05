@@ -3,15 +3,25 @@
 // ==========================================================================
 
 const materialsData = {
-    crushed_stone: {
-        id: 'crushed_stone',
-        name: 'Щебень (гранитный / диоритовый)',
-        category: 'crushed',
-        img: 'images/crushed_stone.jpg',
-        badge: 'ГОСТ 8267-93',
-        price: 750,
+    your_situation: {
+        id: 'your_situation',
+        name: 'Ваша ситуация (Аренда грузовика / Свой вариант)',
+        category: 'custom',
+        img: 'images/truck_rental.jpg',
+        badge: '🚚 Решим любую задачу',
+        price: 'Договорная',
+        unit: 'рейс / услуга',
+        desc: 'Не нашли нужный товар или нужна аренда самосвала? Напишите или позвоните нам — всё доставим и подберём лучшее решение!'
+    },
+    crushed_brick: {
+        id: 'crushed_brick',
+        name: 'Бой кирпича (Вторичный)',
+        category: 'secondary',
+        img: 'images/crushed_brick.jpg',
+        badge: 'ТУ 5711-001 (Акция)',
+        price: 800,
         unit: 'м³',
-        desc: 'Фракции: 4-8, 5-20, 20-40, 40-70 мм. Высокая прочность М1200. Подходит для бетона и фундаментов.'
+        desc: 'Дробленый кирпичный бой для временных дорог, укрепления грунта и засыпки котлованов (ТУ 5711-001).'
     },
     sand: {
         id: 'sand',
@@ -21,57 +31,57 @@ const materialsData = {
         badge: 'ГОСТ 8736-2014',
         price: 850,
         unit: 'м³',
-        desc: 'Чистый сеяный и мытый песок 0-5 мм без глины. Для кладки, штукатурки и стяжки пола.'
+        desc: 'Чистый сеяный и мытый песок 0-5 мм без глины. Для кладки, штукатурки и стяжки пола (ГОСТ 8736-2014).'
+    },
+    crushed_stone: {
+        id: 'crushed_stone',
+        name: 'Щебень (гранитный / диоритовый)',
+        category: 'crushed',
+        img: 'images/crushed_stone.jpg',
+        badge: 'ГОСТ 8267-93',
+        price: 750,
+        unit: 'м³',
+        desc: 'Фракции: 4-8, 5-20, 20-40, 40-70 мм. Высокая прочность М1200. Подходит для бетона и фундаментов (ГОСТ 8267-93).'
     },
     pshs: {
         id: 'pshs',
         name: 'ПЩС (Песчано-щебёночная смесь)',
         category: 'sand_pgs',
         img: 'images/pgs.jpg',
-        badge: 'Хит отсыпки',
+        badge: 'ГОСТ 25607-2009',
         price: 750,
         unit: 'м³',
-        desc: 'Фракции 0-20, 0-40 мм. Идеальное решение для отсыпки дорог, парковок и подушек под фундамент.'
+        desc: 'Фракции 0-20, 0-40 мм. Идеальное решение для отсыпки дорог, парковок и подушек под фундамент (ГОСТ 25607-2009).'
     },
     gps_gravel: {
         id: 'gps_gravel',
         name: 'Гравий и ГПС',
         category: 'gravel',
         img: 'images/gravel.jpg',
-        badge: 'Природный',
+        badge: 'ГОСТ 23735-2014',
         price: 550,
         unit: 'м³',
-        desc: 'Речной промытый гравий фракций 5-20 мм и ГПС. Для дренажа, бетонирования и ландшафта.'
-    },
-    crushed_brick: {
-        id: 'crushed_brick',
-        name: 'Бой кирпича (Вторичный)',
-        category: 'secondary',
-        img: 'images/crushed_brick.jpg',
-        badge: '🔥 АКЦИЯ',
-        price: 800,
-        unit: 'м³',
-        desc: 'Дробленый кирпичный бой для временных дорог, укрепления грунта и засыпки котлованов.'
+        desc: 'Речной промытый гравий фракций 5-20 мм и ГПС. Для дренажа, бетонирования и ландшафта (ГОСТ 23735-2014 / ГОСТ 8267-93).'
     },
     expanded_clay: {
         id: 'expanded_clay',
         name: 'Керамзит (все фракции)',
         category: 'secondary',
         img: 'images/expanded_clay.jpg',
-        badge: 'Утеплитель',
+        badge: 'ГОСТ 32496-2013',
         price: 1600,
         unit: 'м³',
-        desc: 'Фракции 10-20, 20-40 мм. Легкий пористый материал для теплоизоляции полов и перекрытий.'
+        desc: 'Фракции 10-20, 20-40 мм. Легкий пористый материал для теплоизоляции полов и перекрытий (ГОСТ 32496-2013).'
     },
     chernozem: {
         id: 'chernozem',
         name: 'Чернозём плодородный',
         category: 'secondary',
         img: 'images/chernozem.jpg',
-        badge: 'Сеяный грунт',
+        badge: 'ГОСТ Р 53380-2009',
         price: 1000,
         unit: 'м³',
-        desc: 'Верховой сеяный чернозем без сорняков и камней. Для газонов, теплиц и огородов.'
+        desc: 'Верховой сеяный чернозем без сорняков и камней. Для газонов, теплиц и огородов (ГОСТ Р 53380-2009).'
     }
 };
 
@@ -101,10 +111,14 @@ function renderMaterialCards(categoryFilter) {
     grid.innerHTML = '';
 
     Object.values(materialsData).forEach(mat => {
-        if (categoryFilter !== 'all' && mat.category !== categoryFilter) return;
+        if (categoryFilter !== 'all' && mat.category !== categoryFilter && mat.id !== 'your_situation') return;
 
         const card = document.createElement('div');
         card.className = 'material-card avito-card';
+
+        const priceDisplay = typeof mat.price === 'number' 
+            ? `${formatCurrency(mat.price)} <span class="unit">/ ${mat.unit}</span>`
+            : `${mat.price} <span class="unit">/ ${mat.unit}</span>`;
 
         card.innerHTML = `
             <div class="material-img-wrapper">
@@ -113,7 +127,7 @@ function renderMaterialCards(categoryFilter) {
             </div>
             <div class="material-content">
                 <h3 class="material-name">${mat.name}</h3>
-                <div class="material-price-tag">${formatCurrency(mat.price)} <span class="unit">/ ${mat.unit}</span></div>
+                <div class="material-price-tag">${priceDisplay}</div>
                 <p class="material-desc-short">${mat.desc}</p>
                 
                 <div class="card-actions">
@@ -234,7 +248,11 @@ function setupOrderForm() {
         }
 
         if (consentCheck && !consentCheck.checked) {
-            showToast('Необходимо согласие на обработку персональных данных', 'error');
+            consentCheck.focus();
+            consentCheck.parentElement.classList.remove('input-error');
+            void consentCheck.parentElement.offsetWidth;
+            consentCheck.parentElement.classList.add('input-error');
+            showToast('Пожалуйста, подтвердите Согласие на обработку персональных данных (152-ФЗ)', 'error');
             return;
         }
 
@@ -393,6 +411,51 @@ function setupMobileStickyCtaBehavior() {
     updateVisibility();
 }
 
+function setupCookieBanner() {
+    const banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+
+    const savedConsent = localStorage.getItem('kraspesok_cookie_consent');
+    if (savedConsent) {
+        banner.classList.add('hidden');
+        banner.classList.remove('show');
+        banner.style.display = 'none';
+        return;
+    }
+
+    // Показываем баннер если решение еще не было принято
+    banner.style.display = 'flex';
+    banner.classList.remove('hidden');
+    banner.classList.add('show');
+
+    const acceptBtn = document.getElementById('btn-cookie-accept');
+    const essentialBtn = document.getElementById('btn-cookie-essential');
+
+    const handleConsent = (level) => {
+        try {
+            localStorage.setItem('kraspesok_cookie_consent', level);
+        } catch (e) {
+            console.warn('localStorage error:', e);
+        }
+        banner.classList.remove('show');
+        banner.classList.add('hidden');
+        banner.style.display = 'none';
+    };
+
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleConsent('all');
+        });
+    }
+    if (essentialBtn) {
+        essentialBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleConsent('essential');
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     setupMobileNav();
     renderMaterialCards('all');
@@ -402,4 +465,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setupFaqAccordion();
     setupScrollSpyAndBackToTop();
     setupMobileStickyCtaBehavior();
+    setupCookieBanner();
 });

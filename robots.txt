@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /node_modules/
 
-Sitemap: https://xn--e1afkchfhgl0e.xn--p1ai/sitemap.xml
+Sitemap: https://xn--80aknctefjc.xn--p1ai/sitemap.xml

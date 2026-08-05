@@ -4,6 +4,7 @@ try {
 } catch (e) {}
 
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -18,13 +19,16 @@ const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'change-me-in-env';
 app.set('trust proxy', 1);
 app.use(express.json());
 
-// Security middleware to protect internal data and source files
-const forbiddenFiles = ['server.js', 'package.json', 'package-lock.json', 'orders.json', 'orders.md', 'settings.json', '.env'];
+// Strict Security Middleware to protect internal files and databases
+const forbiddenFiles = [
+    'server.js', 'package.json', 'package-lock.json', 
+    'orders.json', 'orders.md', 'settings.json', '.env', 'start.bat'
+];
 
 app.use((req, res, next) => {
     const filename = path.basename(req.path).toLowerCase();
     if (filename.startsWith('.') || forbiddenFiles.includes(filename) || req.path.includes('/node_modules/')) {
-        return res.status(403).send('Forbidden: Access to this file is restricted');
+        return res.status(403).send('Forbidden: Access to restricted system file denied.');
     }
     next();
 });
@@ -33,6 +37,18 @@ app.use(express.static(__dirname, {
     dotfiles: 'ignore',
     index: 'index.html'
 }));
+
+// Rate Limiter for Order Submissions (Anti-DDoS / Anti-Spam protection)
+const orderRateLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes window
+    max: 5, // Max 5 submissions per 10 minutes per IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Слишком много заявок с вашего устройства. Пожалуйста, подождите 10 минут или позвоните диспетчеру по телефону +7 (906) 971-33-77'
+    }
+});
 
 // Load Settings Helper
 function getSettings() {
@@ -70,6 +86,67 @@ function saveSettings(settings) {
     }
 }
 
+// Rebuild Markdown Log from Valid Active Orders
+function rebuildMarkdownLog(orders) {
+    try {
+        let header = `# Журнал заявок — КрасПесок.рф\n\nНиже автоматически сохраняются все поступающие заявки с сайта (Срок хранения: 30 дней в соответствии с 152-ФЗ).\n\n----------------------------------------\n\n`;
+        let content = header;
+        orders.forEach(orderData => {
+            const dateObj = orderData.timestamp ? new Date(orderData.timestamp) : new Date();
+            const formattedDate = dateObj.toLocaleString('ru-RU', { timeZone: 'Asia/Krasnoyarsk' });
+            const costStr = orderData.totalCost ? `${orderData.totalCost.toLocaleString('ru-RU')} ₽` : 'Уточняется';
+            const notesStr = orderData.notes ? orderData.notes : '—';
+            const addressStr = orderData.destinationAddress || 'Не указан (выбор по звонку)';
+            const distStr = orderData.distance !== undefined ? `${orderData.distance} км` : 'Не рассчитана';
+
+            content += `## Заявка № ${orderData.id} [${formattedDate}]\n`;
+            content += `- **Телефон:** ${orderData.phone}\n`;
+            content += `- **Материал:** ${orderData.material}\n`;
+            content += `- **Объём:** ${orderData.volume || 20} м³\n`;
+            content += `- **Адрес доставки:** ${addressStr}\n`;
+            content += `- **Дистанция:** ${distStr}\n`;
+            content += `- **Ориентир стоимости:** ${costStr}\n`;
+            content += `- **Комментарий:** ${notesStr}\n`;
+            content += `- **Согласие на ПД:** Подтверждено на сайте\n`;
+            content += `----------------------------------------\n\n`;
+        });
+        fs.writeFileSync(ORDERS_MD_PATH, content, 'utf8');
+    } catch (err) {
+        console.error('[Server] Error rebuilding orders.md:', err);
+    }
+}
+
+// 30-Day Automated Personal Data Retention Purge (152-FZ Art. 5 & 21 Compliance)
+function cleanupOldOrders() {
+    try {
+        if (!fs.existsSync(ORDERS_PATH)) return;
+        const data = fs.readFileSync(ORDERS_PATH, 'utf8');
+        if (!data) return;
+        let orders = JSON.parse(data);
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        const initialCount = orders.length;
+
+        orders = orders.filter(order => {
+            if (!order.timestamp) return true;
+            const orderTime = new Date(order.timestamp).getTime();
+            return (now - orderTime) <= thirtyDaysMs;
+        });
+
+        if (orders.length !== initialCount) {
+            fs.writeFileSync(ORDERS_PATH, JSON.stringify(orders, null, 2), 'utf8');
+            rebuildMarkdownLog(orders);
+            console.log(`[152-FZ Purge Task] Removed ${initialCount - orders.length} order(s) older than 30 days. Active count: ${orders.length}`);
+        }
+    } catch (err) {
+        console.error('[152-FZ Purge Task] Error during retention cleanup:', err);
+    }
+}
+
+// Run 30-day retention cleanup on startup and schedule every 24 hours
+cleanupOldOrders();
+setInterval(cleanupOldOrders, 24 * 60 * 60 * 1000);
+
 // Helper: Append Order to Markdown file (orders.md)
 function appendOrderToMarkdown(orderData) {
     try {
@@ -91,7 +168,7 @@ function appendOrderToMarkdown(orderData) {
         entry += `----------------------------------------\n\n`;
 
         if (!fs.existsSync(ORDERS_MD_PATH)) {
-            const header = `# Журнал заявок — КрасПесок.рф\n\nНиже автоматически сохраняются все поступающие заявки с сайта.\n\n----------------------------------------\n\n`;
+            const header = `# Журнал заявок — КрасПесок.рф\n\nНиже автоматически сохраняются все поступающие заявки с сайта (Срок хранения: 30 дней в соответствии с 152-ФЗ).\n\n----------------------------------------\n\n`;
             fs.writeFileSync(ORDERS_MD_PATH, header + entry, 'utf8');
         } else {
             fs.appendFileSync(ORDERS_MD_PATH, entry, 'utf8');
@@ -132,7 +209,7 @@ app.get('/api/settings', (req, res) => {
 
 app.post('/api/settings', (req, res) => {
     const apiKey = req.headers['x-api-key'];
-    if (apiKey !== ADMIN_API_KEY) {
+    if (apiKey !== ADMIN_API_KEY || ADMIN_API_KEY === 'change-me-in-env') {
         return res.status(403).json({ success: false, message: 'Forbidden: Invalid API key' });
     }
     const success = saveSettings(req.body);
@@ -143,7 +220,7 @@ app.post('/api/settings', (req, res) => {
     }
 });
 
-app.post('/api/order', (req, res) => {
+app.post('/api/order', orderRateLimiter, (req, res) => {
     const { phone, material, volume, distance, totalCost, destinationAddress, consentMeta } = req.body;
     if (!consentMeta || consentMeta.personalDataAccepted !== true) {
         return res.status(400).json({
