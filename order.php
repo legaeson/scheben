@@ -54,7 +54,7 @@ $dt = new DateTime('now', new DateTimeZone('Asia/Krasnoyarsk'));
 $orderTime = $dt->format('d.m.Y H:i:s');
 $orderId = 'SCH-' . mt_rand(1000, 9999);
 
-// 1. Сохранение в локальный файл orders.json (резервная копия на сервере)
+// 1. Безопасное сохранение в файл (вне публичной папки web-сервера)
 $orderRecord = [
     'id' => $orderId,
     'timestamp' => $dt->format('c'),
@@ -67,7 +67,11 @@ $orderRecord = [
     'userAgent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''
 ];
 
-$ordersFile = __DIR__ . '/orders.json';
+// Сохраняем на уровень выше public/ либо в скрытый файл с точкой
+$parentDir = dirname(__DIR__);
+$storageDir = (is_dir($parentDir) && is_writable($parentDir)) ? $parentDir : __DIR__;
+$ordersFile = $storageDir . '/.orders_vault.json';
+
 $orders = [];
 if (file_exists($ordersFile)) {
     $existing = @file_get_contents($ordersFile);
@@ -83,9 +87,9 @@ if (count($orders) > 500) {
 }
 @file_put_contents($ordersFile, json_encode($orders, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
-// Также пишем в текстовый журнал orders.txt
+// Также пишем в скрытый журнал .orders.log
 $txtLine = sprintf("[%s] Заявка %s | Тел: %s | Материал: %s\n", $orderTime, $orderId, $rawPhone, $material);
-@file_put_contents(__DIR__ . '/orders.txt', $txtLine, FILE_APPEND);
+@file_put_contents($storageDir . '/.orders.log', $txtLine, FILE_APPEND);
 
 // 2. Отправка Email на Gmail
 $to = 'isthismytea@gmail.com';
