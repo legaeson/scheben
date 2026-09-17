@@ -1,0 +1,1959 @@
+/* ==========================================================================
+   КрасПесок.рф — Modern Industrial Swiss Design System
+   Архитектура дизайн-токенов, адаптивная сетка и микро-взаимодействия
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. ДИЗАЙН-ТОКЕНЫ (3-Layer Architecture: Primitive -> Semantic -> Component)
+   -------------------------------------------------------------------------- */
+:root {
+  /* Primitive Colors: Slate (Industrial Base) */
+  --slate-950: #090d16;
+  --slate-900: #0f172a;
+  --slate-850: #131d31;
+  --slate-800: #1e293b;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --slate-500: #64748b;
+  --slate-400: #94a3b8;
+  --slate-300: #cbd5e1;
+  --slate-200: #e2e8f0;
+  --slate-100: #f1f5f9;
+  --slate-50:  #f8fafc;
+  --white:     #ffffff;
+
+  /* Primitive Colors: Emerald (Quarry & Ecology) */
+  --emerald-900: #064e3b;
+  --emerald-800: #065f46;
+  --emerald-700: #047857;
+  --emerald-600: #059669;
+  --emerald-500: #10b981;
+  --emerald-400: #34d399;
+  --emerald-100: #d1fae5;
+  --emerald-50:  #ecfdf5;
+
+  /* Primitive Colors: Amber (Construction Safety & Callout) */
+  --amber-700: #b45309;
+  --amber-600: #d97706;
+  --amber-500: #f59e0b;
+  --amber-400: #fbbf24;
+  --amber-100: #fef3c7;
+  --amber-50:  #fffbeb;
+
+  /* Semantic Tokens: Surfaces */
+  --bg-page:       var(--slate-50);
+  --bg-surface:    var(--white);
+  --bg-card:       var(--white);
+  --bg-card-hover: var(--slate-50);
+  --bg-dark:       var(--slate-900);
+  --bg-glass:      rgba(255, 255, 255, 0.88);
+  --bg-glass-dark: rgba(15, 23, 42, 0.85);
+
+  /* Semantic Tokens: Brand Colors */
+  --primary:         var(--emerald-600);
+  --primary-hover:   var(--emerald-700);
+  --primary-active:  var(--emerald-800);
+  --primary-light:   var(--emerald-50);
+  --primary-border:  rgba(5, 150, 105, 0.25);
+
+  --accent:          var(--amber-600);
+  --accent-hover:    var(--amber-700);
+  --accent-light:    var(--amber-50);
+  --accent-border:   rgba(217, 119, 6, 0.28);
+
+  /* Semantic Tokens: Borders */
+  --border-subtle:   var(--slate-200);
+  --border-medium:   var(--slate-300);
+  --border-dark:     var(--slate-700);
+  --border-active:   var(--primary);
+
+  /* Semantic Tokens: Text Hierarchy */
+  --text-dark:       var(--slate-900);
+  --text-body:       var(--slate-700);
+  --text-muted:      var(--slate-500);
+  --text-light:      var(--white);
+
+  /* Typography Stacks */
+  --font-display: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Component Dimensions & Radii */
+  --radius-xs:   6px;
+  --radius-sm:   10px;
+  --radius-md:   16px;
+  --radius-lg:   22px;
+  --radius-xl:   30px;
+  --radius-full: 9999px;
+
+  /* Elevation Shadows (Layered Ambient Occlusion) */
+  --shadow-xs: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 2px 8px -1px rgba(15, 23, 42, 0.06), 0 1px 4px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 20px 40px -8px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+  --shadow-glow-emerald: 0 10px 30px -4px rgba(5, 150, 105, 0.35);
+  --shadow-glow-amber:   0 10px 30px -4px rgba(217, 119, 6, 0.35);
+
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. СБРОС И БАЗОВЫЕ ПРАВИЛА (CSS Reset & Base)
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-page);
+  color: var(--text-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+button {
+  cursor: pointer;
+  user-select: none;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+/* --------------------------------------------------------------------------
+   3. ТИПОГРАФИКА (Typography Scale)
+   -------------------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6,
+.hero-title,
+.section-title,
+.section-title-large,
+.quick-order-title,
+.material-name {
+  font-family: var(--font-display);
+  color: var(--text-dark);
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+/* --------------------------------------------------------------------------
+   4. СЕТКА И КОНТЕЙНЕР (Grid & Layout)
+   -------------------------------------------------------------------------- */
+.container {
+  width: 100%;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. ВЕРХНЯЯ СТРОКА АКЦИИ (Top Bar)
+   -------------------------------------------------------------------------- */
+.top-bar {
+  background: var(--slate-950);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--slate-200);
+  font-size: 0.84rem;
+  padding: 0.55rem 0;
+  position: relative;
+  z-index: 60;
+}
+
+.top-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.top-bar-text {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.top-bar-link {
+  color: var(--amber-400);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  transition: var(--transition-fast);
+}
+
+.top-bar-link:hover {
+  color: var(--amber-300);
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .top-bar {
+    font-size: 0.78rem;
+    padding: 0.45rem 0;
+  }
+  .top-bar-inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.25rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. ГЛАВНАЯ ШАПКА САЙТА (Site Header)
+   -------------------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: var(--transition-base);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  color: var(--slate-900);
+}
+
+.logo-text span {
+  color: var(--primary);
+  position: relative;
+}
+
+.logo-text span::after {
+  content: ".рф";
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--slate-500);
+  margin-left: 2px;
+}
+
+/* Desktop Navigation */
+.nav-container {
+  display: flex;
+  align-items: center;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-body);
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.nav-link:hover {
+  color: var(--primary);
+  background: var(--slate-100);
+}
+
+.nav-link.active {
+  color: var(--primary);
+  background: var(--primary-light);
+  font-weight: 700;
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.phone-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--slate-900);
+  color: var(--white);
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-base);
+}
+
+.phone-button:hover {
+  background: var(--primary);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow-emerald);
+}
+
+.phone-button:active {
+  transform: scale(0.97);
+}
+
+.mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--slate-100);
+  color: var(--slate-800);
+  transition: var(--transition-fast);
+}
+
+.mobile-toggle:hover {
+  background: var(--slate-200);
+}
+
+/* Mobile Nav Drawer */
+.mobile-nav-drawer {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-surface);
+  border-bottom: 2px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+  padding: 1.25rem 1.5rem;
+  transform: translateY(-10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition-base);
+}
+
+.mobile-nav-drawer.active {
+  display: block;
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.mobile-nav-link {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--slate-800);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: var(--transition-fast);
+}
+
+.mobile-nav-link:hover, .mobile-nav-link:active {
+  background: var(--slate-100);
+  color: var(--primary);
+}
+
+.mobile-nav-link.call-accent {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 992px) {
+  .nav-container {
+    display: none;
+  }
+  .mobile-toggle {
+    display: flex;
+  }
+  .header-inner {
+    height: 64px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. ГЛАВНЫЙ ЭКРАН (Hero Section)
+   -------------------------------------------------------------------------- */
+.hero-section {
+  position: relative;
+  background: var(--slate-900);
+  color: var(--white);
+  padding: 5rem 0 5.5rem;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-bg-image {
+  position: absolute;
+  inset: 0;
+  background-image: url('images/truck_rental_hero.webp');
+  background-size: cover;
+  background-position: center 35%;
+  opacity: 0.22;
+  filter: contrast(1.1) brightness(0.85);
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .hero-bg-image {
+    background-image: url('images/truck_rental_hero_mob.webp');
+  }
+}
+
+.hero-bg-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg, 
+    rgba(9, 13, 22, 0.95) 0%, 
+    rgba(15, 23, 42, 0.88) 45%, 
+    rgba(15, 23, 42, 0.5) 100%
+  );
+}
+
+.hero-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 980px;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+/* Hero Pill Badge */
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: var(--emerald-400);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 0.35rem 0.95rem;
+  border-radius: var(--radius-full);
+}
+
+.hero-title {
+  font-size: clamp(2.1rem, 4.8vw, 3.5rem);
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.hero-title .animated-text {
+  color: var(--amber-400);
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Hero Benefits List */
+.hero-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.hero-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.05rem;
+  color: var(--slate-200);
+  font-weight: 500;
+}
+
+.hero-benefits li svg {
+  color: var(--emerald-400);
+  flex-shrink: 0;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 3px;
+  border-radius: 50%;
+}
+
+/* Hero Action Buttons */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: linear-gradient(135deg, var(--emerald-500) 0%, var(--emerald-600) 100%);
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.85rem 1.75rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glow-emerald);
+  transition: var(--transition-base);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--emerald-400) 0%, var(--emerald-700) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -4px rgba(5, 150, 105, 0.5);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 640px) {
+  .hero-section {
+    padding: 3.5rem 0 4rem;
+  }
+  .hero-benefits li {
+    font-size: 0.95rem;
+  }
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .hero-actions .btn-primary {
+    width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. СЕКЦИЯ КАТАЛОГА МАТЕРИАЛОВ (Main Catalog Section)
+   -------------------------------------------------------------------------- */
+.app-section {
+  padding: 5rem 0;
+  background: var(--bg-page);
+}
+
+.section-head {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 3rem;
+}
+
+.section-tag {
+  display: inline-block;
+  color: var(--primary);
+  background: var(--primary-light);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-full);
+  margin-bottom: 0.85rem;
+}
+
+.section-title-large {
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 900;
+  margin-bottom: 0.85rem;
+}
+
+.section-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Category Tabs */
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 2.75rem;
+}
+
+.tab-btn {
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--slate-600);
+  background: var(--white);
+  border: 1px solid var(--border-subtle);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-xs);
+  transition: var(--transition-fast);
+}
+
+.tab-btn:hover {
+  color: var(--slate-900);
+  border-color: var(--slate-300);
+  background: var(--slate-50);
+}
+
+.tab-btn.active {
+  background: var(--slate-900);
+  color: var(--white);
+  border-color: var(--slate-900);
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+}
+
+/* Material Cards Grid (Modern Avito-Style Grid) */
+.material-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.75rem;
+}
+
+.material-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-base);
+}
+
+.material-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--emerald-300);
+  box-shadow: var(--shadow-md);
+}
+
+/* Card Image & Skeleton Shimmer */
+.material-img-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.8s infinite ease-in-out;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.material-img-wrapper picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.material-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.material-img.loaded,
+.material-img:not([loading="lazy"]) {
+  opacity: 1;
+}
+
+.material-card:hover .material-img {
+  transform: scale(1.05);
+}
+
+.material-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--emerald-400);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-xs);
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Card Body */
+.material-content {
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.material-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+  color: var(--text-dark);
+}
+
+.material-price-tag {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--primary);
+  margin-bottom: 0.65rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.material-price-tag .unit {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.material-desc-short {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+  flex-grow: 1;
+}
+
+/* Card Action Buttons */
+.card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: auto;
+}
+
+.btn-card-call,
+.btn-card-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.86rem;
+  font-weight: 700;
+  transition: var(--transition-fast);
+}
+
+.btn-card-call {
+  background: var(--slate-100);
+  color: var(--slate-900);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-card-call:hover {
+  background: var(--slate-900);
+  color: var(--white);
+  border-color: var(--slate-900);
+}
+
+.btn-card-order {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.btn-card-order:hover {
+  background: var(--primary-hover);
+}
+
+.btn-card-call:active, .btn-card-order:active {
+  transform: scale(0.97);
+}
+
+/* --------------------------------------------------------------------------
+   9. ФОРМА БЫСТРОГО ЗАКАЗА И РАСЧЕТА (Quick Order & Call Section)
+   -------------------------------------------------------------------------- */
+.quick-order-section {
+  padding: 5rem 0;
+  background: var(--slate-900);
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quick-order-card {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 3.5rem;
+  align-items: center;
+}
+
+.quick-order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+  color: var(--white);
+}
+
+.live-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: var(--emerald-400);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-full);
+  align-self: flex-start;
+}
+
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--emerald-400);
+  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+.quick-order-title {
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  color: var(--white);
+  line-height: 1.15;
+}
+
+.quick-order-title .text-emerald {
+  color: var(--emerald-400);
+}
+
+.quick-order-desc {
+  font-size: 1.05rem;
+  color: var(--slate-300);
+  line-height: 1.6;
+}
+
+/* Quick Benefits List */
+.quick-benefits-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.benefit-item-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--slate-200);
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-full);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.benefit-item-chip svg {
+  color: var(--emerald-400);
+}
+
+/* Quick Call Direct Box */
+.quick-call-direct {
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.direct-label {
+  font-size: 0.85rem;
+  color: var(--slate-400);
+  margin-bottom: 0.4rem;
+}
+
+.direct-phone-link {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: var(--amber-400);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: var(--transition-fast);
+}
+
+.direct-phone-link:hover {
+  color: var(--amber-300);
+}
+
+/* Form Panel */
+.quick-order-form,
+.quick-order-form-panel {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+.selected-material-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.95rem;
+  background-color: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  color: var(--primary-dark);
+  margin-bottom: 1.25rem;
+  width: 100%;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.selected-material-pill svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.selected-material-pill strong {
+  color: var(--slate-900);
+  font-weight: 700;
+}
+
+.selected-material-pill button {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--slate-400);
+  cursor: pointer;
+  padding: 0 0.25rem;
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.selected-material-pill button:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.form-panel-header {
+  margin-bottom: 1.5rem;
+}
+
+.form-panel-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin-bottom: 0.25rem;
+}
+
+.form-panel-subtitle {
+  font-size: 0.88rem;
+  color: var(--slate-500);
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--slate-700);
+  margin-bottom: 0.45rem;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--slate-400);
+  pointer-events: none;
+}
+
+.form-input {
+  width: 100%;
+  height: 52px;
+  padding: 0 1rem 0 2.85rem;
+  background: var(--slate-50);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--slate-900);
+  transition: var(--transition-fast);
+}
+
+.form-input:focus {
+  background: var(--white);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+.form-input.input-error {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.form-checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.82rem;
+  color: var(--slate-500);
+  line-height: 1.4;
+}
+
+.form-checkbox-group input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.form-checkbox-group a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.btn-submit-full {
+  width: 100%;
+  height: 54px;
+  font-size: 1.05rem;
+}
+
+.form-trust-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--slate-400);
+  margin-top: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .quick-order-card {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .quick-order-form,
+  .quick-order-form-panel {
+    padding: 1.75rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. ЧАСТЫЕ ВОПРОСЫ (FAQ Section)
+   -------------------------------------------------------------------------- */
+.faq-section {
+  padding: 5rem 0;
+  background: var(--bg-surface);
+}
+
+.faq-list {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.faq-item {
+  background: var(--slate-50);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: var(--transition-fast);
+}
+
+.faq-item:hover {
+  border-color: var(--slate-300);
+}
+
+.faq-item.active {
+  background: var(--white);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.faq-question {
+  width: 100%;
+  padding: 1.35rem 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  text-align: left;
+}
+
+.faq-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+  transition: transform var(--transition-base);
+}
+
+.faq-item.active .faq-icon {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  display: none;
+  padding: 0 1.6rem 1.35rem;
+  color: var(--slate-600);
+  font-size: 0.96rem;
+  line-height: 1.65;
+}
+
+.faq-item.active .faq-answer {
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   11. КОНТАКТЫ (Contacts Section)
+   -------------------------------------------------------------------------- */
+.contacts-section {
+  padding: 5rem 0;
+  background: var(--bg-page);
+}
+
+.contacts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.contact-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.contact-icon-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.phone-badge {
+  background: var(--emerald-50);
+  color: var(--emerald-600);
+}
+
+.address-badge {
+  background: var(--amber-50);
+  color: var(--amber-600);
+}
+
+.contact-card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--slate-900);
+}
+
+.contact-card-value {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--primary);
+}
+
+.contact-card-desc {
+  font-size: 0.9rem;
+  color: var(--slate-500);
+  line-height: 1.5;
+}
+
+.btn-contact {
+  margin-top: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--slate-900);
+  color: var(--white);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition: var(--transition-fast);
+}
+
+.btn-contact:hover {
+  background: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .contacts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   12. ПОДВАЛ САЙТА (Site Footer)
+   -------------------------------------------------------------------------- */
+.site-footer {
+  background: var(--slate-950);
+  color: var(--slate-400);
+  padding: 4.5rem 0 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 3.5rem;
+}
+
+.footer-brand .logo-text {
+  color: var(--white);
+  margin-bottom: 1rem;
+}
+
+.footer-desc {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+  max-width: 380px;
+}
+
+.footer-delivery-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--emerald-400);
+  font-size: 0.84rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.footer-legal-info {
+  font-size: 0.82rem;
+  color: var(--slate-500);
+  line-height: 1.6;
+}
+
+.footer-legal-info a {
+  color: var(--slate-400);
+  text-decoration: underline;
+}
+
+.footer-heading {
+  color: var(--white);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-links a {
+  font-size: 0.88rem;
+  color: var(--slate-400);
+  transition: var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: var(--white);
+}
+
+.footer-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--amber-400);
+  margin-bottom: 0.75rem;
+}
+
+.footer-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--slate-400);
+}
+
+.footer-bottom {
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--slate-500);
+}
+
+@media (max-width: 900px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13. ПЛАВАЮЩИЙ МОБИЛЬНЫЙ БАР ДЕЙСТВИЙ (Sticky Mobile Bottom CTA)
+   -------------------------------------------------------------------------- */
+.mobile-sticky-cta {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border-subtle);
+  box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.1);
+  transition: transform var(--transition-base), opacity var(--transition-base);
+}
+
+.mobile-sticky-cta .btn-primary {
+  width: 100%;
+  height: 48px;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .mobile-sticky-cta {
+    display: block;
+  }
+  body {
+    padding-bottom: 70px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   14. КНОПКА "НАВЕРХ" И TOAST УВЕДОМЛЕНИЯ
+   -------------------------------------------------------------------------- */
+.back-to-top {
+  position: fixed;
+  bottom: 85px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--slate-900);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  z-index: 900;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: var(--transition-base);
+}
+
+.back-to-top.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top:hover {
+  background: var(--primary);
+  transform: translateY(-2px);
+}
+
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--slate-900);
+  color: var(--white);
+  padding: 0.85rem 1.35rem;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: var(--transition-base);
+  pointer-events: auto;
+  border-left: 4px solid var(--primary);
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast-error {
+  border-left-color: #dc2626;
+}
+
+.toast-success {
+  border-left-color: var(--emerald-500);
+}
+
+
+/* --------------------------------------------------------------------------
+   16. ЮРИДИЧЕСКИЕ И ИНФОРМАЦИОННЫЕ СТРАНИЦЫ
+   -------------------------------------------------------------------------- */
+.privacy-container {
+  max-width: 880px;
+  margin: 3rem auto;
+  padding: 2.75rem;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.privacy-container h1 {
+  font-size: 1.85rem;
+  font-weight: 900;
+  margin-bottom: 1.5rem;
+  line-height: 1.25;
+}
+
+.privacy-container h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-top: 2rem;
+  margin-bottom: 0.85rem;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 0.35rem;
+  display: inline-block;
+}
+
+.privacy-container p,
+.privacy-container li {
+  font-size: 0.95rem;
+  color: var(--slate-600);
+  margin-bottom: 1rem;
+  line-height: 1.65;
+}
+
+.privacy-container ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.25rem 0;
+}
+
+.privacy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.privacy-table th,
+.privacy-table td {
+  border: 1px solid var(--border-subtle);
+  padding: 0.85rem 1rem;
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.privacy-table th {
+  background-color: rgba(5, 150, 105, 0.08);
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 2rem;
+  transition: var(--transition-fast);
+}
+
+.btn-back:hover {
+  color: var(--primary-hover);
+}
+
+.alert-box, .info-card-box {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 4px solid var(--amber-500);
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  border-radius: var(--radius-xs);
+  font-size: 0.9rem;
+  color: var(--slate-800);
+  line-height: 1.55;
+}
+
+@media (max-width: 768px) {
+  .privacy-container {
+    margin: 1rem;
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    max-width: calc(100vw - 2rem);
+    box-sizing: border-box;
+  }
+  .privacy-container h1 {
+    font-size: 1.4rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   17. ЭТАПЫ РАБОТЫ И ДОСТАВКИ (Delivery Steps Timeline)
+   -------------------------------------------------------------------------- */
+.steps-section {
+  padding: 5rem 0;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.step-card {
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 2rem 1.6rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: var(--transition-base);
+}
+
+.step-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+  background: var(--white);
+}
+
+.step-number {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--slate-300);
+  line-height: 1;
+  transition: var(--transition-fast);
+}
+
+.step-card:hover .step-number {
+  color: var(--primary);
+}
+
+.step-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--slate-900);
+}
+
+.step-desc {
+  font-size: 0.9rem;
+  color: var(--slate-600);
+  line-height: 1.55;
+}
+
+@media (max-width: 992px) {
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   18. ПРЕИМУЩЕСТВА И ГАРАНТИИ (Why Choose Us)
+   -------------------------------------------------------------------------- */
+.advantages-section {
+  padding: 5rem 0;
+  background: var(--bg-page);
+}
+
+.advantages-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+  margin-top: 2.5rem;
+}
+
+.adv-card {
+  background: var(--white);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 2.25rem 1.75rem;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: var(--transition-base);
+}
+
+.adv-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--emerald-300);
+}
+
+.adv-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.adv-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--slate-900);
+}
+
+.adv-desc {
+  font-size: 0.92rem;
+  color: var(--slate-600);
+  line-height: 1.6;
+}
+
+@media (max-width: 992px) {
+  .advantages-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   19. ЗОНА ДОСТАВКИ И РАЙОНЫ (Delivery Zones)
+   -------------------------------------------------------------------------- */
+.zones-section {
+  padding: 4.5rem 0;
+  background: var(--white);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.zones-card {
+  background: var(--slate-900);
+  border-radius: var(--radius-lg);
+  padding: 3rem;
+  color: var(--white);
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.zones-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.zones-content h2 {
+  font-size: clamp(1.8rem, 3vw, 2.3rem);
+  color: var(--white);
+  margin-bottom: 1rem;
+}
+
+.zones-content p {
+  font-size: 1rem;
+  color: var(--slate-300);
+  margin-bottom: 1.75rem;
+  line-height: 1.6;
+}
+
+.zones-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.zone-tag {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--slate-200);
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-full);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.zones-highlight-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.zone-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.zone-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--emerald-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.zone-stat-val {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.zone-stat-label {
+  font-size: 0.84rem;
+  color: var(--slate-400);
+}
+
+@media (max-width: 900px) {
+  .zones-card {
+    grid-template-columns: 1fr;
+    padding: 2rem 1.5rem;
+    gap: 2rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   14. SEO SEMANTIC TEXT SECTION
+   -------------------------------------------------------------------------- */
+.seo-info-section {
+  padding: 3.5rem 0;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.seo-info-box {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.seo-heading {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.seo-text-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.seo-text-col h3 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.6rem;
+}
+
+.seo-text-col p {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  margin-bottom: 0.85rem;
+}
+
+@media (max-width: 600px) {
+  .seo-info-section {
+    padding: 2.5rem 0;
+  }
+  .seo-heading {
+    font-size: 1.2rem;
+  }
+}
+
+.form-consent-notice {
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+  text-align: center;
+  margin-top: 0.75rem;
+  line-height: 1.45;
+}
+
+.form-consent-notice a {
+  color: var(--primary, #10b981);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.form-consent-notice a:hover {
+  color: var(--primary-hover, #059669);
+}
+
+
+

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: kraspesok_web
+    restart: always
+    ports:
+      - "127.0.0.1:2000:2000"
+    environment:
+      - NODE_ENV=production
+      - PORT=2000
+    volumes:
+      - ./orders.json:/app/orders.json
+      - ./orders.md:/app/orders.md
+      - ./backups:/app/backups
+      - ./logs:/app/logs

@@ -1,0 +1,12 @@
+.git
+node_modules
+.env
+.env.*
+orders.json
+orders.md
+backups/
+logs/
+deploy.zip
+kraspesok_site.zip
+*.log
+*.tmp

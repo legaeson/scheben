@@ -1,0 +1,16 @@
+[Unit]
+Description=KrasPesok Node.js Production Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/kraspesok
+ExecStart=/usr/bin/node /var/www/kraspesok/server.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+Environment=PORT=2000
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,37 @@
+# КрасПесок.рф - Защита и оптимизация для Apache / LiteSpeed (AdminVPS)
+AddDefaultCharset UTF-8
+
+# Защита конфиденциальных файлов и служебных логов
+<FilesMatch "(\.env|\.git|orders\.json|orders\.txt|package\.json|package-lock\.json|server\.js|\.md|\.log|\.sql|\.bak|\.conf)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Правильные MIME-типы для современных форматов
+<IfModule mod_mime.c>
+    AddType image/webp .webp
+    AddType image/svg+xml .svg
+    AddType application/javascript .js
+    AddType text/css .css
+</IfModule>
+
+# Включение GZIP сжатия
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# Кэширование статики
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
