@@ -349,6 +349,9 @@ h1, h2, h3, h4, h5, h6,
   letter-spacing: -0.01em;
   box-shadow: var(--shadow-sm);
   transition: var(--transition-base);
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-decoration: none;
 }
 
 .phone-button:hover {
@@ -372,6 +375,9 @@ h1, h2, h3, h4, h5, h6,
   background: var(--slate-100);
   color: var(--slate-800);
   transition: var(--transition-fast);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .mobile-toggle:hover {
@@ -441,6 +447,80 @@ h1, h2, h3, h4, h5, h6,
   }
   .header-inner {
     height: 64px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-inner {
+    height: 60px;
+  }
+
+  .logo-text {
+    font-size: 1.35rem;
+  }
+
+  .header-actions {
+    gap: 0.5rem;
+  }
+
+  .phone-button {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: var(--primary);
+    color: var(--white);
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+  }
+
+  .phone-button:hover {
+    background: var(--primary-hover);
+    transform: none;
+    box-shadow: 0 4px 10px rgba(5, 150, 105, 0.35);
+  }
+
+  .phone-button:active {
+    transform: scale(0.95);
+  }
+
+  .phone-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .phone-button .phone-text {
+    display: none;
+  }
+
+  .mobile-toggle {
+    width: 42px;
+    height: 42px;
+  }
+
+  .mobile-toggle:active {
+    transform: scale(0.95);
+  }
+}
+
+@media (max-width: 380px) {
+  .logo-text {
+    font-size: 1.22rem;
+  }
+
+  .header-actions {
+    gap: 0.35rem;
+  }
+
+  .phone-button,
+  .mobile-toggle {
+    width: 38px;
+    height: 38px;
+  }
+
+  .phone-button svg {
+    width: 18px;
+    height: 18px;
   }
 }
 
