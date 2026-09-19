@@ -167,17 +167,15 @@ const materialsData = _kpmat || {
         webp2x: 'images/crushed_brick@2x.webp',
         badge: 'Вторичный рециклинг',
         spec: 'Дробленый кирпич/бетон фр. 20-70 мм',
-        priceM3: 450,   // исправлено (рыночная цена)
+        priceM3: 450,
         density: 1.3,
         minOrder: 'от 6 м³',
         origin: 'Сортировочная база Красноярск',
         useCase: 'Для засыпки ям, болотных грунтов и временных дорог'
     }
-};  // конец fallback-defaults для materialsData
+};
 
 // ─── Функция расчёта цены доставки по расстоянию ────────────────────────────
-// Единственное место, где считается цена доставки для клиента.
-// Учитывает реальную себестоимость рейса + маржу.
 function calcDeliveryFromKm(distanceKm, numTrips) {
     if (typeof KPEngine !== 'undefined' && typeof KPCONFIG !== 'undefined') {
         const cfg = KPCONFIG.getConfig();
@@ -189,13 +187,13 @@ function calcDeliveryFromKm(distanceKm, numTrips) {
     // Fallback: Shacman 20т без движка
     const MIN_DELIVERY = 3000;
     const COEFF = 1.45;
-    const KM_COST = 48;   // ₽/км итого (включая все статьи)
+    const KM_COST = 48;   // ₽/км
     const DRIVER  = 1200; // ₽/рейс
     const tripCost = distanceKm * 2 * KM_COST + DRIVER;
     return Math.round(Math.max(MIN_DELIVERY, tripCost * COEFF)) * (numTrips || 1);
 }
 
-// ─── Карта районов (для hero-виджета) ────────────────────────────────────────
+// ─── Карта районов ──────────────────────────────────────────────────────────
 const _districtMap = (_kpcfg && _kpcfg.districtMap) ? _kpcfg.districtMap : {
     sovetskiy:         { name: 'Советский район (Красноярск)',    km: 8  },
     oktyabrskiy:       { name: 'Октябрьский район (Красноярск)', km: 10 },
@@ -224,13 +222,13 @@ Object.entries(_districtMap).forEach(([key, d]) => {
     deliveryZones[key] = {
         name:  d.name,
         zone:  'dynamic',
-        price: calcDeliveryFromKm(d.km, 1),   // базовая цена за 1 рейс
+        price: calcDeliveryFromKm(d.km, 1),
         km:    d.km,
         eta:   d.km <= 15 ? '1.5-2 ч' : d.km <= 30 ? '2-3 ч' : d.km <= 50 ? '3-4 ч' : '4-6 ч',
     };
 });
 
-// ─── fleetData — для отображения автопарка на сайте ──────────────────────────
+// ─── fleetData — автопарк для отображения и подбора ──────────────────────────
 const fleetData = {
     mini: {
         id: 'mini',
@@ -243,7 +241,7 @@ const fleetData = {
     },
     kamaz: {
         id: 'kamaz',
-        name: 'Самосвал среднего класса 10-12 т',
+        name: 'Самосвал КамАЗ 65115 (10-14 т)',
         capacityTons: 12,
         capacityM3: 8,
         clearanceWidth: '2.6 м',
@@ -252,16 +250,14 @@ const fleetData = {
     },
     heavy: {
         id: 'heavy',
-        name: _kpveh ? _kpveh.name : 'Shacman F3000 — 20 тонн (основной)',
+        name: _kpveh ? _kpveh.name : 'Тяжёлый самосвал 20 тонн (Shacman)',
         capacityTons: _kpveh ? _kpveh.capacity   : 20,
         capacityM3:   _kpveh ? _kpveh.bodyVolume : 14,
-        clearanceWidth: '2.55 м',
+        clearanceWidth: '2.8 м',
         clearanceHeight: '3.2 м',
         bestFor: 'Основной рабочий самосвал. Крупные заказы, промышленные объекты, дороги'
     }
 };
-
-
 
 // ==========================================================================
 // Инициализация приложения
@@ -314,9 +310,9 @@ function renderMaterialCards(catFilter = 'all', taskFilter = 'all') {
 
     if (filtered.length === 0) {
         grid.innerHTML = `
-            <div class="empty-catalog-msg">
-                <p>В этой категории по выбранной задаче материалы не найдены.</p>
-                <button type="button" class="btn-primary" onclick="resetFilters()">Показать все материалы</button>
+            <div class="empty-catalog-msg" style="grid-column: 1/-1; text-align: center; padding: 3rem; background: #fff; border-radius: 14px; border: 1px dashed var(--slate-300);">
+                <p style="font-size: 1.1rem; color: var(--slate-600); margin-bottom: 1rem;">По выбранным фильтрам материалы не найдены.</p>
+                <button type="button" class="btn-primary" onclick="resetFilters()">Показать все материалы каталога</button>
             </div>
         `;
         return;
@@ -389,12 +385,12 @@ function renderMaterialCards(catFilter = 'all', taskFilter = 'all') {
 
                 <div class="card-actions-grid">
                     <button type="button" class="btn-card-calc" data-mat-id="${mat.id}" aria-label="Рассчитать доставку ${mat.name}">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
-                        <span>В калькулятор</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/></svg>
+                        <span>В расчёт</span>
                     </button>
                     <button type="button" class="btn-card-order" data-mat-id="${mat.id}" data-mat-name="${mat.name}" aria-label="Быстрый заказ ${mat.name}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                        <span>Заказать</span>
+                        <span>Заказать рейс</span>
                     </button>
                 </div>
             </div>
@@ -430,8 +426,14 @@ function renderMaterialCards(catFilter = 'all', taskFilter = 'all') {
 function resetFilters() {
     currentCategory = 'all';
     currentTask = 'all';
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.category === 'all'));
-    document.querySelectorAll('.task-chip').forEach(c => c.classList.toggle('active', c.dataset.task === 'all'));
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.category === 'all');
+        b.setAttribute('aria-selected', b.dataset.category === 'all' ? 'true' : 'false');
+    });
+    document.querySelectorAll('.task-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.task === 'all');
+        c.setAttribute('aria-selected', c.dataset.task === 'all' ? 'true' : 'false');
+    });
     renderMaterialCards('all', 'all');
 }
 
@@ -440,11 +442,11 @@ function appendCustomRentalBanner(grid) {
     banner.className = 'rental-cta-card';
     banner.innerHTML = `
         <div class="rental-cta-content">
-            <div class="rental-badge">🚚 Индивидуальные рейсы и спецтехника</div>
+            <div class="rental-badge">🚚 Индивидуальные рейсы и аренда техники</div>
             <h3 class="rental-title">Нужен другой материал, аренда самосвала на смену или вывоз грунта?</h3>
-            <p class="rental-desc">Предоставляем самосвалы 10 и 20 м³ с опытными водителями с почасовой или посуточной оплатой по Красноярску и краю. Погрузка на любых сертифицированных карьерах.</p>
+            <p class="rental-desc">Предоставляем самосвалы 4т, 10т и 20м³ с опытными водителями по Красноярску и пригороду. Погрузка на любых сертифицированных карьерах.</p>
             <div class="rental-actions">
-                <button type="button" class="btn-primary" onclick="openOrderModal({ materialName: 'Аренда самосвала / Индивидуальный заказ' })">
+                <button type="button" class="btn-primary" onclick="openOrderModal({ materialName: 'Аренда самосвала / Индивидуальный рейс' })">
                     Заказать консультацию диспетчера
                 </button>
                 <a href="tel:+79950758414" class="btn-secondary">
@@ -461,8 +463,12 @@ function setupCategoryTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
+            tabs.forEach(t => {
+                t.classList.remove('active');
+                t.setAttribute('aria-selected', 'false');
+            });
             tab.classList.add('active');
+            tab.setAttribute('aria-selected', 'true');
             currentCategory = tab.dataset.category;
             renderMaterialCards(currentCategory, currentTask);
         });
@@ -474,8 +480,12 @@ function setupTaskChips() {
     const chips = document.querySelectorAll('.task-chip');
     chips.forEach(chip => {
         chip.addEventListener('click', () => {
-            chips.forEach(c => c.classList.remove('active'));
+            chips.forEach(c => {
+                c.classList.remove('active');
+                c.setAttribute('aria-selected', 'false');
+            });
             chip.classList.add('active');
+            chip.setAttribute('aria-selected', 'true');
             currentTask = chip.dataset.task;
             renderMaterialCards(currentCategory, currentTask);
         });
@@ -507,6 +517,7 @@ function setupHeroExpressCalc() {
     const customVolInput = document.getElementById('hero-custom-vol');
     const chips = document.querySelectorAll('.hero-vol-chip');
     const submitBtn = document.getElementById('hero-calc-submit');
+    const altLink = document.querySelector('.link-switch-to-dimensions');
 
     if (!matSelect || !zoneSelect) return;
 
@@ -546,13 +557,38 @@ function setupHeroExpressCalc() {
         });
     }
 
-    matSelect.addEventListener('change', recalcHeroWidget);
-    zoneSelect.addEventListener('change', recalcHeroWidget);
+    matSelect.addEventListener('change', () => {
+        const mainMat = document.getElementById('main-calc-material');
+        if (mainMat) mainMat.value = matSelect.value;
+        recalcHeroWidget();
+        recalcMainCalculator();
+    });
+
+    zoneSelect.addEventListener('change', () => {
+        const mainZone = document.getElementById('main-calc-zone');
+        if (mainZone) mainZone.value = zoneSelect.value;
+        recalcHeroWidget();
+        recalcMainCalculator();
+    });
+
+    if (altLink) {
+        altLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            const mainMat = document.getElementById('main-calc-material');
+            const mainZone = document.getElementById('main-calc-zone');
+            if (mainMat) mainMat.value = matSelect.value;
+            if (mainZone) mainZone.value = zoneSelect.value;
+            const dimModeBtn = document.querySelector('.calc-mode-btn[data-mode="dimensions"]');
+            if (dimModeBtn) dimModeBtn.click();
+            const calcSec = document.getElementById('calc-section');
+            if (calcSec) calcSec.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
 
     if (submitBtn) {
         submitBtn.addEventListener('click', () => {
-            const mat = materialsData[matSelect.value];
-            const zone = deliveryZones[zoneSelect.value];
+            const mat = materialsData[matSelect.value] || materialsData.sand_washed;
+            const zone = deliveryZones[zoneSelect.value] || deliveryZones.sovetskiy;
             const vol = parseFloat(customVolInput ? customVolInput.value : 7) || 7;
             const matCost = mat.priceM3 * vol;
             const deliveryCost = zone.price;
@@ -625,21 +661,40 @@ function setupMainCalculator() {
         zoneSelect.appendChild(opt);
     });
 
-    // Переключение режимов: По размерам площадки / Знаю точный объем
+    // Переключение режимов
     modeTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            modeTabs.forEach(t => t.classList.remove('active'));
+            modeTabs.forEach(t => {
+                t.classList.remove('active');
+                t.setAttribute('aria-selected', 'false');
+            });
             tab.classList.add('active');
+            tab.setAttribute('aria-selected', 'true');
             const mode = tab.dataset.mode;
             if (mode === 'dimensions') {
                 if (directInputsBox) directInputsBox.style.display = 'none';
-                if (dimensionsInputsBox) dimensionsInputsBox.style.display = 'grid';
+                if (dimensionsInputsBox) dimensionsInputsBox.style.display = 'block';
             } else {
-                if (directInputsBox) directInputsBox.style.display = 'grid';
+                if (directInputsBox) directInputsBox.style.display = 'block';
                 if (dimensionsInputsBox) dimensionsInputsBox.style.display = 'none';
             }
             recalcMainCalculator();
         });
+    });
+
+    // Синхронизация обратно в hero
+    matSelect.addEventListener('change', () => {
+        const heroMat = document.getElementById('hero-calc-material');
+        if (heroMat) heroMat.value = matSelect.value;
+        recalcHeroWidget();
+        recalcMainCalculator();
+    });
+
+    zoneSelect.addEventListener('change', () => {
+        const heroZone = document.getElementById('hero-calc-zone');
+        if (heroZone) heroZone.value = zoneSelect.value;
+        recalcHeroWidget();
+        recalcMainCalculator();
     });
 
     // Слушатели инпутов
@@ -685,13 +740,13 @@ function setupMainCalculator() {
         mainWaBtn.addEventListener('click', () => {
             const state = calculateCurrentState();
             const text = encodeURIComponent(
-                `Здравствуйте! Хочу заказать материал на КрасПесок.рф:\n` +
+                `Здравствуйте! Хочу заказать доставку на КрасПесок.рф:\n` +
                 `• Материал: ${state.mat.name}\n` +
-                `• Расчётный объём: ${state.finalVolume} м³ (≈ ${state.totalTons} тонн)\n` +
+                `• Объём с запасом: ${state.finalVolume} м³ (≈ ${state.totalTons} т)\n` +
                 `• Район доставки: ${state.zone.name}\n` +
-                `• Рекомендуемый транспорт: ${state.recommendedTruck.name}\n` +
-                `• Расчётная стоимость: ${formatRub(state.totalPrice)} с доставкой.\n` +
-                `Когда сможете привезти?`
+                `• Рекомендуемая машина: ${state.recommendedTruck.name}\n` +
+                `• Расчётная цена: ${formatRub(state.totalPrice)} с доставкой.\n` +
+                `Подскажите, когда ближайший свободный рейс?`
             );
             window.open(`https://wa.me/79950758414?text=${text}`, '_blank');
         });
@@ -711,7 +766,7 @@ function calculateCurrentState() {
     const zone = deliveryZones[zoneKey] || deliveryZones.sovetskiy;
 
     let volumeM3 = 7;
-    let compactionFactor = 1.0;
+    let compactionFactor = 1.15;
 
     if (mode === 'dimensions') {
         const length = parseFloat(document.getElementById('dim-length')?.value) || 10;
@@ -719,8 +774,8 @@ function calculateCurrentState() {
         const depthCm = parseFloat(document.getElementById('dim-depth')?.value) || 15;
         const depthM = depthCm / 100;
 
-        // Коэффициент уплотнения при трамбовке
-        compactionFactor = mat.category === 'crushed' || mat.category === 'gravel' ? 1.15 : 1.2;
+        // Коэффициент уплотнения при трамбовке (СНиП)
+        compactionFactor = (mat.category === 'crushed' || mat.category === 'gravel') ? 1.15 : (mat.category === 'sand_pgs' ? 1.20 : 1.15);
         const rawVolume = length * width * depthM;
         volumeM3 = parseFloat((rawVolume * compactionFactor).toFixed(1));
     } else {
@@ -730,32 +785,27 @@ function calculateCurrentState() {
     if (volumeM3 < 1) volumeM3 = 1;
 
     const totalTons = parseFloat((volumeM3 * mat.density).toFixed(1));
-
-    // Расстояние для данного района/зоны
     const distKm = zone.km || 10;
 
-    // Подбор подходящей машины с учётом объёма и физических ограничений Shacman 20т
-    let recommendedTruck = fleetData.heavy;
+    // Подбор подходящей машины с учётом объёма и габаритов
+    let recommendedTruck = fleetData.kamaz;
     let numTrips = 1;
 
-    // Shacman 20т: ограничение по весу = 20т / density, по кузову = 14 м³
-    const SHACMAN_BODY_VOL = _kpveh ? _kpveh.bodyVolume : 14;
-    const SHACMAN_CAPACITY = _kpveh ? _kpveh.capacity   : 20;
-    const maxByWeight = SHACMAN_CAPACITY / mat.density;
-    const maxPerTrip  = Math.min(SHACMAN_BODY_VOL, maxByWeight);
-    numTrips = Math.ceil(volumeM3 / maxPerTrip);
-
-    // Для небольших объёмов показываем мини-машину (информационно)
-    if (volumeM3 <= 4 && (volumeM3 * mat.density) <= 4.5) {
+    if (volumeM3 <= 4 && totalTons <= 4.5) {
         recommendedTruck = fleetData.mini;
         numTrips = 1;
+    } else if (volumeM3 <= 10 && totalTons <= 14) {
+        recommendedTruck = fleetData.kamaz;
+        numTrips = 1;
+    } else {
+        recommendedTruck = fleetData.heavy;
+        const maxPerTrip = Math.min(14, 20 / mat.density);
+        numTrips = Math.ceil(volumeM3 / maxPerTrip);
     }
 
-    const materialCost  = Math.round(volumeM3 * mat.priceM3);
-    // Цена доставки теперь считается через реальную себестоимость
-    const deliveryCost  = calcDeliveryFromKm(distKm, numTrips);
-    const totalPrice    = materialCost + deliveryCost;
-
+    const materialCost = Math.round(volumeM3 * mat.priceM3);
+    const deliveryCost = calcDeliveryFromKm(distKm, numTrips);
+    const totalPrice = materialCost + deliveryCost;
 
     return {
         mat,
@@ -850,13 +900,19 @@ function setupDeliveryZonesSelector() {
             if (nameEl) nameEl.innerText = zoneInfo.name;
             if (priceEl) priceEl.innerText = `от ${formatRub(zoneInfo.price)} за рейс`;
             if (etaEl) etaEl.innerText = `Подача машины: ${zoneInfo.eta}`;
-            if (zoneTagEl) zoneTagEl.innerText = `Зона ${zoneInfo.zone}`;
+            if (zoneTagEl) zoneTagEl.innerText = zoneInfo.km <= 15 ? 'Городской тариф' : 'Пригородный тариф';
 
             // Синхронизация с калькулятором
             const mainZoneSelect = document.getElementById('main-calc-zone');
             if (mainZoneSelect) {
                 mainZoneSelect.value = zoneKey;
                 recalcMainCalculator();
+            }
+
+            const heroZoneSelect = document.getElementById('hero-calc-zone');
+            if (heroZoneSelect) {
+                heroZoneSelect.value = zoneKey;
+                recalcHeroWidget();
             }
         });
     });
@@ -1056,21 +1112,28 @@ function setupFaqAccordion() {
         question.addEventListener('click', (e) => {
             e.preventDefault();
             const isActive = item.classList.contains('active');
-            faqItems.forEach(i => i.classList.remove('active'));
+            faqItems.forEach(i => {
+                i.classList.remove('active');
+                const btn = i.querySelector('.faq-question');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            });
             if (!isActive) {
                 item.classList.add('active');
+                question.setAttribute('aria-expanded', 'true');
             }
         });
     });
 }
 
 // ==========================================================================
-// 10. Плавающий мобильный Sticky Bar и ScrollSpy
+// 10. Плавающий мобильный Sticky Bar и ScrollSpy (с requestAnimationFrame)
 // ==========================================================================
 function setupMobileStickyCtaBehavior() {
     const stickyCta = document.querySelector('.mobile-sticky-cta');
     const orderSection = document.getElementById('quick-order-section');
     if (!stickyCta) return;
+
+    let isTicking = false;
 
     const updateVisibility = () => {
         if (window.innerWidth > 768) return;
@@ -1093,9 +1156,16 @@ function setupMobileStickyCtaBehavior() {
             stickyCta.style.pointerEvents = 'auto';
             stickyCta.style.transform = 'translateY(0)';
         }
+        isTicking = false;
     };
 
-    window.addEventListener('scroll', updateVisibility, { passive: true });
+    window.addEventListener('scroll', () => {
+        if (!isTicking) {
+            window.requestAnimationFrame(updateVisibility);
+            isTicking = true;
+        }
+    }, { passive: true });
+
     window.addEventListener('resize', updateVisibility);
     document.addEventListener('focusin', updateVisibility);
     document.addEventListener('focusout', () => setTimeout(updateVisibility, 100));
@@ -1107,7 +1177,9 @@ function setupScrollSpyAndBackToTop() {
     const sections = document.querySelectorAll('section[id], main[id]');
     const navLinks = document.querySelectorAll('.nav-link');
 
-    window.addEventListener('scroll', () => {
+    let isTicking = false;
+
+    const handleScroll = () => {
         if (backToTopBtn) {
             backToTopBtn.classList.toggle('active', window.scrollY > 400);
         }
@@ -1126,6 +1198,14 @@ function setupScrollSpyAndBackToTop() {
                 link.classList.toggle('active', href === currentSectionId);
             });
         }
+        isTicking = false;
+    };
+
+    window.addEventListener('scroll', () => {
+        if (!isTicking) {
+            window.requestAnimationFrame(handleScroll);
+            isTicking = true;
+        }
     }, { passive: true });
 
     if (backToTopBtn) {
@@ -1143,13 +1223,23 @@ function setupMobileNav() {
     if (!toggleBtn || !drawer) return;
 
     toggleBtn.addEventListener('click', () => {
+        const isActive = drawer.classList.contains('active');
         drawer.classList.toggle('active');
+        toggleBtn.setAttribute('aria-expanded', !isActive ? 'true' : 'false');
     });
 
     document.querySelectorAll('.mobile-nav-link').forEach(link => {
         link.addEventListener('click', () => {
             drawer.classList.remove('active');
+            toggleBtn.setAttribute('aria-expanded', 'false');
         });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (drawer.classList.contains('active') && !drawer.contains(e.target) && !toggleBtn.contains(e.target)) {
+            drawer.classList.remove('active');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+        }
     });
 }
 

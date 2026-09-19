@@ -32,7 +32,8 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             imgSrc:     ["'self'", "data:"],
             scriptSrc:  ["'self'"],
-            styleSrc:   ["'self'", "'unsafe-inline'"],
+            styleSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc:    ["'self'", "https://fonts.gstatic.com", "data:"],
             // OpenStreetMap: Nominatim (геокодинг) + OSRM (маршруты)
             connectSrc: [
                 "'self'",
