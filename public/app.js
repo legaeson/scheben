@@ -1,149 +1,338 @@
 // ==========================================================================
-// КрасПесок.рф — Каталог материалов и быстрая связь с диспетчером
+// КрасПесок.рф — Интеллектуальный логистический сервис нерудных материалов
+// Версия 15.0 (2026) — Экономический движок + прямые поставки с карьеров
+// ==========================================================================
+// ВСЕ ЦЕНЫ БЕРУТСЯ ИЗ business-config.js → KPCONFIG
+// Изменять цены только через /admin.html
 // ==========================================================================
 
-const materialsData = {
-    your_situation: {
-        id: 'your_situation',
-        name: 'Ваша ситуация (Аренда грузовика / Свой вариант)',
-        category: 'custom',
-        img: 'images/truck_rental.jpg',
-        webp: 'images/truck_rental.webp',
-        webp2x: 'images/truck_rental@2x.webp',
-        badge: '🚚 Решим любую задачу',
-        price: 'Договорная',
-        unit: 'рейс / услуга',
-        desc: 'Не нашли нужный товар или нужна аренда самосвала? Напишите или позвоните нам — всё доставим и подберём лучшее решение!'
-    },
-    crushed_brick: {
-        id: 'crushed_brick',
-        name: 'Бой кирпича (Вторичный)',
-        category: 'secondary',
-        img: 'images/crushed_brick.jpg',
-        webp: 'images/crushed_brick.webp',
-        webp2x: 'images/crushed_brick@2x.webp',
-        badge: 'Вторичный рециклинг',
-        price: 800,
-        unit: 'м³',
-        desc: 'Дробленый кирпичный бой для временных дорог, укрепления грунта и засыпки котлованов (Вторичный рециклинг).'
-    },
-    sand: {
-        id: 'sand',
-        name: 'Песок строительный (отсев / мытый)',
+// Загружаем конфиг — берём из KPCONFIG или падаем на defaults
+const _kpcfg = (typeof KPCONFIG !== 'undefined') ? KPCONFIG.getConfig()        : null;
+const _kpmat = _kpcfg                             ? KPCONFIG.getMaterialsForUI() : null;
+const _kpveh = _kpcfg                             ? KPCONFIG.getDefaultVehicle() : null;
+
+// ─── materialsData ─────────────────────────────────────────────────────────────
+const materialsData = _kpmat || {
+    sand_washed: {
+        id: 'sand_washed',
+        name: 'Песок строительный мытый (0-5 мм)',
         category: 'sand_pgs',
+        tags: ['concrete', 'foundation', 'leveling'],
         img: 'images/sand.jpg',
         webp: 'images/sand.webp',
         webp2x: 'images/sand@2x.webp',
         badge: 'ГОСТ 8736-2014',
-        price: 850,
-        unit: 'м³',
-        desc: 'Чистый сеяный и мытый песок 0-5 мм без глины. Для кладки, штукатурки и стяжки пола (ГОСТ 8736-2014).'
+        spec: 'Мытый, модуль 2.0-2.5 мм, без глины',
+        priceM3: 850,
+        density: 1.5, // 1 м³ = 1.5 тонны
+        minOrder: 'от 3 м³',
+        origin: 'Карьер Песчанка / Есауловский',
+        useCase: 'Для бетона, стяжки пола, кладки и штукатурки'
     },
-    crushed_stone: {
-        id: 'crushed_stone',
-        name: 'Щебень (гранитный / диоритовый)',
+    sand_sifted: {
+        id: 'sand_sifted',
+        name: 'Песок карьерный сеяный (отсев 0-3 мм)',
+        category: 'sand_pgs',
+        tags: ['leveling', 'garden', 'road'],
+        img: 'images/sand.jpg',
+        webp: 'images/sand.webp',
+        webp2x: 'images/sand@2x.webp',
+        badge: 'ГОСТ 8736-2014',
+        spec: 'Сеяный отсев, модуль 1.5-2.0 мм',
+        priceM3: 700,
+        density: 1.45,
+        minOrder: 'от 3 м³',
+        origin: 'Карьер Дорожник / Зыково',
+        useCase: 'Для подушек под брусчатку, засыпки траншей и кабелей'
+    },
+    crushed_stone_5_20: {
+        id: 'crushed_stone_5_20',
+        name: 'Щебень диоритовый фр. 5-20 мм',
         category: 'crushed',
+        tags: ['concrete', 'foundation'],
         img: 'images/crushed_stone.jpg',
         webp: 'images/crushed_stone.webp',
         webp2x: 'images/crushed_stone@2x.webp',
-        badge: 'ГОСТ 8267-93',
-        price: 750,
-        unit: 'м³',
-        desc: 'Фракции: 4-8, 5-20, 20-40, 40-70 мм. Высокая прочность М1200. Подходит для бетона и фундаментов (ГОСТ 8267-93).'
+        badge: 'ГОСТ 8267-93 (М1200)',
+        spec: 'Высокопрочный диорит, лещадность до 12%',
+        priceM3: 750,
+        density: 1.4, // 1 м³ = 1.4 тонны
+        minOrder: 'от 3 м³',
+        origin: 'Карьер Дорожник / Кузнецовское плато',
+        useCase: 'Идеален для фундамента дома, монолитных плит и товарного бетона'
+    },
+    crushed_stone_20_40: {
+        id: 'crushed_stone_20_40',
+        name: 'Щебень скальный фр. 20-40 мм',
+        category: 'crushed',
+        tags: ['road', 'foundation', 'drainage'],
+        img: 'images/crushed_stone.jpg',
+        webp: 'images/crushed_stone.webp',
+        webp2x: 'images/crushed_stone@2x.webp',
+        badge: 'ГОСТ 8267-93 (М1200)',
+        spec: 'Фракция 20-40 мм, морозостойкость F300',
+        priceM3: 750,
+        density: 1.38,
+        minOrder: 'от 3 м³',
+        origin: 'Карьер Дорожник / Зыково',
+        useCase: 'Для подушек фундаментов, отсыпки дорог, въездов и парковок'
+    },
+    crushed_stone_40_70: {
+        id: 'crushed_stone_40_70',
+        name: 'Щебень крупный фр. 40-70 мм',
+        category: 'crushed',
+        tags: ['road', 'drainage'],
+        img: 'images/crushed_stone.jpg',
+        webp: 'images/crushed_stone.webp',
+        webp2x: 'images/crushed_stone@2x.webp',
+        badge: 'ГОСТ 8267-93 (М1200)',
+        spec: 'Крупный скальный камень для оснований',
+        priceM3: 700,
+        density: 1.35,
+        minOrder: 'от 6 м³',
+        origin: 'Карьер Дорожник',
+        useCase: 'Для тяжелых дорожных оснований, габионов и глубокого дренажа'
     },
     pshs: {
         id: 'pshs',
-        name: 'ПЩС (Песчано-щебёночная смесь)',
+        name: 'ПЩС (Песчано-щебёночная смесь 0-20 / 0-40)',
         category: 'sand_pgs',
+        tags: ['road', 'leveling', 'foundation'],
         img: 'images/pgs.jpg',
         webp: 'images/pgs.webp',
         webp2x: 'images/pgs@2x.webp',
         badge: 'ГОСТ 25607-2009',
-        price: 750,
-        unit: 'м³',
-        desc: 'Фракции 0-20, 0-40 мм. Идеальное решение для отсыпки дорог, парковок и подушек под фундамент (ГОСТ 25607-2009).'
+        spec: 'Оптимальный состав с уплотнением до 98%',
+        priceM3: 750,
+        density: 1.6,
+        minOrder: 'от 3 м³',
+        origin: 'Карьер Дорожник / Песчанка',
+        useCase: 'Для дорог, отсыпки стоянок, заездов на участок и расклинцовки'
     },
     gps_gravel: {
         id: 'gps_gravel',
-        name: 'Гравий и ГПС',
+        name: 'Гравий речной мытый фр. 5-20 мм и ГПС',
         category: 'gravel',
+        tags: ['drainage', 'concrete', 'road'],
         img: 'images/gravel.jpg',
         webp: 'images/gravel.webp',
         webp2x: 'images/gravel@2x.webp',
         badge: 'ГОСТ 23735-2014',
-        price: 550,
-        unit: 'м³',
-        desc: 'Речной промытый гравий фракций 5-20 мм и ГПС. Для дренажа, бетонирования и ландшафта (ГОСТ 23735-2014 / ГОСТ 8267-93).'
-    },
-    expanded_clay: {
-        id: 'expanded_clay',
-        name: 'Керамзит (все фракции)',
-        category: 'secondary',
-        img: 'images/expanded_clay.jpg',
-        webp: 'images/expanded_clay.webp',
-        webp2x: 'images/expanded_clay@2x.webp',
-        badge: 'ГОСТ 32496-2013',
-        price: 1600,
-        unit: 'м³',
-        desc: 'Фракции 10-20, 20-40 мм. Легкий пористый материал для теплоизоляции полов и перекрытий (ГОСТ 32496-2013).'
+        spec: 'Промытый округлый галечник 5-20 мм',
+        priceM3: 550,
+        density: 1.45,
+        minOrder: 'от 3 м³',
+        origin: 'Енисейский бассейн / Песчанка',
+        useCase: 'Для дренажных систем, фильтрации септиков и бетонирования'
     },
     chernozem: {
         id: 'chernozem',
-        name: 'Чернозём плодородный',
+        name: 'Чернозём плодородный сеяный (Полевой)',
         category: 'secondary',
+        tags: ['garden'],
         img: 'images/chernozem.jpg',
         webp: 'images/chernozem.webp',
         webp2x: 'images/chernozem@2x.webp',
         badge: 'ГОСТ Р 53380-2009',
-        price: 1000,
-        unit: 'м³',
-        desc: 'Верховой сеяный чернозем без сорняков и камней. Для газонов, теплиц и огородов (ГОСТ Р 53380-2009).'
+        spec: 'Верховой сеяный грунт, гумус 7-9%',
+        priceM3: 1000,
+        density: 1.1,
+        minOrder: 'от 3 м³',
+        origin: 'Емельяновский / Березовский район',
+        useCase: 'Для газонов, теплиц, посадок и благоустройства участков'
+    },
+    expanded_clay: {
+        id: 'expanded_clay',
+        name: 'Керамзит теплоизоляционный (10-20 мм)',
+        category: 'secondary',
+        tags: ['foundation', 'drainage'],
+        img: 'images/expanded_clay.jpg',
+        webp: 'images/expanded_clay.webp',
+        webp2x: 'images/expanded_clay@2x.webp',
+        badge: 'ГОСТ 32496-2013',
+        spec: 'Фракция 10-20 мм, насыпная масса М400',
+        priceM3: 1600,
+        density: 0.4,
+        minOrder: 'от 3 м³',
+        origin: 'Заводской керамзит',
+        useCase: 'Для утепления полов, межэтажных перекрытий и дренажа'
+    },
+    crushed_brick: {
+        id: 'crushed_brick',
+        name: 'Бой кирпича и бетона вторичный',
+        category: 'secondary',
+        tags: ['road', 'leveling'],
+        img: 'images/crushed_brick.jpg',
+        webp: 'images/crushed_brick.webp',
+        webp2x: 'images/crushed_brick@2x.webp',
+        badge: 'Вторичный рециклинг',
+        spec: 'Дробленый кирпич/бетон фр. 20-70 мм',
+        priceM3: 450,   // исправлено (рыночная цена)
+        density: 1.3,
+        minOrder: 'от 6 м³',
+        origin: 'Сортировочная база Красноярск',
+        useCase: 'Для засыпки ям, болотных грунтов и временных дорог'
+    }
+};  // конец fallback-defaults для materialsData
+
+// ─── Функция расчёта цены доставки по расстоянию ────────────────────────────
+// Единственное место, где считается цена доставки для клиента.
+// Учитывает реальную себестоимость рейса + маржу.
+function calcDeliveryFromKm(distanceKm, numTrips) {
+    if (typeof KPEngine !== 'undefined' && typeof KPCONFIG !== 'undefined') {
+        const cfg = KPCONFIG.getConfig();
+        const veh = KPCONFIG.getDefaultVehicle();
+        if (cfg && veh) {
+            return KPEngine.calcDeliveryPrice(cfg.settings, veh, distanceKm, numTrips || 1, null);
+        }
+    }
+    // Fallback: Shacman 20т без движка
+    const MIN_DELIVERY = 3000;
+    const COEFF = 1.45;
+    const KM_COST = 48;   // ₽/км итого (включая все статьи)
+    const DRIVER  = 1200; // ₽/рейс
+    const tripCost = distanceKm * 2 * KM_COST + DRIVER;
+    return Math.round(Math.max(MIN_DELIVERY, tripCost * COEFF)) * (numTrips || 1);
+}
+
+// ─── Карта районов (для hero-виджета) ────────────────────────────────────────
+const _districtMap = (_kpcfg && _kpcfg.districtMap) ? _kpcfg.districtMap : {
+    sovetskiy:         { name: 'Советский район (Красноярск)',    km: 8  },
+    oktyabrskiy:       { name: 'Октябрьский район (Красноярск)', km: 10 },
+    sverdlovskiy:      { name: 'Свердловский район',             km: 8  },
+    zheleznodorozhniy: { name: 'Железнодорожный район',          km: 9  },
+    kirovskiy:         { name: 'Кировский район',                km: 11 },
+    leninskiy:         { name: 'Ленинский район',                km: 7  },
+    tsentralniy:       { name: 'Центральный район',              km: 10 },
+    solontsy:          { name: 'п. Солонцы',                     km: 14 },
+    drokino:           { name: 'п. Дрокино',                     km: 18 },
+    berezovka:         { name: 'п. Берёзовка',                   km: 20 },
+    emelyanovo:        { name: 'п. Емельяново',                  km: 24 },
+    minino:            { name: 'п. Минино',                      km: 22 },
+    kuznetsovo:        { name: 'п. Кузнецово / Лукино',          km: 17 },
+    zykovo:            { name: 'п. Зыково',                      km: 19 },
+    divnogorsk:        { name: 'г. Дивногорск',                  km: 35 },
+    sosnovoborsk:      { name: 'г. Сосновоборск',                km: 30 },
+    kedroviy:          { name: 'п. Кедровый',                    km: 42 },
+    sukhobuzimskoe:    { name: 'Сухобузимский район',            km: 55 },
+    other_suburb:      { name: 'Другой посёлок / СНТ',           km: 30 },
+};
+
+// ─── deliveryZones — динамические цены на основе реальной себестоимости ──────
+const deliveryZones = {};
+Object.entries(_districtMap).forEach(([key, d]) => {
+    deliveryZones[key] = {
+        name:  d.name,
+        zone:  'dynamic',
+        price: calcDeliveryFromKm(d.km, 1),   // базовая цена за 1 рейс
+        km:    d.km,
+        eta:   d.km <= 15 ? '1.5-2 ч' : d.km <= 30 ? '2-3 ч' : d.km <= 50 ? '3-4 ч' : '4-6 ч',
+    };
+});
+
+// ─── fleetData — для отображения автопарка на сайте ──────────────────────────
+const fleetData = {
+    mini: {
+        id: 'mini',
+        name: 'Мини-самосвал (Японец / ГАЗель)',
+        capacityTons: 4,
+        capacityM3: 4,
+        clearanceWidth: '2.1 м',
+        clearanceHeight: '2.4 м',
+        bestFor: 'Узкие улицы СНТ, дачные участки, заезд под низкие навесы и газовые трубы'
+    },
+    kamaz: {
+        id: 'kamaz',
+        name: 'Самосвал среднего класса 10-12 т',
+        capacityTons: 12,
+        capacityM3: 8,
+        clearanceWidth: '2.6 м',
+        clearanceHeight: '2.9 м',
+        bestFor: 'Оптимальный выбор для коттеджей, заливки фундамента, засыпки дорожек'
+    },
+    heavy: {
+        id: 'heavy',
+        name: _kpveh ? _kpveh.name : 'Shacman F3000 — 20 тонн (основной)',
+        capacityTons: _kpveh ? _kpveh.capacity   : 20,
+        capacityM3:   _kpveh ? _kpveh.bodyVolume : 14,
+        clearanceWidth: '2.55 м',
+        clearanceHeight: '3.2 м',
+        bestFor: 'Основной рабочий самосвал. Крупные заказы, промышленные объекты, дороги'
     }
 };
 
+
+
+// ==========================================================================
+// Инициализация приложения
+// ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
 function initApp() {
-    renderMaterialCards('all');
+    renderMaterialCards('all', 'all');
     setupCategoryTabs();
-    setupMobileNav();
-    setupOrderForm();
+    setupTaskChips();
+    setupHeroExpressCalc();
+    setupMainCalculator();
+    setupFleetInteractions();
+    setupDeliveryZonesSelector();
+    setupOrderModal();
+    setupQuickOrderSectionForm();
     setupFaqAccordion();
     setupScrollSpyAndBackToTop();
-    setupPhoneMask();
+    setupPhoneMasks();
     setupMobileStickyCtaBehavior();
+    setupMobileNav();
 }
 
-// Format currency
-function formatCurrency(val) {
-    return `от ${Math.round(val).toLocaleString('ru-RU')} ₽`;
+// Форматирование валюты
+function formatRub(val) {
+    return `${Math.round(val).toLocaleString('ru-RU')} ₽`;
 }
 
-// Render Avito-Style Material Catalog with Ultra-Fast WebP & Adaptive Srcset
-function renderMaterialCards(categoryFilter) {
+// ==========================================================================
+// 1. Каталог товаров с двойной ценой (м³ и тонна)
+// ==========================================================================
+let currentCategory = 'all';
+let currentTask = 'all';
+
+function renderMaterialCards(catFilter = 'all', taskFilter = 'all') {
     const grid = document.getElementById('material-grid');
     if (!grid) return;
     grid.innerHTML = '';
 
     let cardIndex = 0;
-    Object.values(materialsData).forEach(mat => {
-        if (categoryFilter !== 'all' && mat.category !== categoryFilter && mat.id !== 'your_situation') return;
+    const items = Object.values(materialsData);
 
+    const filtered = items.filter(mat => {
+        const matchesCat = (catFilter === 'all' || mat.category === catFilter);
+        const matchesTask = (taskFilter === 'all' || mat.tags.includes(taskFilter));
+        return matchesCat && matchesTask;
+    });
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-catalog-msg">
+                <p>В этой категории по выбранной задаче материалы не найдены.</p>
+                <button type="button" class="btn-primary" onclick="resetFilters()">Показать все материалы</button>
+            </div>
+        `;
+        return;
+    }
+
+    filtered.forEach(mat => {
         const isAboveTheFold = cardIndex < 2;
         cardIndex++;
 
+        const pricePerTon = Math.round(mat.priceM3 / mat.density);
+        const tripEstimate = mat.priceM3 * 7 + 2500; // 7 м³ в КамАЗ + 2500 доставка по городу
+
         const card = document.createElement('div');
-        card.className = 'material-card avito-card';
+        card.className = 'material-card modern-card';
 
-        const priceDisplay = typeof mat.price === 'number' 
-            ? `${formatCurrency(mat.price)} <span class="unit">/ ${mat.unit}</span>`
-            : `${mat.price} <span class="unit">/ ${mat.unit}</span>`;
-
-        const priorityAttrs = isAboveTheFold 
-            ? 'fetchpriority="high"' 
-            : 'loading="lazy"';
+        const priorityAttrs = isAboveTheFold ? 'fetchpriority="high"' : 'loading="lazy"';
 
         card.innerHTML = `
             <div class="material-img-wrapper">
@@ -159,19 +348,51 @@ function renderMaterialCards(categoryFilter) {
                          onload="this.classList.add('loaded')"
                          onerror="this.classList.add('loaded')">
                 </picture>
-                ${mat.badge ? `<span class="material-badge">${mat.badge}</span>` : ''}
+                <div class="card-top-badges">
+                    <span class="material-badge badge-gost">${mat.badge}</span>
+                </div>
             </div>
             <div class="material-content">
-                <h3 class="material-name">${mat.name}</h3>
-                <div class="material-price-tag">${priceDisplay}</div>
-                <p class="material-desc-short">${mat.desc}</p>
+                <div class="material-header-row">
+                    <h3 class="material-name">${mat.name}</h3>
+                </div>
                 
-                <div class="card-actions">
-                    <a href="tel:+79950758414" class="btn-card-call" aria-label="Позвонить диспетчеру для заказа ${mat.name}">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                        <span>Позвонить</span>
-                    </a>
-                    <button type="button" class="btn-card-order" data-material="${mat.name}" aria-label="Быстрый заказ ${mat.name}">
+                <div class="price-box">
+                    <div class="price-primary">
+                        <span class="price-val">${formatRub(mat.priceM3)}</span>
+                        <span class="price-unit">/ м³</span>
+                    </div>
+                    <div class="price-secondary">
+                        ≈ ${formatRub(pricePerTon)} / тонна
+                    </div>
+                </div>
+
+                <div class="material-usecase">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>${mat.useCase}</span>
+                </div>
+
+                <div class="material-specs-grid">
+                    <div class="spec-item">
+                        <span class="spec-label">Плотность:</span>
+                        <span class="spec-value">${mat.density} т/м³</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Заказ:</span>
+                        <span class="spec-value">${mat.minOrder}</span>
+                    </div>
+                </div>
+
+                <div class="trip-preview-banner">
+                    Рейс самосвала 10 т (7 м³) с доставкой — <strong>от ${formatRub(tripEstimate)}</strong>
+                </div>
+
+                <div class="card-actions-grid">
+                    <button type="button" class="btn-card-calc" data-mat-id="${mat.id}" aria-label="Рассчитать доставку ${mat.name}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+                        <span>В калькулятор</span>
+                    </button>
+                    <button type="button" class="btn-card-order" data-mat-id="${mat.id}" data-mat-name="${mat.name}" aria-label="Быстрый заказ ${mat.name}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
                         <span>Заказать</span>
                     </button>
@@ -179,51 +400,60 @@ function renderMaterialCards(categoryFilter) {
             </div>
         `;
 
-        const imgEl = card.querySelector('.material-img');
-        if (imgEl && imgEl.complete) {
-            imgEl.classList.add('loaded');
+        // Card button handlers
+        const calcBtn = card.querySelector('.btn-card-calc');
+        if (calcBtn) {
+            calcBtn.addEventListener('click', () => {
+                transferToCalculator(mat.id);
+            });
         }
 
-        // Card button handler -> select material and scroll to quick order form
         const orderBtn = card.querySelector('.btn-card-order');
         if (orderBtn) {
             orderBtn.addEventListener('click', () => {
-                selectMaterial(mat.name);
-                const formSection = document.getElementById('quick-order-section');
-                if (formSection) {
-                    formSection.scrollIntoView({ behavior: 'smooth' });
-                }
-                const phoneInput = document.getElementById('order-phone');
-                if (phoneInput) {
-                    setTimeout(() => phoneInput.focus(), 400);
-                }
+                openOrderModal({
+                    materialId: mat.id,
+                    materialName: mat.name,
+                    volume: 7,
+                    district: 'sovetskiy'
+                });
             });
         }
 
         grid.appendChild(card);
     });
+
+    // Добавляем сервисный баннер аренды в конец каталога
+    appendCustomRentalBanner(grid);
 }
 
-// Helper: Select material from card
-function selectMaterial(name) {
-    const box = document.getElementById('selected-material-box');
-    const textEl = document.getElementById('selected-material-text');
-    const inputEl = document.getElementById('order-material');
-    if (box && textEl && inputEl) {
-        textEl.innerText = `Выбран материал: ${name}`;
-        inputEl.value = name;
-        box.style.display = 'flex';
-    }
+function resetFilters() {
+    currentCategory = 'all';
+    currentTask = 'all';
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.category === 'all'));
+    document.querySelectorAll('.task-chip').forEach(c => c.classList.toggle('active', c.dataset.task === 'all'));
+    renderMaterialCards('all', 'all');
 }
 
-// Helper: Clear selected material
-function clearSelectedMaterial() {
-    const box = document.getElementById('selected-material-box');
-    const inputEl = document.getElementById('order-material');
-    if (box && inputEl) {
-        box.style.display = 'none';
-        inputEl.value = 'Запрос звонка диспетчера';
-    }
+function appendCustomRentalBanner(grid) {
+    const banner = document.createElement('div');
+    banner.className = 'rental-cta-card';
+    banner.innerHTML = `
+        <div class="rental-cta-content">
+            <div class="rental-badge">🚚 Индивидуальные рейсы и спецтехника</div>
+            <h3 class="rental-title">Нужен другой материал, аренда самосвала на смену или вывоз грунта?</h3>
+            <p class="rental-desc">Предоставляем самосвалы 10 и 20 м³ с опытными водителями с почасовой или посуточной оплатой по Красноярску и краю. Погрузка на любых сертифицированных карьерах.</p>
+            <div class="rental-actions">
+                <button type="button" class="btn-primary" onclick="openOrderModal({ materialName: 'Аренда самосвала / Индивидуальный заказ' })">
+                    Заказать консультацию диспетчера
+                </button>
+                <a href="tel:+79950758414" class="btn-secondary">
+                    Позвонить: +7 (995) 075-84-14
+                </a>
+            </div>
+        </div>
+    `;
+    grid.appendChild(banner);
 }
 
 // Category Tabs
@@ -233,223 +463,610 @@ function setupCategoryTabs() {
         tab.addEventListener('click', () => {
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            renderMaterialCards(tab.dataset.category);
+            currentCategory = tab.dataset.category;
+            renderMaterialCards(currentCategory, currentTask);
         });
     });
 }
 
-// Mobile Menu Drawer
-function setupMobileNav() {
-    const toggleBtn = document.getElementById('mobile-toggle');
-    const drawer = document.getElementById('mobile-nav-drawer');
-
-    if (!toggleBtn || !drawer) return;
-
-    toggleBtn.addEventListener('click', () => {
-        drawer.classList.toggle('active');
-    });
-
-    document.querySelectorAll('.mobile-nav-link').forEach(link => {
-        link.addEventListener('click', () => {
-            drawer.classList.remove('active');
+// Task Chips
+function setupTaskChips() {
+    const chips = document.querySelectorAll('.task-chip');
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            currentTask = chip.dataset.task;
+            renderMaterialCards(currentCategory, currentTask);
         });
     });
 }
 
-// Phone Input Formatting
-function setupPhoneMask() {
-    const phoneInput = document.getElementById('order-phone');
-    if (!phoneInput) return;
+function transferToCalculator(matId) {
+    const calcSection = document.getElementById('calc-section');
+    const heroMaterialSelect = document.getElementById('hero-calc-material');
+    const mainMaterialSelect = document.getElementById('main-calc-material');
 
-    phoneInput.addEventListener('input', (e) => {
-        let val = e.target.value.replace(/\D/g, '');
-        if (val.length === 0) {
-            e.target.value = '';
-            return;
-        }
-        if (val.startsWith('7') || val.startsWith('8')) {
-            val = val.substring(1);
-        }
-        let formatted = '+7 ';
-        if (val.length > 0) formatted += '(' + val.substring(0, 3);
-        if (val.length >= 3) formatted += ') ' + val.substring(3, 6);
-        if (val.length >= 6) formatted += '-' + val.substring(6, 8);
-        if (val.length >= 8) formatted += '-' + val.substring(8, 10);
-        e.target.value = formatted;
+    if (heroMaterialSelect) heroMaterialSelect.value = matId;
+    if (mainMaterialSelect) mainMaterialSelect.value = matId;
+
+    recalcHeroWidget();
+    recalcMainCalculator();
+
+    if (calcSection) {
+        calcSection.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// ==========================================================================
+// 2. Экспресс-калькулятор в Hero-блоке
+// ==========================================================================
+function setupHeroExpressCalc() {
+    const matSelect = document.getElementById('hero-calc-material');
+    const zoneSelect = document.getElementById('hero-calc-zone');
+    const customVolInput = document.getElementById('hero-custom-vol');
+    const chips = document.querySelectorAll('.hero-vol-chip');
+    const submitBtn = document.getElementById('hero-calc-submit');
+
+    if (!matSelect || !zoneSelect) return;
+
+    // Заполнение материалов
+    matSelect.innerHTML = '';
+    Object.values(materialsData).forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.text = `${m.name} — от ${m.priceM3} ₽/м³`;
+        matSelect.appendChild(opt);
+    });
+
+    // Заполнение районов
+    zoneSelect.innerHTML = '';
+    Object.entries(deliveryZones).forEach(([key, z]) => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.text = `${z.name} (от ${formatRub(z.price)})`;
+        zoneSelect.appendChild(opt);
+    });
+
+    // Выбор чипов объема
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            const vol = parseFloat(chip.dataset.vol);
+            if (customVolInput) customVolInput.value = vol;
+            recalcHeroWidget();
+        });
+    });
+
+    if (customVolInput) {
+        customVolInput.addEventListener('input', () => {
+            chips.forEach(c => c.classList.remove('active'));
+            recalcHeroWidget();
+        });
+    }
+
+    matSelect.addEventListener('change', recalcHeroWidget);
+    zoneSelect.addEventListener('change', recalcHeroWidget);
+
+    if (submitBtn) {
+        submitBtn.addEventListener('click', () => {
+            const mat = materialsData[matSelect.value];
+            const zone = deliveryZones[zoneSelect.value];
+            const vol = parseFloat(customVolInput ? customVolInput.value : 7) || 7;
+            const matCost = mat.priceM3 * vol;
+            const deliveryCost = zone.price;
+            const total = matCost + deliveryCost;
+
+            openOrderModal({
+                materialId: mat.id,
+                materialName: mat.name,
+                volume: vol,
+                districtKey: zoneSelect.value,
+                districtName: zone.name,
+                totalPrice: total
+            });
+        });
+    }
+
+    recalcHeroWidget();
+}
+
+function recalcHeroWidget() {
+    const matSelect = document.getElementById('hero-calc-material');
+    const zoneSelect = document.getElementById('hero-calc-zone');
+    const customVolInput = document.getElementById('hero-custom-vol');
+    const totalDisplay = document.getElementById('hero-calc-total');
+    const breakdownDisplay = document.getElementById('hero-calc-breakdown');
+
+    if (!matSelect || !zoneSelect || !totalDisplay) return;
+
+    const mat = materialsData[matSelect.value] || materialsData.sand_washed;
+    const zone = deliveryZones[zoneSelect.value] || deliveryZones.sovetskiy;
+    const vol = parseFloat(customVolInput ? customVolInput.value : 7) || 7;
+
+    const matCost = mat.priceM3 * vol;
+    const deliveryCost = zone.price;
+    const total = matCost + deliveryCost;
+    const totalTons = (vol * mat.density).toFixed(1);
+
+    totalDisplay.innerText = formatRub(total);
+    if (breakdownDisplay) {
+        breakdownDisplay.innerText = `Материал: ${formatRub(matCost)} (${vol} м³ / ≈${totalTons} т) + Доставка: ${formatRub(deliveryCost)}`;
+    }
+}
+
+// ==========================================================================
+// 3. Главный инженерный калькулятор (объем по габаритам или прямой ввод)
+// ==========================================================================
+function setupMainCalculator() {
+    const matSelect = document.getElementById('main-calc-material');
+    const zoneSelect = document.getElementById('main-calc-zone');
+    const modeTabs = document.querySelectorAll('.calc-mode-btn');
+    const directInputsBox = document.getElementById('calc-direct-inputs');
+    const dimensionsInputsBox = document.getElementById('calc-dimensions-inputs');
+
+    if (!matSelect || !zoneSelect) return;
+
+    // Заполнение селекторов
+    matSelect.innerHTML = '';
+    Object.values(materialsData).forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.text = `${m.name} (${m.priceM3} ₽/м³) — ${m.density} т/м³`;
+        matSelect.appendChild(opt);
+    });
+
+    zoneSelect.innerHTML = '';
+    Object.entries(deliveryZones).forEach(([key, z]) => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.text = `${z.name} (тариф рейса: ${formatRub(z.price)})`;
+        zoneSelect.appendChild(opt);
+    });
+
+    // Переключение режимов: По размерам площадки / Знаю точный объем
+    modeTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            modeTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const mode = tab.dataset.mode;
+            if (mode === 'dimensions') {
+                if (directInputsBox) directInputsBox.style.display = 'none';
+                if (dimensionsInputsBox) dimensionsInputsBox.style.display = 'grid';
+            } else {
+                if (directInputsBox) directInputsBox.style.display = 'grid';
+                if (dimensionsInputsBox) dimensionsInputsBox.style.display = 'none';
+            }
+            recalcMainCalculator();
+        });
+    });
+
+    // Слушатели инпутов
+    const calcInputs = document.querySelectorAll('.calc-field-input');
+    calcInputs.forEach(input => {
+        input.addEventListener('input', recalcMainCalculator);
+        input.addEventListener('change', recalcMainCalculator);
+    });
+
+    // Пресеты объема в главном калькуляторе
+    const mainVolChips = document.querySelectorAll('.main-vol-chip');
+    mainVolChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            mainVolChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            const directVolInput = document.getElementById('main-calc-vol');
+            if (directVolInput) directVolInput.value = chip.dataset.vol;
+            recalcMainCalculator();
+        });
+    });
+
+    // Кнопка отправки расчета
+    const mainOrderBtn = document.getElementById('main-calc-order-btn');
+    if (mainOrderBtn) {
+        mainOrderBtn.addEventListener('click', () => {
+            const state = calculateCurrentState();
+            openOrderModal({
+                materialId: state.mat.id,
+                materialName: state.mat.name,
+                volume: state.finalVolume,
+                districtKey: state.zoneKey,
+                districtName: state.zone.name,
+                totalPrice: state.totalPrice,
+                truckName: state.recommendedTruck.name,
+                weightTons: state.totalTons
+            });
+        });
+    }
+
+    // Кнопка отправки в WhatsApp
+    const mainWaBtn = document.getElementById('main-calc-whatsapp-btn');
+    if (mainWaBtn) {
+        mainWaBtn.addEventListener('click', () => {
+            const state = calculateCurrentState();
+            const text = encodeURIComponent(
+                `Здравствуйте! Хочу заказать материал на КрасПесок.рф:\n` +
+                `• Материал: ${state.mat.name}\n` +
+                `• Расчётный объём: ${state.finalVolume} м³ (≈ ${state.totalTons} тонн)\n` +
+                `• Район доставки: ${state.zone.name}\n` +
+                `• Рекомендуемый транспорт: ${state.recommendedTruck.name}\n` +
+                `• Расчётная стоимость: ${formatRub(state.totalPrice)} с доставкой.\n` +
+                `Когда сможете привезти?`
+            );
+            window.open(`https://wa.me/79950758414?text=${text}`, '_blank');
+        });
+    }
+
+    recalcMainCalculator();
+}
+
+function calculateCurrentState() {
+    const matSelect = document.getElementById('main-calc-material');
+    const zoneSelect = document.getElementById('main-calc-zone');
+    const activeModeTab = document.querySelector('.calc-mode-btn.active');
+    const mode = activeModeTab ? activeModeTab.dataset.mode : 'dimensions';
+
+    const mat = materialsData[matSelect ? matSelect.value : 'sand_washed'] || materialsData.sand_washed;
+    const zoneKey = zoneSelect ? zoneSelect.value : 'sovetskiy';
+    const zone = deliveryZones[zoneKey] || deliveryZones.sovetskiy;
+
+    let volumeM3 = 7;
+    let compactionFactor = 1.0;
+
+    if (mode === 'dimensions') {
+        const length = parseFloat(document.getElementById('dim-length')?.value) || 10;
+        const width = parseFloat(document.getElementById('dim-width')?.value) || 4;
+        const depthCm = parseFloat(document.getElementById('dim-depth')?.value) || 15;
+        const depthM = depthCm / 100;
+
+        // Коэффициент уплотнения при трамбовке
+        compactionFactor = mat.category === 'crushed' || mat.category === 'gravel' ? 1.15 : 1.2;
+        const rawVolume = length * width * depthM;
+        volumeM3 = parseFloat((rawVolume * compactionFactor).toFixed(1));
+    } else {
+        volumeM3 = parseFloat(document.getElementById('main-calc-vol')?.value) || 7;
+    }
+
+    if (volumeM3 < 1) volumeM3 = 1;
+
+    const totalTons = parseFloat((volumeM3 * mat.density).toFixed(1));
+
+    // Расстояние для данного района/зоны
+    const distKm = zone.km || 10;
+
+    // Подбор подходящей машины с учётом объёма и физических ограничений Shacman 20т
+    let recommendedTruck = fleetData.heavy;
+    let numTrips = 1;
+
+    // Shacman 20т: ограничение по весу = 20т / density, по кузову = 14 м³
+    const SHACMAN_BODY_VOL = _kpveh ? _kpveh.bodyVolume : 14;
+    const SHACMAN_CAPACITY = _kpveh ? _kpveh.capacity   : 20;
+    const maxByWeight = SHACMAN_CAPACITY / mat.density;
+    const maxPerTrip  = Math.min(SHACMAN_BODY_VOL, maxByWeight);
+    numTrips = Math.ceil(volumeM3 / maxPerTrip);
+
+    // Для небольших объёмов показываем мини-машину (информационно)
+    if (volumeM3 <= 4 && (volumeM3 * mat.density) <= 4.5) {
+        recommendedTruck = fleetData.mini;
+        numTrips = 1;
+    }
+
+    const materialCost  = Math.round(volumeM3 * mat.priceM3);
+    // Цена доставки теперь считается через реальную себестоимость
+    const deliveryCost  = calcDeliveryFromKm(distKm, numTrips);
+    const totalPrice    = materialCost + deliveryCost;
+
+
+    return {
+        mat,
+        zone,
+        zoneKey,
+        finalVolume: volumeM3,
+        totalTons,
+        compactionFactor,
+        recommendedTruck,
+        numTrips,
+        materialCost,
+        deliveryCost,
+        totalPrice
+    };
+}
+
+function recalcMainCalculator() {
+    const state = calculateCurrentState();
+
+    const volResultEl = document.getElementById('calc-res-vol');
+    const tonsResultEl = document.getElementById('calc-res-tons');
+    const truckResultEl = document.getElementById('calc-res-truck');
+    const matCostEl = document.getElementById('calc-res-mat-cost');
+    const delCostEl = document.getElementById('calc-res-del-cost');
+    const totalCostEl = document.getElementById('calc-res-total-cost');
+    const truckNoteEl = document.getElementById('calc-res-truck-note');
+
+    if (volResultEl) volResultEl.innerText = `${state.finalVolume} м³`;
+    if (tonsResultEl) tonsResultEl.innerText = `≈ ${state.totalTons} т`;
+    if (truckResultEl) {
+        truckResultEl.innerText = state.numTrips > 1 
+            ? `${state.recommendedTruck.name} (${state.numTrips} рейса)`
+            : state.recommendedTruck.name;
+    }
+    if (matCostEl) matCostEl.innerText = formatRub(state.materialCost);
+    if (delCostEl) delCostEl.innerText = formatRub(state.deliveryCost);
+    if (totalCostEl) totalCostEl.innerText = formatRub(state.totalPrice);
+
+    if (truckNoteEl) {
+        truckNoteEl.innerText = `Габариты въезда: ширина от ${state.recommendedTruck.clearanceWidth}, высота ${state.recommendedTruck.clearanceHeight}`;
+    }
+}
+
+// ==========================================================================
+// 4. Блок автопарка (Выбор машины переносит в калькулятор)
+// ==========================================================================
+function setupFleetInteractions() {
+    const fleetButtons = document.querySelectorAll('.btn-select-fleet');
+    fleetButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const truckType = btn.dataset.truck;
+            const calcSection = document.getElementById('calc-section');
+            const directModeBtn = document.querySelector('.calc-mode-btn[data-mode="direct"]');
+
+            if (directModeBtn) directModeBtn.click();
+
+            const volInput = document.getElementById('main-calc-vol');
+            if (volInput) {
+                if (truckType === 'mini') volInput.value = 4;
+                else if (truckType === 'kamaz') volInput.value = 8;
+                else if (truckType === 'heavy') volInput.value = 20;
+            }
+
+            recalcMainCalculator();
+
+            if (calcSection) {
+                calcSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
     });
 }
 
-// Fast Order Form Handler (POST to /api/order -> Instant Email notification)
-function setupOrderForm() {
+// ==========================================================================
+// 5. Интерактивные зоны доставки
+// ==========================================================================
+function setupDeliveryZonesSelector() {
+    const zonePills = document.querySelectorAll('.zone-pill-interactive');
+    zonePills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            zonePills.forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+
+            const zoneKey = pill.dataset.zoneKey;
+            const zoneInfo = deliveryZones[zoneKey];
+            if (!zoneInfo) return;
+
+            const nameEl = document.getElementById('zone-preview-name');
+            const priceEl = document.getElementById('zone-preview-price');
+            const etaEl = document.getElementById('zone-preview-eta');
+            const zoneTagEl = document.getElementById('zone-preview-tag');
+
+            if (nameEl) nameEl.innerText = zoneInfo.name;
+            if (priceEl) priceEl.innerText = `от ${formatRub(zoneInfo.price)} за рейс`;
+            if (etaEl) etaEl.innerText = `Подача машины: ${zoneInfo.eta}`;
+            if (zoneTagEl) zoneTagEl.innerText = `Зона ${zoneInfo.zone}`;
+
+            // Синхронизация с калькулятором
+            const mainZoneSelect = document.getElementById('main-calc-zone');
+            if (mainZoneSelect) {
+                mainZoneSelect.value = zoneKey;
+                recalcMainCalculator();
+            }
+        });
+    });
+}
+
+// ==========================================================================
+// 6. Модальное окно быстрого заказа (1 клик)
+// ==========================================================================
+function setupOrderModal() {
+    const modal = document.getElementById('order-modal');
+    const closeBtn = document.getElementById('modal-close-btn');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    const form = document.getElementById('modal-order-form');
+
+    if (!modal) return;
+
+    const closeModal = () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (modalBackdrop) modalBackdrop.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleOrderSubmit(form, 'modal');
+        });
+    }
+}
+
+function openOrderModal(data = {}) {
+    const modal = document.getElementById('order-modal');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('modal-material-name');
+    const detailsEl = document.getElementById('modal-order-details');
+    const hiddenMatInput = document.getElementById('modal-hidden-material');
+    const hiddenDetailsInput = document.getElementById('modal-hidden-details');
+    const phoneInput = document.getElementById('modal-phone');
+
+    const matName = data.materialName || 'Сыпучие строительные материалы';
+    const volume = data.volume ? `${data.volume} м³` : 'объем уточняется';
+    const district = data.districtName || 'Красноярск / пригород';
+    const priceText = data.totalPrice ? ` • Расчетная стоимость: ${formatRub(data.totalPrice)}` : '';
+    const truckText = data.truckName ? ` • ${data.truckName}` : '';
+
+    if (titleEl) titleEl.innerText = matName;
+    if (detailsEl) detailsEl.innerText = `Параметры: ${volume} • ${district}${priceText}${truckText}`;
+    if (hiddenMatInput) hiddenMatInput.value = matName;
+    if (hiddenDetailsInput) hiddenDetailsInput.value = `Объем: ${volume}, Район: ${district}, Цена: ${data.totalPrice || 'расчет диспетчером'}`;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    if (phoneInput) {
+        setTimeout(() => phoneInput.focus(), 300);
+    }
+}
+
+// ==========================================================================
+// 7. Форма заказа внизу страницы (Quick Order Section)
+// ==========================================================================
+function setupQuickOrderSectionForm() {
     const form = document.getElementById('quick-order-form');
     if (!form) return;
 
-    const phoneInput = document.getElementById('order-phone');
-    const materialInput = document.getElementById('order-material');
-    const clearBtn = document.getElementById('clear-material-btn');
-
-    if (clearBtn) {
-        clearBtn.addEventListener('click', clearSelectedMaterial);
-    }
-
-    if (phoneInput) {
-        phoneInput.addEventListener('input', () => {
-            phoneInput.classList.remove('input-error');
-        });
-    }
-
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        const submitBtn = form.querySelector('button[type="submit"]');
-
-        const phoneDigits = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
-        if (!phoneInput || !phoneInput.value.trim() || phoneDigits.length < 11) {
-            if (phoneInput) {
-                phoneInput.classList.remove('input-error');
-                void phoneInput.offsetWidth; // Trigger reflow for animation
-                phoneInput.classList.add('input-error');
-                phoneInput.focus();
-            }
-            showToast('Укажите корректный номер телефона (11 цифр)', 'error');
-            return;
-        }
-
-        const originalBtnText = submitBtn ? submitBtn.innerText : 'Заказать звонок диспетчера';
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'Отправка...';
-        }
-
-        const payload = {
-            phone: phoneInput.value.trim(),
-            material: materialInput ? materialInput.value : 'Запрос звонка диспетчера',
-            source: 'website'
-        };
-
-        let isSuccess = false;
-        let responseMessage = '';
-
-        // Список поддерживаемых бекенд-эндпоинтов (PHP на виртуальном хостинге + Express на Node.js)
-        const endpoints = ['order.php', '/api/order', '/api/order.php'];
-
-        for (const endpoint of endpoints) {
-            try {
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.success) {
-                        isSuccess = true;
-                        responseMessage = data.message || 'Спасибо! Номер передан диспетчеру. Мы перезвоним в течение 3 минут.';
-                        break;
-                    } else if (data && data.message) {
-                        responseMessage = data.message;
-                    }
-                }
-            } catch (endpointErr) {
-                console.warn(`[Submit] Эндпоинт ${endpoint} недоступен, пробуем следующий...`, endpointErr);
-            }
-        }
-
-        try {
-            if (isSuccess) {
-                showToast(responseMessage || 'Спасибо! Номер передан диспетчеру. Мы перезвоним в течение 3 минут.', 'success');
-                form.reset();
-                clearSelectedMaterial();
-            } else {
-                showToast(responseMessage || 'Ошибка соединения с сервером. Пожалуйста, позвоните диспетчеру: +7 (995) 075-84-14', 'error');
-            }
-        } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerText = originalBtnText;
-            }
-        }
+        await handleOrderSubmit(form, 'section');
     });
 }
 
-// FAQ Accordion Handler
+// Универсальный обработчик отправки лидов
+async function handleOrderSubmit(formEl, formType) {
+    const phoneInput = formEl.querySelector('input[type="tel"]');
+    const materialInput = formEl.querySelector('input[name="material"]') || formEl.querySelector('#order-material');
+    const detailsInput = formEl.querySelector('input[name="details"]');
+    const channelSelect = formEl.querySelector('select[name="channel"]');
+    const submitBtn = formEl.querySelector('button[type="submit"]');
+
+    const phoneDigits = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
+    if (!phoneInput || !phoneInput.value.trim() || phoneDigits.length < 11) {
+        if (phoneInput) {
+            phoneInput.classList.remove('input-error');
+            void phoneInput.offsetWidth;
+            phoneInput.classList.add('input-error');
+            phoneInput.focus();
+        }
+        showToast('Пожалуйста, укажите полный номер телефона (11 цифр)', 'error');
+        return;
+    }
+
+    const originalBtnText = submitBtn ? submitBtn.innerHTML : 'Отправить';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Отправка заявки...';
+    }
+
+    const payload = {
+        phone: phoneInput.value.trim(),
+        material: materialInput ? materialInput.value : 'Запрос звонка диспетчера',
+        details: detailsInput ? detailsInput.value : '',
+        preferredChannel: channelSelect ? channelSelect.value : 'phone',
+        source: `website_${formType}`
+    };
+
+    let isSuccess = false;
+    let responseMessage = '';
+    const endpoints = ['order.php', '/api/order', '/api/order.php'];
+
+    for (const endpoint of endpoints) {
+        try {
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.success) {
+                    isSuccess = true;
+                    responseMessage = data.message || 'Спасибо! Заявка передана диспетчеру. Мы перезвоним в течение 3 минут.';
+                    break;
+                } else if (data && data.message) {
+                    responseMessage = data.message;
+                }
+            }
+        } catch (endpointErr) {
+            console.warn(`[Submit] Эндпоинт ${endpoint} недоступен, пробуем запасной...`, endpointErr);
+        }
+    }
+
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+    }
+
+    if (isSuccess) {
+        showToast(responseMessage, 'success');
+        formEl.reset();
+        const modal = document.getElementById('order-modal');
+        if (modal && modal.classList.contains('active')) {
+            setTimeout(() => {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }, 1200);
+        }
+    } else {
+        showToast(responseMessage || 'Ошибка соединения с сервером. Пожалуйста, позвоните диспетчеру напрямую: +7 (995) 075-84-14', 'error');
+    }
+}
+
+// ==========================================================================
+// 8. Маска телефона для всех полей ввода
+// ==========================================================================
+function setupPhoneMasks() {
+    const phoneInputs = document.querySelectorAll('input[type="tel"]');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, '');
+            if (val.length === 0) {
+                e.target.value = '';
+                return;
+            }
+            if (val.startsWith('7') || val.startsWith('8')) {
+                val = val.substring(1);
+            }
+            let formatted = '+7 ';
+            if (val.length > 0) formatted += '(' + val.substring(0, 3);
+            if (val.length >= 3) formatted += ') ' + val.substring(3, 6);
+            if (val.length >= 6) formatted += '-' + val.substring(6, 8);
+            if (val.length >= 8) formatted += '-' + val.substring(8, 10);
+            e.target.value = formatted;
+            input.classList.remove('input-error');
+        });
+    });
+}
+
+// ==========================================================================
+// 9. FAQ Аккордеон
+// ==========================================================================
 function setupFaqAccordion() {
     const faqItems = document.querySelectorAll('.faq-item');
     faqItems.forEach(item => {
         const question = item.querySelector('.faq-question');
         if (!question) return;
 
-        question.onclick = (e) => {
+        question.addEventListener('click', (e) => {
             e.preventDefault();
-            e.stopPropagation();
-
-            const isCurrentlyActive = item.classList.contains('active');
-
-            // Close all items
+            const isActive = item.classList.contains('active');
             faqItems.forEach(i => i.classList.remove('active'));
-
-            // Toggle clicked item
-            if (!isCurrentlyActive) {
+            if (!isActive) {
                 item.classList.add('active');
             }
-        };
+        });
     });
 }
 
-// Toast Notifications
-function showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.innerText = message;
-
-    container.appendChild(toast);
-    setTimeout(() => toast.classList.add('show'), 10);
-
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 4500);
-}
-
-// ScrollSpy & Back To Top
-function setupScrollSpyAndBackToTop() {
-    const backToTopBtn = document.getElementById('back-to-top');
-    const sections = document.querySelectorAll('section[id], main[id]');
-    const navLinks = document.querySelectorAll('.nav-link');
-
-    window.addEventListener('scroll', () => {
-        if (backToTopBtn) {
-            backToTopBtn.classList.toggle('active', window.scrollY > 400);
-        }
-
-        let currentSectionId = '';
-        sections.forEach(sec => {
-            const secTop = sec.offsetTop - 120;
-            if (window.scrollY >= secTop) {
-                currentSectionId = sec.getAttribute('id');
-            }
-        });
-
-        if (currentSectionId) {
-            navLinks.forEach(link => {
-                const href = link.getAttribute('href').replace('#', '');
-                link.classList.toggle('active', href === currentSectionId);
-            });
-        }
-    });
-
-    if (backToTopBtn) {
-        backToTopBtn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
-}
-
-// Mobile Sticky CTA Smart Hiding (hides when form is visible or field focused)
+// ==========================================================================
+// 10. Плавающий мобильный Sticky Bar и ScrollSpy
+// ==========================================================================
 function setupMobileStickyCtaBehavior() {
     const stickyCta = document.querySelector('.mobile-sticky-cta');
     const orderSection = document.getElementById('quick-order-section');
@@ -483,4 +1100,83 @@ function setupMobileStickyCtaBehavior() {
     document.addEventListener('focusin', updateVisibility);
     document.addEventListener('focusout', () => setTimeout(updateVisibility, 100));
     updateVisibility();
+}
+
+function setupScrollSpyAndBackToTop() {
+    const backToTopBtn = document.getElementById('back-to-top');
+    const sections = document.querySelectorAll('section[id], main[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+        if (backToTopBtn) {
+            backToTopBtn.classList.toggle('active', window.scrollY > 400);
+        }
+
+        let currentSectionId = '';
+        sections.forEach(sec => {
+            const secTop = sec.offsetTop - 140;
+            if (window.scrollY >= secTop) {
+                currentSectionId = sec.getAttribute('id');
+            }
+        });
+
+        if (currentSectionId) {
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href').replace('#', '');
+                link.classList.toggle('active', href === currentSectionId);
+            });
+        }
+    }, { passive: true });
+
+    if (backToTopBtn) {
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+}
+
+// Мобильное меню (Drawer)
+function setupMobileNav() {
+    const toggleBtn = document.getElementById('mobile-toggle');
+    const drawer = document.getElementById('mobile-nav-drawer');
+
+    if (!toggleBtn || !drawer) return;
+
+    toggleBtn.addEventListener('click', () => {
+        drawer.classList.toggle('active');
+    });
+
+    document.querySelectorAll('.mobile-nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            drawer.classList.remove('active');
+        });
+    });
+}
+
+// Уведомления (Toast)
+function showToast(message, type = 'info') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon">
+            ${type === 'success' ? '✔' : type === 'error' ? '✖' : 'ℹ'}
+        </div>
+        <div class="toast-msg">${message}</div>
+    `;
+
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
 }

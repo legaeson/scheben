@@ -30,9 +30,15 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            imgSrc: ["'self'", "data:"],
-            scriptSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc:     ["'self'", "data:"],
+            scriptSrc:  ["'self'"],
+            styleSrc:   ["'self'", "'unsafe-inline'"],
+            // OpenStreetMap: Nominatim (геокодинг) + OSRM (маршруты)
+            connectSrc: [
+                "'self'",
+                "https://nominatim.openstreetmap.org",
+                "https://router.project-osrm.org",
+            ],
         }
     },
     frameguard: { action: 'deny' }

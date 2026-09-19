@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Доставка песка, щебня, ПЩС и гравия в Красноярске | КрасПесок.рф</title>
+    <meta name="description" content="Прямая доставка щебня, песка, ПЩС, гравия и чернозёма в Красноярске от 2 часов самосвалами от 4т до 20м³. Честный замер кузова рулеткой до выгрузки. Звоните: +7 (995) 075-84-14.">
+    
+    <!-- Иконки -->
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+    
+    <!-- Стили -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Верхняя статусная строка -->
+    <div class="top-bar">
+        <div class="container top-bar-content">
+            <div>
+                <span class="status-dot"></span>
+                <span>Погрузка и доставка сегодня: 08:00 – 21:00</span>
+            </div>
+            <div>Красноярск и пригород до 80 км • Выезд от 2 часов</div>
+        </div>
+    </div>
+
+    <!-- Шапка сайта -->
+    <header class="header">
+        <div class="container header-inner">
+            <a href="index.html" class="brand" aria-label="КрасПесок главная">
+                <div class="brand-badge">КП</div>
+                <div>
+                    <div class="brand-name">Крас<span>Песок</span>.рф</div>
+                    <div class="brand-sub">Прямые поставки с карьеров</div>
+                </div>
+            </a>
+
+            <div class="header-contacts">
+                <div class="phone-link">
+                    <a href="tel:+79950758414" class="phone-num">+7 (995) 075-84-14</a>
+                    <span class="phone-hint">Диспетчер на связи</span>
+                </div>
+                <a href="#order-section" class="btn btn-primary header-btn">Заказать звонок</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Главный экран (Hero) с экспресс-калькулятором -->
+    <section class="hero">
+        <div class="container hero-grid">
+            
+            <!-- Левая колонка: УТП и преимущества -->
+            <div class="hero-left">
+                <div class="badge-tag">⚡ Прямые цены карьера от 550 ₽/м³</div>
+                <h1 class="hero-title">
+                    Доставка песка, щебня, ПЩС и гравия в Красноярске <span>от 2 часов</span>
+                </h1>
+                <p class="hero-desc">
+                    Поставки напрямую с сертифицированных карьеров (Песчанка, Дорожник, Зыково). Честный замер кузова рулеткой до выгрузки. Оплата водителю строго по факту!
+                </p>
+
+                <div class="hero-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Замер кузова рулеткой до выгрузки</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Оплата водителю по факту</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Самосвалы 4т, 10т и 20м³</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Быстрая подача в день звонка</span>
+                    </div>
+                </div>
+
+                <div class="hero-actions">
+                    <a href="tel:+79950758414" class="btn btn-primary">
+                        📞 Позвонить диспетчеру
+                    </a>
+                    <a href="#catalog-section" class="btn btn-secondary">
+                        Смотреть цены
+                    </a>
+                </div>
+            </div>
+
+            <!-- Правая колонка: Экспресс-калькулятор -->
+            <div class="calc-card" id="calc-card">
+                <div class="calc-card-title">
+                    <span>🧮</span> Калькулятор доставки
+                </div>
+                <p class="calc-card-desc">Рассчитайте примерную стоимость за 10 секунд</p>
+
+                <div class="form-group">
+                    <label for="calc-material" class="form-label">Выберите материал:</label>
+                    <select id="calc-material" class="form-select">
+                        <option value="crushed_5_20" selected>Щебень 5-20 мм (диорит) — 750 ₽/м³</option>
+                        <option value="crushed_20_40">Щебень 20-40 мм (скала) — 750 ₽/м³</option>
+                        <option value="sand_washed">Песок строительный мытый — 850 ₽/м³</option>
+                        <option value="sand_sifted">Песок карьерный сеяный — 700 ₽/м³</option>
+                        <option value="pshs">ПЩС (0-20 / 0-40) — 750 ₽/м³</option>
+                        <option value="gravel">Гравий мытый / ПГС — 550 ₽/м³</option>
+                        <option value="chernozem">Чернозём плодородный — 1000 ₽/м³</option>
+                        <option value="expanded_clay">Керамзит 10-20 мм — 1600 ₽/м³</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Объём материала (м³):</label>
+                    <div class="volume-chips">
+                        <button type="button" class="chip-btn" data-vol="3">3 м³</button>
+                        <button type="button" class="chip-btn" data-vol="5">5 м³</button>
+                        <button type="button" class="chip-btn active" data-vol="7">7 м³</button>
+                        <button type="button" class="chip-btn" data-vol="10">10 м³</button>
+                        <button type="button" class="chip-btn" data-vol="15">15 м³</button>
+                        <button type="button" class="chip-btn" data-vol="20">20 м³</button>
+                    </div>
+                    <input type="number" id="calc-volume" class="form-input" value="7" min="1" max="100" placeholder="Другой объём, м³">
+                </div>
+
+                <div class="form-group">
+                    <label for="calc-zone" class="form-label">Район доставки:</label>
+                    <select id="calc-zone" class="form-select">
+                        <option value="city" selected>Красноярск (любой район города)</option>
+                        <option value="solontsy">п. Солонцы</option>
+                        <option value="drokino">п. Дрокино</option>
+                        <option value="berezovka">п. Берёзовка</option>
+                        <option value="kuznetsovo">п. Кузнецово / Лукино</option>
+                        <option value="emelyanovo">п. Емельяново</option>
+                        <option value="minino">п. Минино</option>
+                        <option value="zykovo">п. Зыково</option>
+                        <option value="divnogorsk">г. Дивногорск</option>
+                        <option value="other">Другой посёлок / СНТ (до 80 км)</option>
+                    </select>
+                </div>
+
+                <!-- Результат расчета -->
+                <div class="calc-result-box">
+                    <div class="calc-price-row">
+                        <span class="calc-price-label">Итого с доставкой:</span>
+                        <span class="calc-total-price" id="calc-total">7 750 ₽</span>
+                    </div>
+                    <div class="calc-price-breakdown" id="calc-breakdown">
+                        Материал: 5 250 ₽ (7 м³) + Доставка: 2 500 ₽
+                    </div>
+                </div>
+
+                <button type="button" id="btn-calc-order" class="btn btn-primary btn-block">
+                    Заказать по этой цене →
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Каталог материалов -->
+    <section class="section" id="catalog-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Каталог материалов и цены</h2>
+                <p class="section-subtitle">Честные цены карьера без накруток посредников. Быстрая отгрузка со склада в день заказа.</p>
+            </div>
+
+            <div class="catalog-grid">
+                
+                <!-- 1. Щебень 5-20 -->
+                <div class="material-card">
+                    <div class="material-img-wrap">
+                        <img src="../images/crushed_stone.jpg" alt="Щебень 5-20 мм" class="material-img" loading="lazy">
+                        <span class="material-badge">ГОСТ 8267-93</span>
+                    </div>
+                    <div class="material-body">
+                        <h3 class="material-name">Щебень 5-20 мм (диорит)</h3>
+                        <p class="material-desc">Высокопрочный щебень М1200 для товарного бетона, стяжки и фундамента дома.</p>
+                        <div class="material-footer">
+                            <div class="material-price">
+                                <span class="price-val">от 750 ₽</span>
+                                <span class="price-unit">за 1 м³</span>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-card-order" data-material="crushed_5_20">Заказать</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Щебень 20-40 -->
+                <div class="material-card">
+                    <div class="material-img-wrap">
+                        <img src="../images/crushed_stone.jpg" alt="Щебень 20-40 мм" class="material-img" loading="lazy">
+                        <span class="material-badge">ГОСТ 8267-93</span>
+                    </div>
+                    <div class="material-body">
+                        <h3 class="material-name">Щебень 20-40 мм (скальный)</h3>
+                        <p class="material-desc">Для подушек фундаментов, отсыпки дорог, заездов на участок и парковок.</p>
+                        <div class="material-footer">
+                            <div class="material-price">
+                                <span class="price-val">от 750 ₽</span>
+                                <span class="price-unit">за 1 м³</span>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-card-order" data-material="crushed_20_40">Заказать</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Песок мытый -->
+                <div class="material-card">
+                    <div class="material-img-wrap">
+                        <img src="../images/sand.jpg" alt="Песок строительный мытый" class="material-img" loading="lazy">
+                        <span class="material-badge">ГОСТ 8736-2014</span>
+                    </div>
+                    <div class="material-body">
+                        <h3 class="material-name">Песок строительный мытый</h3>
+                        <p class="material-desc">Модуль 2.0-2.5 мм, без глины и камней. Для стяжки полов, кладки и бетонирования.</p>
+                        <div class="material-footer">
+                            <div class="material-price">
+                                <span class="price-val">от 850 ₽</span>
+                                <span class="price-unit">за 1 м³</span>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-card-order" data-material="sand_washed">Заказать</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Песок сеяный -->
+                <div class="material-card">
+                    <div class="material-img-wrap">
+                        <img src="../images/sand.jpg" alt="Песок карьерный сеяный" class="material-img" loading="lazy">
+                        <span class="material-badge">ГОСТ 8736-2014</span>
+                    </div>
+                    <div class="material-body">
+                        <h3 class="material-name">Песок карьерный сеяный</h3>
+                        <p class="material-desc">Отсев 0-3 мм. Идеален для подушек под брусчатку, засыпки траншей и кабелей.</p>
+                        <div class="material-footer">
+                            <div class="material-price">
+                                <span class="price-val">от 700 ₽</span>
+                                <span class="price-unit">за 1 м³</span>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-card-order" data-material="sand_sifted">Заказать</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. ПЩС -->
+                <div class="material-card">
+                    <div class="material-img-wrap">
+                        <img src="../images/pgs.jpg" alt="ПЩС смесь" class="material-img" loading="lazy">
+                        <span class="material-badge">ГОСТ 25607-2009</span>
+                    </div>
+                    <div class="material-body">
+                        <h3 class="material-name">ПЩС (0-20 / 0-40 мм)</h3>
+                        <p class="material-desc">Песчано-щебеночная смесь с трамбовкой до 98%. Для заездов на участок и стоянок.</p>
+                        <div class="material-footer">
+                            <div class="material-price">
+                                <span class="price-val">от 750 ₽</span>
+                                <span class="price-unit">за 1 м³</span>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-card-order" data-material="pshs">Заказать</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Гравий / ПГС -->
+                <div class="material-card">
+                    <div class="material-img-wrap">
+                        <img src="../images/gravel.jpg" alt="Гравий мытый" class="material-img" loading="lazy">
+                        <span class="material-badge">ГОСТ 23735-2014</span>
+                    </div>
+                    <div class="material-body">
+                        <h3 class="material-name">Гравий мытый 5-20 / ПГС</h3>
+                        <p class="material-desc">Чистый речной галечник. Для дренажа участка, подушек септиков и бетонирования.</p>
+                        <div class="material-footer">
+                            <div class="material-price">
+                                <span class="price-val">от 550 ₽</span>
+                                <span class="price-unit">за 1 м³</span>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-card-order" data-material="gravel">Заказать</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. Чернозём -->
+                <div class="material-card">
+                    <div class="material-img-wrap">
+                        <img src="../images/chernozem.jpg" alt="Чернозем плодородный" class="material-img" loading="lazy">
+                        <span class="material-badge">Плодородный</span>
+                    </div>
+                    <div class="material-body">
+                        <h3 class="material-name">Чернозём полевой сеяный</h3>
+                        <p class="material-desc">Чистый питательный грунт без глины и мусора. Для газонов, теплиц и огородов.</p>
+                        <div class="material-footer">
+                            <div class="material-price">
+                                <span class="price-val">от 1 000 ₽</span>
+                                <span class="price-unit">за 1 м³</span>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-card-order" data-material="chernozem">Заказать</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. Керамзит -->
+                <div class="material-card">
+                    <div class="material-img-wrap">
+                        <img src="../images/expanded_clay.jpg" alt="Керамзит 10-20" class="material-img" loading="lazy">
+                        <span class="material-badge">ГОСТ 32496</span>
+                    </div>
+                    <div class="material-body">
+                        <h3 class="material-name">Керамзит (10-20 мм)</h3>
+                        <p class="material-desc">Заводской вспученный керамзит. Для утепления полов, чердаков и перекрытий.</p>
+                        <div class="material-footer">
+                            <div class="material-price">
+                                <span class="price-val">от 1 600 ₽</span>
+                                <span class="price-unit">за 1 м³</span>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-card-order" data-material="expanded_clay">Заказать</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Автопарк -->
+    <section class="section" style="background: #ffffff;">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Самосвалы под ваш заезд</h2>
+                <p class="section-subtitle">Подберём технику под ширину ваших ворот и дорожное покрытие</p>
+            </div>
+
+            <div class="fleet-grid">
+                
+                <div class="fleet-card">
+                    <div class="fleet-tag">Для дач и узких СНТ</div>
+                    <h3 class="fleet-title">Мини-самосвал 4 тонны</h3>
+                    <ul class="fleet-specs">
+                        <li><span>Объём кузова:</span> <span>до 4 м³</span></li>
+                        <li><span>Грузоподъёмность:</span> <span>до 4 тонн</span></li>
+                        <li><span>Ширина заезда:</span> <span>от 2.1 м</span></li>
+                        <li><span>Высота машины:</span> <span>2.4 м</span></li>
+                    </ul>
+                    <div class="fleet-best">
+                        Идеально для узких дачных проездов, под низкие газовые трубы и арки.
+                    </div>
+                </div>
+
+                <div class="fleet-card" style="border-color: var(--primary); border-width: 2px;">
+                    <div class="fleet-tag" style="color: var(--primary);">Хит для дома и дачи</div>
+                    <h3 class="fleet-title">КамАЗ 10-12 тонн</h3>
+                    <ul class="fleet-specs">
+                        <li><span>Объём кузова:</span> <span>до 8 м³</span></li>
+                        <li><span>Грузоподъёмность:</span> <span>10-12 тонн</span></li>
+                        <li><span>Ширина заезда:</span> <span>от 2.6 м</span></li>
+                        <li><span>Высота машины:</span> <span>2.9 м</span></li>
+                    </ul>
+                    <div class="fleet-best">
+                        Самый выгодный вариант для заливки фундаментов, отсыпки дорожек и заездов.
+                    </div>
+                </div>
+
+                <div class="fleet-card">
+                    <div class="fleet-tag">Для больших объёмов</div>
+                    <h3 class="fleet-title">Самосвал 20-25 тонн</h3>
+                    <ul class="fleet-specs">
+                        <li><span>Объём кузова:</span> <span>до 20 м³</span></li>
+                        <li><span>Грузоподъёмность:</span> <span>до 25 тонн</span></li>
+                        <li><span>Ширина заезда:</span> <span>от 3.0 м</span></li>
+                        <li><span>Колёсная база:</span> <span>3-4 оси</span></li>
+                    </ul>
+                    <div class="fleet-best">
+                        Максимальная экономия на стоимости доставки при оптовых заказах.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Гарантии и честность -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Почему заказывают у нас</h2>
+                <p class="section-subtitle">Простые и прозрачные правила работы с частными и корпоративными клиентами</p>
+            </div>
+
+            <div class="trust-grid">
+                <div class="trust-box">
+                    <div class="trust-icon">📏</div>
+                    <h3 class="trust-title">Замер кузова рулеткой</h3>
+                    <p class="trust-text">Водитель поднимает кузов только после того, как вы лично проверите высоту насыпи и кубатуру.</p>
+                </div>
+                <div class="trust-box">
+                    <div class="trust-icon">💵</div>
+                    <h3 class="trust-title">Оплата после осмотра</h3>
+                    <p class="trust-text">Никаких предоплат. Вы платите водителю наличными или переводом только после доставки и проверки качества.</p>
+                </div>
+                <div class="trust-box">
+                    <div class="trust-icon">⏱️</div>
+                    <h3 class="trust-title">Быстрый выезд сегодня</h3>
+                    <p class="trust-text">Самосвалы дежурят в разных районах Красноярска, поэтому подача на объект возможна уже через 2 часа.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Быстрая форма заказа -->
+    <section class="container" id="order-section">
+        <div class="order-section">
+            <div class="order-grid">
+                
+                <div class="order-left">
+                    <h2>Быстрый заказ доставки</h2>
+                    <p>Оставьте номер телефона, диспетчер перезвонит в течение 5 минут, уточнит удобное время и подтвердит точную цену рейса.</p>
+                    
+                    <div class="order-contacts-quick">
+                        <a href="tel:+79950758414" class="quick-call-btn">
+                            <span>📞</span> Позвонить: +7 (995) 075-84-14
+                        </a>
+                        <a href="https://wa.me/79950758414" target="_blank" rel="noopener" class="quick-call-btn">
+                            <span>💬</span> Написать в WhatsApp
+                        </a>
+                    </div>
+                </div>
+
+                <div class="order-form-wrap">
+                    <h3>Заявка на расчет и доставку</h3>
+                    <div id="order-status" class="form-status"></div>
+                    
+                    <form id="order-form">
+                        <div class="form-group">
+                            <label for="order-phone" class="form-label">Ваш телефон для связи *</label>
+                            <input type="tel" id="order-phone" class="form-input" placeholder="+7 (___) ___-__-__" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="order-material" class="form-label">Что привезти:</label>
+                            <select id="order-material" class="form-select">
+                                <option value="crushed_5_20">Щебень 5-20 мм (диорит)</option>
+                                <option value="crushed_20_40">Щебень 20-40 мм (скальный)</option>
+                                <option value="sand_washed">Песок строительный мытый</option>
+                                <option value="sand_sifted">Песок карьерный сеяный</option>
+                                <option value="pshs">ПЩС (0-20 / 0-40)</option>
+                                <option value="gravel">Гравий мытый / ПГС</option>
+                                <option value="chernozem">Чернозём плодородный</option>
+                                <option value="expanded_clay">Керамзит 10-20 мм</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="order-address" class="form-label">Куда везти (район, поселок или СНТ):</label>
+                            <input type="text" id="order-address" class="form-input" placeholder="Например: Советский район / п. Емельяново">
+                        </div>
+
+                        <button type="submit" id="order-submit-btn" class="btn btn-primary btn-block">
+                            Отправить заявку
+                        </button>
+                        <p class="privacy-note">Нажимая кнопку, вы соглашаетесь на обработку персональных данных для расчета доставки.</p>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>КрасПесок.рф</h4>
+                    <p>Прямые поставки нерудных материалов с сертифицированных карьеров Красноярска.</p>
+                    <p>Песок, щебень, ПЩС, ПГС, гравий, чернозём, керамзит.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Контакты диспетчера</h4>
+                    <p>Телефон: <a href="tel:+79950758414" class="footer-link">+7 (995) 075-84-14</a></p>
+                    <p>Режим работы: ежедневно с 08:00 до 21:00</p>
+                    <p>Красноярск и пригород до 80 км</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Версии сайта</h4>
+                    <p>Вы просматриваете: <strong>Супер простая версия</strong></p>
+                    <p><a href="../index.html" class="footer-link">Перейти на полную версию сайта →</a></p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>© 2026 КрасПесок.рф — Доставка сыпучих материалов в Красноярске.</div>
+                <div>Оплата по факту выгрузки. Честный объем.</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Плавающая нижняя панель для мобильных телефонов -->
+    <div class="mobile-bar">
+        <a href="tel:+79950758414" class="btn btn-primary">
+            📞 Позвонить
+        </a>
+        <a href="#calc-card" class="btn btn-secondary">
+            🧮 Рассчитать
+        </a>
+    </div>
+
+    <!-- Скрипт -->
+    <script src="app.js"></script>
+</body>
+</html>

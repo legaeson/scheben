@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>КрасПесок — Административная панель</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #0f1117;
+  --bg2:      #161b25;
+  --bg3:      #1e2535;
+  --border:   #2a3348;
+  --text:     #e2e8f0;
+  --muted:    #94a3b8;
+  --accent:   #3b82f6;
+  --accent2:  #2563eb;
+  --green:    #22c55e;
+  --yellow:   #f59e0b;
+  --red:      #ef4444;
+  --green-bg: rgba(34,197,94,.1);
+  --yellow-bg:rgba(245,158,11,.1);
+  --red-bg:   rgba(239,68,68,.1);
+  --radius:   8px;
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+}
+html { font-size: 14px; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; display: flex; min-height: 100vh; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════════════════════════════ */
+#sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 100;
+}
+#main {
+  flex: 1; margin-left: 220px; padding: 24px 32px; max-width: 1100px;
+}
+.sidebar-logo {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo h1 { font-size: 1rem; font-weight: 700; color: var(--accent); }
+.sidebar-logo p  { font-size: .7rem; color: var(--muted); margin-top: 2px; }
+nav.sidebar-nav { padding: 12px 0; flex: 1; }
+nav.sidebar-nav a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; color: var(--muted); text-decoration: none;
+  border-radius: 0; font-size: .875rem; transition: all .15s;
+}
+nav.sidebar-nav a:hover, nav.sidebar-nav a.active {
+  background: var(--bg3); color: var(--text);
+}
+nav.sidebar-nav a.active { border-left: 3px solid var(--accent); }
+.sidebar-footer {
+  padding: 12px 16px; border-top: 1px solid var(--border);
+  font-size: .7rem; color: var(--muted);
+}
+.sidebar-footer a { color: var(--accent); text-decoration: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTIONS
+═══════════════════════════════════════════════════════════════════════════ */
+.section { display: none; }
+.section.active { display: block; }
+.page-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+.page-sub   { color: var(--muted); font-size: .85rem; margin-bottom: 24px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARDS & PANELS
+═══════════════════════════════════════════════════════════════════════════ */
+.card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 20px;
+}
+.card-title { font-size: .95rem; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+.card-title small { font-weight: 400; color: var(--muted); font-size: .75rem; margin-left: 8px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FORMS
+═══════════════════════════════════════════════════════════════════════════ */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.form-row { display: flex; flex-direction: column; gap: 5px; }
+.form-row label { font-size: .8rem; color: var(--muted); }
+.form-row input, .form-row select, .form-row textarea {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 8px 10px; border-radius: var(--radius);
+  font-size: .875rem; outline: none; transition: border .15s;
+}
+.form-row input:focus, .form-row select:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,.2);
+}
+.form-row .hint { font-size: .7rem; color: var(--muted); margin-top: 3px; }
+.form-section-title {
+  font-size: .8rem; font-weight: 600; text-transform: uppercase;
+  color: var(--accent); letter-spacing: .05em;
+  margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: var(--radius); font-size: .875rem;
+  font-weight: 500; cursor: pointer; border: none; transition: all .15s;
+}
+.btn-primary  { background: var(--accent);  color: #fff; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-success  { background: var(--green);   color: #fff; }
+.btn-danger   { background: var(--red);     color: #fff; }
+.btn-secondary{ background: var(--bg3);     color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+.btn-sm { padding: 5px 10px; font-size: .8rem; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TABLES
+═══════════════════════════════════════════════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th { background: var(--bg3); color: var(--muted); text-align: left; padding: 10px 12px; font-weight: 500; border-bottom: 1px solid var(--border); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.02); }
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: .7rem; font-weight: 600;
+}
+.badge-active   { background: var(--green-bg);  color: var(--green); }
+.badge-inactive { background: var(--red-bg);    color: var(--red); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CALCULATOR (ADMIN)
+═══════════════════════════════════════════════════════════════════════════ */
+.calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.calc-result-box {
+  background: var(--bg3); border-radius: var(--radius); padding: 16px;
+}
+.calc-result-title { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+.calc-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: .875rem; }
+.calc-row.total { font-weight: 700; font-size: 1rem; border-top: 1px solid var(--border); margin-top: 8px; padding-top: 10px; }
+.calc-row .val  { font-weight: 600; }
+.calc-row .pos  { color: var(--green); }
+.calc-row .neg  { color: var(--red); }
+.calc-row .dim  { color: var(--muted); }
+.profit-indicator {
+  margin-top: 16px; padding: 14px; border-radius: var(--radius);
+  display: flex; align-items: center; gap: 12px;
+}
+.profit-indicator.profitable { background: var(--green-bg); border: 1px solid rgba(34,197,94,.2); }
+.profit-indicator.borderline { background: var(--yellow-bg); border: 1px solid rgba(245,158,11,.2); }
+.profit-indicator.loss       { background: var(--red-bg);   border: 1px solid rgba(239,68,68,.2); }
+.profit-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.profitable .profit-dot { background: var(--green); }
+.borderline .profit-dot { background: var(--yellow); }
+.loss       .profit-dot { background: var(--red); }
+.profit-text { font-size: .875rem; font-weight: 500; }
+.profitable .profit-text { color: var(--green); }
+.borderline .profit-text { color: var(--yellow); }
+.loss       .profit-text { color: var(--red); }
+.profit-sub { font-size: .75rem; color: var(--muted); }
+
+/* Ручная корректировка */
+.override-block { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-top: 16px; }
+.override-block label { font-size: .8rem; color: var(--muted); }
+.override-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.override-row input { width: 140px; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: var(--radius); font-size: .875rem; outline: none; }
+.override-row input:focus { border-color: var(--accent); }
+.override-hint { font-size: .75rem; color: var(--muted); margin-top: 6px; }
+
+/* Физическая инфо-строка */
+.physics-info {
+  background: var(--bg3); border-radius: var(--radius); padding: 12px 14px;
+  font-size: .8rem; color: var(--muted); margin-top: 8px;
+}
+.physics-info strong { color: var(--text); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADDRESS GEOCODER (калькулятор)
+═══════════════════════════════════════════════════════════════════════════ */
+.addr-wrap { position: relative; }
+.addr-status { font-size: .75rem; margin-top: 4px; min-height: 18px; }
+.addr-ok      { color: var(--green); }
+.addr-loading { color: var(--muted); }
+.addr-error   { color: var(--red); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANALYTICS PLACEHOLDER
+═══════════════════════════════════════════════════════════════════════════ */
+.analytics-placeholder {
+  background: var(--bg2); border: 1px dashed var(--border);
+  border-radius: var(--radius); padding: 60px 20px;
+  text-align: center; color: var(--muted);
+}
+.analytics-placeholder h3 { font-size: 1rem; margin-bottom: 8px; color: var(--text); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ALERTS
+═══════════════════════════════════════════════════════════════════════════ */
+.alert { padding: 12px 14px; border-radius: var(--radius); font-size: .85rem; margin-bottom: 16px; }
+.alert-success { background: var(--green-bg); border: 1px solid rgba(34,197,94,.3); color: var(--green); }
+.alert-error   { background: var(--red-bg);   border: 1px solid rgba(239,68,68,.3); color: var(--red); }
+.alert-info    { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.3); color: var(--accent); }
+#toast { position: fixed; top: 20px; right: 20px; z-index: 9999; display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODAL (редактор товара)
+═══════════════════════════════════════════════════════════════════════════ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  z-index: 500; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; width: 92%; max-width: 600px;
+  max-height: 90vh; overflow-y: auto; padding: 24px;
+}
+.modal-title { font-size: 1rem; font-weight: 700; margin-bottom: 20px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MISC
+═══════════════════════════════════════════════════════════════════════════ */
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.text-muted { color: var(--muted); }
+.mono { font-family: 'Menlo', 'Consolas', monospace; font-size: .8rem; }
+.tag-list { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { display: inline-block; padding: 2px 7px; border-radius: 4px; background: var(--bg3); font-size: .7rem; color: var(--muted); }
+
+@media (max-width: 900px) {
+  #sidebar { width: 180px; }
+  #main { margin-left: 180px; padding: 16px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .calc-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  #sidebar { display: none; }
+  #main { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════════════════ -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <h1>КрасПесок.рф</h1>
+    <p>Административная панель</p>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#" data-section="settings" class="active">⚙ Настройки бизнеса</a>
+    <a href="#" data-section="products">📦 Товары и цены</a>
+    <a href="#" data-section="vehicles">🚛 Автомобили</a>
+    <a href="#" data-section="tariffs">🗺 Тарифы доставки</a>
+    <a href="#" data-section="calculator">🧮 Калькулятор заказа</a>
+    <a href="#" data-section="analytics">📊 Аналитика</a>
+    <a href="#" data-section="export">💾 Экспорт / Импорт</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/">← На сайт</a><br>
+    Версия 1.0 · 2026
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MAIN
+══════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ─── SECTION: Настройки бизнеса ────────────────────────────── -->
+<div class="section active" id="section-settings">
+  <div class="page-title">Настройки бизнеса</div>
+  <div class="page-sub">Все параметры расчёта себестоимости. Изменение любого поля автоматически пересчитывает все заказы.</div>
+
+  <form id="settings-form">
+
+    <div class="card">
+      <div class="card-title">Адрес базы и координаты</div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Название базы</label>
+          <input type="text" name="BASE_NAME" required>
+        </div>
+        <div class="form-row">
+          <label>Адрес базы (для отображения)</label>
+          <input type="text" name="BASE_ADDRESS" required>
+        </div>
+        <div class="form-row">
+          <label>Широта базы (LAT)</label>
+          <input type="number" name="BASE_LAT" step="0.000001" required>
+          <span class="hint">Используется для расчёта маршрута. Правый берег: ~56.015</span>
+        </div>
+        <div class="form-row">
+          <label>Долгота базы (LNG)</label>
+          <input type="number" name="BASE_LNG" step="0.000001" required>
+          <span class="hint">Правый берег: ~92.893</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Топливо</div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Цена дизельного топлива, ₽/л</label>
+          <input type="number" name="DIESEL_PRICE" step="0.1" min="0" required>
+          <span class="hint">Менять при каждом существенном изменении цен на АЗС. Пересчёт мгновенный.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Себестоимость автомобиля <small>(Вариант А — собственный транспорт)</small></div>
+      <div class="form-grid-3">
+        <div class="form-row">
+          <label>Расход гружёный, л/100 км</label>
+          <input type="number" name="VEHICLE_FUEL_LOADED" step="0.1" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>Расход порожний, л/100 км</label>
+          <input type="number" name="VEHICLE_FUEL_EMPTY" step="0.1" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>ТО и ремонт, ₽/км</label>
+          <input type="number" name="MAINTENANCE_COST_KM" step="0.01" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>Шины, ₽/км</label>
+          <input type="number" name="TIRE_COST_KM" step="0.01" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>Амортизация, ₽/км</label>
+          <input type="number" name="DEPRECIATION_KM" step="0.01" min="0" required>
+          <span class="hint">Стоимость авто / срок службы лет / пробег в год</span>
+        </div>
+        <div class="form-row">
+          <label>Прочие расходы, ₽/км</label>
+          <input type="number" name="OTHER_COSTS_KM" step="0.01" min="0" required>
+          <span class="hint">Масла, фильтры, мойка и т.д.</span>
+        </div>
+        <div class="form-row">
+          <label>Зарплата водителя за рейс, ₽</label>
+          <input type="number" name="DRIVER_SALARY_PER_TRIP" step="50" min="0" required>
+        </div>
+      </div>
+      <div style="margin-top:12px;" class="physics-info">
+        Расчётная себестоимость 1 км: <strong id="km-cost-preview">—</strong>
+        &nbsp;|&nbsp; Рейс 10 км (20 км туда-обратно): <strong id="trip10-preview">—</strong>
+        &nbsp;|&nbsp; Рейс 25 км: <strong id="trip25-preview">—</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ценообразование доставки</div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Минимальная цена рейса для клиента, ₽</label>
+          <input type="number" name="MIN_DELIVERY_PRICE" step="100" min="0" required>
+          <span class="hint">Даже если себестоимость ниже, клиент платит не меньше этой суммы</span>
+        </div>
+        <div class="form-row">
+          <label>Коэффициент маржи на доставку</label>
+          <input type="number" name="PROFIT_COEFFICIENT" step="0.01" min="1" max="5" required>
+          <span class="hint">1.45 = 45% сверх себестоимости рейса</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Простой автомобиля</div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Бесплатное ожидание, минут</label>
+          <input type="number" name="FREE_WAIT_MINUTES" step="5" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>Стоимость простоя, ₽/час</label>
+          <input type="number" name="WAIT_PRICE_PER_HOUR" step="100" min="0" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Финансовые параметры</div>
+      <div class="form-grid-3">
+        <div class="form-row">
+          <label>Налог, % (УСН 6%)</label>
+          <input type="number" name="TAX_RATE_PERCENT" step="0.1" min="0" max="100" required>
+          <span class="hint">Вводите в %: 6 = 6%</span>
+        </div>
+        <div class="form-row">
+          <label>Эквайринг, %</label>
+          <input type="number" name="ACQUIRING_RATE_PERCENT" step="0.1" min="0" max="10" required>
+          <span class="hint">Вводите в %: 2 = 2%</span>
+        </div>
+        <div class="form-row">
+          <label>Мин. прибыль с заказа, ₽</label>
+          <input type="number" name="MIN_ORDER_PROFIT" step="100" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>Мин. допустимая маржа, %</label>
+          <input type="number" name="MIN_MARGIN_PERCENT" step="1" min="0" max="100" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary">💾 Сохранить настройки</button>
+      <button type="button" id="btn-reset-settings" class="btn btn-secondary">↺ Сбросить к defaults</button>
+    </div>
+  </form>
+</div>
+
+<!-- ─── SECTION: Товары ─────────────────────────────────────────── -->
+<div class="section" id="section-products">
+  <div class="page-title">Товары и цены</div>
+  <div class="page-sub">Закупочные цены видны только здесь. Клиенты видят только цену продажи.</div>
+  <div class="card">
+    <div class="table-wrap">
+      <table id="products-table">
+        <thead>
+          <tr>
+            <th>Товар</th>
+            <th>Продажа ₽/м³</th>
+            <th>Закупка ₽/м³</th>
+            <th>Маржа</th>
+            <th>Плотность</th>
+            <th>Мин. заказ</th>
+            <th>Статус</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="products-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SECTION: Автомобили ────────────────────────────────────── -->
+<div class="section" id="section-vehicles">
+  <div class="page-title">Автомобили</div>
+  <div class="page-sub">Физические параметры каждой машины для расчёта себестоимости рейса.</div>
+  <div class="card">
+    <div class="table-wrap">
+      <table id="vehicles-table">
+        <thead>
+          <tr>
+            <th>Модель</th>
+            <th>Грузоп. (т)</th>
+            <th>Кузов (м³)</th>
+            <th>Расход гружёный (л/100)</th>
+            <th>Расход порожний (л/100)</th>
+            <th>Основной</th>
+            <th>Статус</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="vehicles-tbody"></tbody>
+      </table>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-secondary btn-sm" id="btn-add-vehicle">+ Добавить автомобиль</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SECTION: Тарифы доставки ───────────────────────────────── -->
+<div class="section" id="section-tariffs">
+  <div class="page-title">Тарифы доставки</div>
+  <div class="page-sub">Выберите модель тарифа. Рекомендуется «Полная себестоимость» — точнее всего.</div>
+
+  <div class="card">
+    <div class="card-title">Тарифная модель</div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Выбранная модель</label>
+        <select id="tariff-model-select">
+          <option value="full_cost">Полная себестоимость (рекомендуется)</option>
+          <option value="per_km">Базовая цена + за км</option>
+          <option value="zones">Фиксированные зоны</option>
+        </select>
+        <span class="hint">
+          <b>full_cost</b>: MAX(мин., себестоимость × коэфф.) — адаптируется к расстоянию<br>
+          <b>per_km</b>: фиксированная база + доплата за каждый лишний км<br>
+          <b>zones</b>: фиксированная цена по зоне (не учитывает реальную себестоимость)
+        </span>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btn-save-tariff-model">Сохранить выбор</button>
+    </div>
+  </div>
+
+  <div class="card" id="zones-card">
+    <div class="card-title">Зоны доставки <small>используются при модели «zones» и как справочник</small></div>
+    <div class="table-wrap">
+      <table id="zones-table">
+        <thead>
+          <tr><th>Зона</th><th>От (км)</th><th>До (км)</th><th>Цена за рейс, ₽</th><th></th></tr>
+        </thead>
+        <tbody id="zones-tbody"></tbody>
+      </table>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btn-save-zones">Сохранить зоны</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Карта районов → расстояние <small>для экспресс-калькулятора (без геокодинга)</small></div>
+    <div class="table-wrap">
+      <table id="districts-table">
+        <thead>
+          <tr><th>Ключ</th><th>Название района</th><th>Расстояние, км</th><th></th></tr>
+        </thead>
+        <tbody id="districts-tbody"></tbody>
+      </table>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btn-save-districts">Сохранить районы</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SECTION: Калькулятор заказа ────────────────────────────── -->
+<div class="section" id="section-calculator">
+  <div class="page-title">Калькулятор заказа</div>
+  <div class="page-sub">Полный расчёт с внутренней экономикой. Клиенты не видят закупочных цен и себестоимости.</div>
+
+  <div class="card">
+    <div class="form-grid-3">
+      <div class="form-row">
+        <label>Материал</label>
+        <select id="adm-material"></select>
+      </div>
+      <div class="form-row">
+        <label>Объём, м³</label>
+        <input type="number" id="adm-volume" value="7" min="0.5" step="0.5">
+      </div>
+      <div class="form-row">
+        <label>Автомобиль</label>
+        <select id="adm-vehicle"></select>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:12px;">
+      <label>Адрес доставки</label>
+      <div class="addr-wrap">
+        <input type="text" id="adm-address" placeholder="Красноярск, ул. Примерная, 10" style="width:100%">
+        <div class="addr-status" id="adm-addr-status"></div>
+      </div>
+    </div>
+    <div class="form-grid" style="margin-top:10px;">
+      <div class="form-row">
+        <label>— или укажите расстояние вручную, км</label>
+        <input type="number" id="adm-distance" value="" min="1" step="1" placeholder="Авто (из адреса)">
+        <span class="hint">Если введено — адрес игнорируется</span>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btn-adm-calc">Рассчитать</button>
+    </div>
+  </div>
+
+  <div id="adm-result" style="display:none">
+    <div class="calc-grid">
+      <!-- Для клиента -->
+      <div class="calc-result-box">
+        <div class="calc-result-title">Для клиента (видно на сайте)</div>
+        <div class="calc-row">
+          <span>Материал</span>
+          <span class="val" id="r-material-cost">—</span>
+        </div>
+        <div class="calc-row">
+          <span>Доставка (<span id="r-trips">1</span> рейс)</span>
+          <span class="val" id="r-delivery">—</span>
+        </div>
+        <div class="calc-row total">
+          <span>ИТОГО</span>
+          <span class="val" id="r-total">—</span>
+        </div>
+        <div class="physics-info" style="margin-top:10px;" id="r-physics">—</div>
+      </div>
+
+      <!-- Внутренняя экономика -->
+      <div class="calc-result-box">
+        <div class="calc-result-title">Внутренний расчёт (только здесь)</div>
+        <div class="calc-row">
+          <span>Закупка материала</span>
+          <span class="val neg" id="r-purchase">—</span>
+        </div>
+        <div class="calc-row">
+          <span>Себестоимость рейса (всего)</span>
+          <span class="val neg" id="r-trip-cost">—</span>
+        </div>
+        <div class="calc-row">
+          <span>Налог УСН 6%</span>
+          <span class="val neg" id="r-tax">—</span>
+        </div>
+        <div class="calc-row">
+          <span>Эквайринг 2%</span>
+          <span class="val neg" id="r-acquiring">—</span>
+        </div>
+        <div class="calc-row total">
+          <span>Прибыль</span>
+          <span class="val" id="r-profit">—</span>
+        </div>
+        <div class="calc-row">
+          <span class="dim">Маржа</span>
+          <span class="val dim" id="r-margin">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Индикатор рентабельности -->
+    <div class="profit-indicator" id="r-indicator" style="margin-top:16px">
+      <div class="profit-dot"></div>
+      <div>
+        <div class="profit-text" id="r-status-text">—</div>
+        <div class="profit-sub" id="r-status-sub">—</div>
+      </div>
+    </div>
+
+    <!-- Ручная корректировка -->
+    <div class="override-block">
+      <label>Ручная корректировка цены доставки (для этого заказа)</label>
+      <div class="override-row">
+        <span style="color:var(--muted);font-size:.85rem;">Авто:</span>
+        <strong id="r-auto-delivery">—</strong>
+        <input type="number" id="adm-override" placeholder="Изменить вручную" min="0">
+        <button class="btn btn-secondary btn-sm" id="btn-apply-override">Применить</button>
+      </div>
+      <div class="override-hint" id="r-override-hint">Корректировка не применена. Авто цена активна.</div>
+    </div>
+
+    <!-- Минимальный заказ -->
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title">Минимальный выгодный заказ при таком расстоянии</div>
+      <div class="calc-row">
+        <span>Авто-расчёт минимума</span>
+        <span class="val" id="r-auto-min">—</span>
+      </div>
+      <div class="calc-row">
+        <span>Фактический минимум (с шагом)</span>
+        <span class="val" id="r-eff-min">—</span>
+      </div>
+      <div class="calc-row">
+        <span>Заказано</span>
+        <span class="val" id="r-ordered-vol">—</span>
+      </div>
+      <div id="r-below-min-warn" class="alert alert-error" style="margin-top:10px;display:none">
+        ⚠ Заказанный объём ниже минимального для данного расстояния
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SECTION: Аналитика ──────────────────────────────────────── -->
+<div class="section" id="section-analytics">
+  <div class="page-title">Аналитика</div>
+  <div class="page-sub">Статистика заказов для оптимизации тарифов и ассортимента.</div>
+  <div class="analytics-placeholder">
+    <h3>📊 Раздел в разработке</h3>
+    <p>Когда заказы начнут поступать через API — здесь появятся:<br>
+    средний чек, средняя маржа, прибыль по материалам и районам,<br>
+    загрузка автомобилей, популярность товаров.</p>
+  </div>
+</div>
+
+<!-- ─── SECTION: Экспорт / Импорт ──────────────────────────────── -->
+<div class="section" id="section-export">
+  <div class="page-title">Экспорт / Импорт конфигурации</div>
+  <div class="page-sub">Сохраните конфигурацию в файл на компьютере или загрузите ранее сохранённую.</div>
+  <div class="card">
+    <div class="card-title">Экспорт</div>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px;">Скачайте текущую конфигурацию как JSON-файл. Храните его в безопасном месте — он содержит закупочные цены.</p>
+    <button class="btn btn-primary" id="btn-export">💾 Скачать конфиг (JSON)</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Импорт</div>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px;">Загрузите ранее сохранённый файл конфигурации. Текущие настройки будут заменены.</p>
+    <input type="file" id="import-file" accept=".json" style="display:none">
+    <button class="btn btn-secondary" id="btn-import-pick">📂 Выбрать файл JSON</button>
+    <span id="import-file-name" style="margin-left:12px;color:var(--muted);font-size:.85rem;"></span>
+    <div class="btn-group">
+      <button class="btn btn-danger" id="btn-import-apply" disabled>⚡ Применить импорт</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Сброс к заводским настройкам</div>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px;">Удаляет все изменения и возвращает значения по умолчанию.</p>
+    <button class="btn btn-danger" id="btn-factory-reset">⚠ Сброс к defaults</button>
+  </div>
+</div>
+
+</main>
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL: Редактор товара
+══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal">
+    <div class="modal-title" id="product-modal-title">Редактировать товар</div>
+    <form id="product-form">
+      <input type="hidden" id="pf-id">
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Название</label>
+          <input type="text" id="pf-name" required>
+        </div>
+        <div class="form-row">
+          <label>Категория</label>
+          <select id="pf-category">
+            <option value="crushed">Щебень</option>
+            <option value="sand_pgs">Песок и ПЩС</option>
+            <option value="gravel">Гравий</option>
+            <option value="secondary">Прочие</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Цена продажи, ₽/м³ (видна клиентам)</label>
+          <input type="number" id="pf-sale" step="10" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>Закупочная цена, ₽/м³ (только админ)</label>
+          <input type="number" id="pf-purchase" step="10" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>Плотность, т/м³</label>
+          <input type="number" id="pf-density" step="0.01" min="0.01" max="4" required>
+        </div>
+        <div class="form-row">
+          <label>Шаг заказа, м³</label>
+          <input type="number" id="pf-step" step="0.5" min="0.5" value="1" required>
+        </div>
+        <div class="form-row">
+          <label>Мин. заказ, м³ (пусто = авто)</label>
+          <input type="number" id="pf-min-order" step="1" min="0" placeholder="авто">
+        </div>
+        <div class="form-row">
+          <label>Мин. прибыль с заказа, ₽</label>
+          <input type="number" id="pf-min-profit" step="100" min="0" value="800">
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:12px;">
+        <label>Описание / применение</label>
+        <textarea id="pf-usecase" rows="2" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:var(--radius);resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+        <label style="color:var(--muted)">Активен</label>
+        <input type="checkbox" id="pf-active" checked>
+        &nbsp;&nbsp;
+        <label style="color:var(--muted)">Доставка доступна</label>
+        <input type="checkbox" id="pf-delivery" checked>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-modal-cancel">Отмена</button>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL: Редактор автомобиля
+══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="vehicle-modal">
+  <div class="modal">
+    <div class="modal-title">Редактировать автомобиль</div>
+    <form id="vehicle-form">
+      <input type="hidden" id="vf-id">
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Название</label>
+          <input type="text" id="vf-name" required>
+        </div>
+        <div class="form-row">
+          <label>Короткое название</label>
+          <input type="text" id="vf-short" required>
+        </div>
+        <div class="form-row">
+          <label>Грузоподъёмность, т</label>
+          <input type="number" id="vf-capacity" step="0.5" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>Объём кузова, м³</label>
+          <input type="number" id="vf-volume" step="0.5" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>Расход гружёный, л/100 км</label>
+          <input type="number" id="vf-fuel-loaded" step="0.5" min="0" required>
+        </div>
+        <div class="form-row">
+          <label>Расход порожний, л/100 км</label>
+          <input type="number" id="vf-fuel-empty" step="0.5" min="0" required>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+        <label style="color:var(--muted)">Активен</label>
+        <input type="checkbox" id="vf-active" checked>
+        &nbsp;&nbsp;
+        <label style="color:var(--muted)">Основной (используется по умолчанию)</label>
+        <input type="checkbox" id="vf-default">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-vmodal-cancel">Отмена</button>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════════════════ -->
+<script src="business-config.js?v=1.0"></script>
+<script src="pricing-engine.js?v=1.0"></script>
+<script>
+'use strict';
+
+// ─── Утилиты ─────────────────────────────────────────────────────────────────
+function fmt(v) { return Math.round(v).toLocaleString('ru-RU') + ' ₽'; }
+function fmtN(v, d=1) { return parseFloat(v).toFixed(d); }
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.className = 'alert alert-' + type;
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+
+// ─── Навигация ────────────────────────────────────────────────────────────────
+document.querySelectorAll('.sidebar-nav a[data-section]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const sec = link.dataset.section;
+    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    link.classList.add('active');
+    document.getElementById('section-' + sec).classList.add('active');
+    if (sec === 'calculator') initAdminCalc();
+    if (sec === 'products')   renderProductsTable();
+    if (sec === 'vehicles')   renderVehiclesTable();
+    if (sec === 'tariffs')    renderTariffs();
+    if (sec === 'settings')   loadSettingsForm();
+  });
+});
+
+// ─── Загрузка конфига ─────────────────────────────────────────────────────────
+let cfg;
+function reloadCfg() { cfg = KPCONFIG.getConfig(); }
+reloadCfg();
+
+// ─── SECTION: Настройки ───────────────────────────────────────────────────────
+function loadSettingsForm() {
+  reloadCfg();
+  const s = cfg.settings;
+  const f = document.getElementById('settings-form');
+  function set(name, val) {
+    const el = f.querySelector(`[name="${name}"]`);
+    if (el) el.value = val;
+  }
+  set('BASE_NAME',          s.BASE_NAME);
+  set('BASE_ADDRESS',       s.BASE_ADDRESS);
+  set('BASE_LAT',           s.BASE_LAT);
+  set('BASE_LNG',           s.BASE_LNG);
+  set('DIESEL_PRICE',       s.DIESEL_PRICE);
+  set('VEHICLE_FUEL_LOADED',s.VEHICLE_FUEL_LOADED);
+  set('VEHICLE_FUEL_EMPTY', s.VEHICLE_FUEL_EMPTY);
+  set('MAINTENANCE_COST_KM',s.MAINTENANCE_COST_KM);
+  set('TIRE_COST_KM',       s.TIRE_COST_KM);
+  set('DEPRECIATION_KM',    s.DEPRECIATION_KM);
+  set('OTHER_COSTS_KM',     s.OTHER_COSTS_KM);
+  set('DRIVER_SALARY_PER_TRIP', s.DRIVER_SALARY_PER_TRIP);
+  set('MIN_DELIVERY_PRICE', s.MIN_DELIVERY_PRICE);
+  set('PROFIT_COEFFICIENT', s.PROFIT_COEFFICIENT);
+  set('FREE_WAIT_MINUTES',  s.FREE_WAIT_MINUTES);
+  set('WAIT_PRICE_PER_HOUR',s.WAIT_PRICE_PER_HOUR);
+  set('TAX_RATE_PERCENT',   +(s.TAX_RATE * 100).toFixed(1));
+  set('ACQUIRING_RATE_PERCENT', +(s.ACQUIRING_RATE * 100).toFixed(1));
+  set('MIN_ORDER_PROFIT',   s.MIN_ORDER_PROFIT);
+  set('MIN_MARGIN_PERCENT', s.MIN_MARGIN_PERCENT);
+  updateKmPreview();
+}
+
+function updateKmPreview() {
+  const f = document.getElementById('settings-form');
+  function g(name) { return parseFloat(f.querySelector(`[name="${name}"]`)?.value) || 0; }
+  const v = cfg.vehicles[Object.keys(cfg.vehicles)[0]] || {};
+  const fuelAvg = (g('VEHICLE_FUEL_LOADED') + g('VEHICLE_FUEL_EMPTY')) / 2;
+  const fuelRub = fuelAvg / 100 * g('DIESEL_PRICE');
+  const kmCost  = fuelRub + g('MAINTENANCE_COST_KM') + g('TIRE_COST_KM') + g('DEPRECIATION_KM') + g('OTHER_COSTS_KM');
+  const driver  = g('DRIVER_SALARY_PER_TRIP');
+  const trip10  = 20 * kmCost + driver;
+  const trip25  = 50 * kmCost + driver;
+  document.getElementById('km-cost-preview').textContent = fmtN(kmCost, 2) + ' ₽/км';
+  document.getElementById('trip10-preview').textContent  = fmt(trip10);
+  document.getElementById('trip25-preview').textContent  = fmt(trip25);
+}
+
+document.getElementById('settings-form').addEventListener('input', updateKmPreview);
+document.getElementById('settings-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target;
+  function g(name) { return parseFloat(f.querySelector(`[name="${name}"]`).value); }
+  function gs(name) { return f.querySelector(`[name="${name}"]`).value.trim(); }
+  reloadCfg();
+  Object.assign(cfg.settings, {
+    BASE_NAME:           gs('BASE_NAME'),
+    BASE_ADDRESS:        gs('BASE_ADDRESS'),
+    BASE_LAT:            g('BASE_LAT'),
+    BASE_LNG:            g('BASE_LNG'),
+    DIESEL_PRICE:        g('DIESEL_PRICE'),
+    VEHICLE_FUEL_LOADED: g('VEHICLE_FUEL_LOADED'),
+    VEHICLE_FUEL_EMPTY:  g('VEHICLE_FUEL_EMPTY'),
+    MAINTENANCE_COST_KM: g('MAINTENANCE_COST_KM'),
+    TIRE_COST_KM:        g('TIRE_COST_KM'),
+    DEPRECIATION_KM:     g('DEPRECIATION_KM'),
+    OTHER_COSTS_KM:      g('OTHER_COSTS_KM'),
+    DRIVER_SALARY_PER_TRIP: g('DRIVER_SALARY_PER_TRIP'),
+    MIN_DELIVERY_PRICE:  g('MIN_DELIVERY_PRICE'),
+    PROFIT_COEFFICIENT:  g('PROFIT_COEFFICIENT'),
+    FREE_WAIT_MINUTES:   g('FREE_WAIT_MINUTES'),
+    WAIT_PRICE_PER_HOUR: g('WAIT_PRICE_PER_HOUR'),
+    TAX_RATE:            g('TAX_RATE_PERCENT') / 100,
+    ACQUIRING_RATE:      g('ACQUIRING_RATE_PERCENT') / 100,
+    MIN_ORDER_PROFIT:    g('MIN_ORDER_PROFIT'),
+    MIN_MARGIN_PERCENT:  g('MIN_MARGIN_PERCENT'),
+  });
+  KPCONFIG.saveConfig(cfg);
+  showToast('Настройки сохранены');
+});
+
+document.getElementById('btn-reset-settings').addEventListener('click', () => {
+  if (confirm('Сбросить настройки к заводским значениям? Это не сбросит товары и автомобили.')) {
+    reloadCfg();
+    cfg.settings = JSON.parse(JSON.stringify(KPCONFIG.DEFAULT_CONFIG.settings));
+    KPCONFIG.saveConfig(cfg);
+    loadSettingsForm();
+    showToast('Настройки сброшены');
+  }
+});
+
+// ─── SECTION: Товары ─────────────────────────────────────────────────────────
+function renderProductsTable() {
+  reloadCfg();
+  const tbody = document.getElementById('products-tbody');
+  tbody.innerHTML = '';
+  Object.values(cfg.products).forEach(p => {
+    const margin = p.salePrice > 0 ? Math.round((p.salePrice - p.purchasePrice) / p.salePrice * 100) : 0;
+    const minDisp = p.minOrder !== null ? `${p.minOrder} м³` : 'авто';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${p.name}</strong><br><span class="text-muted" style="font-size:.75rem">${p.id}</span></td>
+      <td>${fmt(p.salePrice)}</td>
+      <td>${fmt(p.purchasePrice)}</td>
+      <td style="color:${margin >= 20 ? 'var(--green)' : margin >= 10 ? 'var(--yellow)' : 'var(--red)'}">${margin}%</td>
+      <td>${p.density} т/м³</td>
+      <td>${minDisp}</td>
+      <td><span class="badge ${p.active ? 'badge-active' : 'badge-inactive'}">${p.active ? 'Активен' : 'Скрыт'}</span></td>
+      <td><button class="btn btn-secondary btn-sm" data-edit-product="${p.id}">Ред.</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.querySelectorAll('[data-edit-product]').forEach(btn => {
+    btn.addEventListener('click', () => openProductModal(btn.dataset.editProduct));
+  });
+}
+
+function openProductModal(id) {
+  reloadCfg();
+  const p = cfg.products[id];
+  if (!p) return;
+  document.getElementById('pf-id').value       = id;
+  document.getElementById('pf-name').value     = p.name;
+  document.getElementById('pf-category').value = p.category;
+  document.getElementById('pf-sale').value     = p.salePrice;
+  document.getElementById('pf-purchase').value = p.purchasePrice;
+  document.getElementById('pf-density').value  = p.density;
+  document.getElementById('pf-step').value     = p.step || 1;
+  document.getElementById('pf-min-order').value= p.minOrder !== null ? p.minOrder : '';
+  document.getElementById('pf-min-profit').value=p.minProfit || 800;
+  document.getElementById('pf-usecase').value  = p.useCase || '';
+  document.getElementById('pf-active').checked = p.active !== false;
+  document.getElementById('pf-delivery').checked = p.deliveryAvailable !== false;
+  document.getElementById('product-modal').classList.add('open');
+}
+
+document.getElementById('btn-modal-cancel').addEventListener('click', () => {
+  document.getElementById('product-modal').classList.remove('open');
+});
+document.getElementById('product-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const id  = document.getElementById('pf-id').value;
+  reloadCfg();
+  Object.assign(cfg.products[id], {
+    name:              document.getElementById('pf-name').value.trim(),
+    category:          document.getElementById('pf-category').value,
+    salePrice:     +document.getElementById('pf-sale').value,
+    purchasePrice: +document.getElementById('pf-purchase').value,
+    density:       +document.getElementById('pf-density').value,
+    step:          +document.getElementById('pf-step').value,
+    minOrder:         document.getElementById('pf-min-order').value !== ''
+                       ? +document.getElementById('pf-min-order').value : null,
+    minProfit:     +document.getElementById('pf-min-profit').value,
+    useCase:          document.getElementById('pf-usecase').value.trim(),
+    active:           document.getElementById('pf-active').checked,
+    deliveryAvailable:document.getElementById('pf-delivery').checked,
+  });
+  KPCONFIG.saveConfig(cfg);
+  document.getElementById('product-modal').classList.remove('open');
+  renderProductsTable();
+  showToast('Товар обновлён');
+});
+
+// ─── SECTION: Автомобили ─────────────────────────────────────────────────────
+function renderVehiclesTable() {
+  reloadCfg();
+  const tbody = document.getElementById('vehicles-tbody');
+  tbody.innerHTML = '';
+  Object.values(cfg.vehicles).forEach(v => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${v.name}</strong></td>
+      <td>${v.capacity} т</td>
+      <td>${v.bodyVolume} м³</td>
+      <td>${v.fuelLoaded} л/100</td>
+      <td>${v.fuelEmpty} л/100</td>
+      <td>${v.isDefault ? '⭐ Да' : '—'}</td>
+      <td><span class="badge ${v.active ? 'badge-active' : 'badge-inactive'}">${v.active ? 'Активен' : 'Скрыт'}</span></td>
+      <td><button class="btn btn-secondary btn-sm" data-edit-vehicle="${v.id}">Ред.</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.querySelectorAll('[data-edit-vehicle]').forEach(btn => {
+    btn.addEventListener('click', () => openVehicleModal(btn.dataset.editVehicle));
+  });
+}
+
+function openVehicleModal(id) {
+  reloadCfg();
+  const v = cfg.vehicles[id];
+  if (!v) return;
+  document.getElementById('vf-id').value       = id;
+  document.getElementById('vf-name').value     = v.name;
+  document.getElementById('vf-short').value    = v.shortName || '';
+  document.getElementById('vf-capacity').value = v.capacity;
+  document.getElementById('vf-volume').value   = v.bodyVolume;
+  document.getElementById('vf-fuel-loaded').value = v.fuelLoaded;
+  document.getElementById('vf-fuel-empty').value  = v.fuelEmpty;
+  document.getElementById('vf-active').checked  = v.active !== false;
+  document.getElementById('vf-default').checked = v.isDefault || false;
+  document.getElementById('vehicle-modal').classList.add('open');
+}
+
+document.getElementById('btn-vmodal-cancel').addEventListener('click', () => {
+  document.getElementById('vehicle-modal').classList.remove('open');
+});
+document.getElementById('btn-add-vehicle').addEventListener('click', () => {
+  // Simple: just open an empty form
+  const id = 'vehicle_' + Date.now();
+  reloadCfg();
+  cfg.vehicles[id] = {
+    id, name: 'Новый автомобиль', shortName: 'Авто',
+    capacity: 10, bodyVolume: 8,
+    fuelLoaded: 35, fuelEmpty: 25, active: true, isDefault: false
+  };
+  KPCONFIG.saveConfig(cfg);
+  openVehicleModal(id);
+  renderVehiclesTable();
+});
+document.getElementById('vehicle-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const id = document.getElementById('vf-id').value;
+  reloadCfg();
+  Object.assign(cfg.vehicles[id], {
+    name:      document.getElementById('vf-name').value.trim(),
+    shortName: document.getElementById('vf-short').value.trim(),
+    capacity:  +document.getElementById('vf-capacity').value,
+    bodyVolume:+document.getElementById('vf-volume').value,
+    fuelLoaded:+document.getElementById('vf-fuel-loaded').value,
+    fuelEmpty: +document.getElementById('vf-fuel-empty').value,
+    active:    document.getElementById('vf-active').checked,
+    isDefault: document.getElementById('vf-default').checked,
+  });
+  // Если этот авто стал основным — снять флаг у остальных
+  if (document.getElementById('vf-default').checked) {
+    Object.keys(cfg.vehicles).forEach(k => {
+      if (k !== id) cfg.vehicles[k].isDefault = false;
+    });
+  }
+  KPCONFIG.saveConfig(cfg);
+  document.getElementById('vehicle-modal').classList.remove('open');
+  renderVehiclesTable();
+  showToast('Автомобиль обновлён');
+});
+
+// ─── SECTION: Тарифы ─────────────────────────────────────────────────────────
+function renderTariffs() {
+  reloadCfg();
+  document.getElementById('tariff-model-select').value = cfg.settings.TARIFF_MODEL;
+
+  // Зоны
+  const zTbody = document.getElementById('zones-tbody');
+  zTbody.innerHTML = '';
+  cfg.zones.forEach((z, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="form-row input" data-zone-name="${i}" value="${z.name}" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:4px;width:100%"></td>
+      <td><input type="number" data-zone-min="${i}" value="${z.minKm}" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:4px;width:80px"></td>
+      <td><input type="number" data-zone-max="${i}" value="${z.maxKm}" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:4px;width:80px"></td>
+      <td><input type="number" data-zone-price="${i}" value="${z.price || ''}" placeholder="индив." style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:4px;width:100px"></td>
+      <td></td>
+    `;
+    zTbody.appendChild(tr);
+  });
+
+  // Районы
+  const dTbody = document.getElementById('districts-tbody');
+  dTbody.innerHTML = '';
+  Object.entries(cfg.districtMap).forEach(([key, d]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="mono">${key}</td>
+      <td>${d.name}</td>
+      <td><input type="number" data-dist-key="${key}" value="${d.km}" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:4px;width:80px"></td>
+      <td></td>
+    `;
+    dTbody.appendChild(tr);
+  });
+}
+
+document.getElementById('btn-save-tariff-model').addEventListener('click', () => {
+  reloadCfg();
+  cfg.settings.TARIFF_MODEL = document.getElementById('tariff-model-select').value;
+  KPCONFIG.saveConfig(cfg);
+  showToast('Тарифная модель сохранена');
+});
+
+document.getElementById('btn-save-zones').addEventListener('click', () => {
+  reloadCfg();
+  cfg.zones.forEach((z, i) => {
+    const name  = document.querySelector(`[data-zone-name="${i}"]`)?.value;
+    const min   = document.querySelector(`[data-zone-min="${i}"]`)?.value;
+    const max   = document.querySelector(`[data-zone-max="${i}"]`)?.value;
+    const price = document.querySelector(`[data-zone-price="${i}"]`)?.value;
+    if (name  !== undefined) z.name   = name;
+    if (min   !== undefined) z.minKm  = +min;
+    if (max   !== undefined) z.maxKm  = +max;
+    z.price = price && price !== '' ? +price : null;
+  });
+  KPCONFIG.saveConfig(cfg);
+  showToast('Зоны сохранены');
+});
+
+document.getElementById('btn-save-districts').addEventListener('click', () => {
+  reloadCfg();
+  document.querySelectorAll('[data-dist-key]').forEach(inp => {
+    const key = inp.dataset.distKey;
+    if (cfg.districtMap[key]) cfg.districtMap[key].km = +inp.value;
+  });
+  KPCONFIG.saveConfig(cfg);
+  showToast('Расстояния до районов сохранены');
+});
+
+// ─── SECTION: Калькулятор (Админ) ────────────────────────────────────────────
+let lastResult = null;
+
+function initAdminCalc() {
+  reloadCfg();
+  const matSel = document.getElementById('adm-material');
+  const vehSel = document.getElementById('adm-vehicle');
+  matSel.innerHTML = '';
+  Object.values(cfg.products).filter(p => p.active).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.text  = `${p.name} (${fmt(p.salePrice)}/м³)`;
+    matSel.appendChild(opt);
+  });
+  vehSel.innerHTML = '';
+  Object.values(cfg.vehicles).filter(v => v.active).forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.id;
+    opt.text  = v.name;
+    opt.selected = v.isDefault;
+    vehSel.appendChild(opt);
+  });
+}
+
+// Геокодинг в калькуляторе
+let admGeoTimer = null;
+document.getElementById('adm-address').addEventListener('input', () => {
+  clearTimeout(admGeoTimer);
+  const val = document.getElementById('adm-address').value.trim();
+  if (!val || val.length < 5) return;
+  // Если расстояние задано вручную — не геокодируем
+  if (document.getElementById('adm-distance').value) return;
+  document.getElementById('adm-addr-status').className = 'addr-status addr-loading';
+  document.getElementById('adm-addr-status').textContent = 'Определяю адрес...';
+  admGeoTimer = setTimeout(async () => {
+    const geo = await KPEngine.geocodeAddress(val);
+    if (!geo) {
+      document.getElementById('adm-addr-status').className = 'addr-status addr-error';
+      document.getElementById('adm-addr-status').textContent = 'Адрес не найден. Введите вручную или укажите расстояние.';
+    } else {
+      document.getElementById('adm-addr-status').className = 'addr-status addr-ok';
+      document.getElementById('adm-addr-status').textContent = '✓ ' + geo.display.substring(0, 80);
+    }
+  }, 900);
+});
+
+document.getElementById('btn-adm-calc').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-adm-calc');
+  btn.disabled = true;
+  btn.textContent = 'Считаю...';
+
+  reloadCfg();
+  const productId = document.getElementById('adm-material').value;
+  const vehicleId = document.getElementById('adm-vehicle').value;
+  const volume    = parseFloat(document.getElementById('adm-volume').value) || 7;
+  const manualDist= parseFloat(document.getElementById('adm-distance').value);
+
+  try {
+    let distanceKm;
+    if (manualDist > 0) {
+      distanceKm = manualDist;
+    } else {
+      const address = document.getElementById('adm-address').value.trim();
+      if (!address) {
+        showToast('Введите адрес или расстояние', 'error');
+        return;
+      }
+      const s = cfg.settings;
+      const geo = await KPEngine.geocodeAddress(address);
+      if (!geo) {
+        showToast('Адрес не найден', 'error');
+        return;
+      }
+      const route = await KPEngine.getRouteDistance(s.BASE_LAT, s.BASE_LNG, geo.lat, geo.lng);
+      distanceKm = route ? route.distanceKm : parseFloat((
+        Math.sqrt(Math.pow(geo.lat - s.BASE_LAT, 2) + Math.pow(geo.lng - s.BASE_LNG, 2)) * 111.1 * 1.3
+      ).toFixed(1));
+    }
+
+    const result = KPEngine.calcOrder(cfg, productId, vehicleId, volume, distanceKm, null, null);
+    lastResult   = result;
+    renderAdminResult(result);
+    document.getElementById('adm-result').style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Рассчитать';
+  }
+});
+
+function renderAdminResult(r) {
+  if (r.error) { showToast(r.error, 'error'); return; }
+
+  document.getElementById('r-material-cost').textContent = fmt(r.materialCost);
+  document.getElementById('r-trips').textContent         = r.trips;
+  document.getElementById('r-delivery').textContent      = fmt(r.deliveryPrice);
+  document.getElementById('r-total').textContent         = fmt(r.totalPrice);
+
+  const limitText = r.limitBy === 'weight'
+    ? `ограничение по весу: ${r.vehicle.capacity} т / ${r.product.density} т/м³ = ${r.maxVolPerTrip} м³ на рейс`
+    : `ограничение по кузову: ${r.vehicle.bodyVolume} м³ на рейс`;
+  document.getElementById('r-physics').innerHTML =
+    `<strong>${r.trips} рейс(а)</strong> · ${r.vehicle.shortName || r.vehicle.name} · ` +
+    `${limitText} · ${r.distanceKm} км плечо · ${r.roundTripKm} км туда-обратно`;
+
+  document.getElementById('r-purchase').textContent    = '−' + fmt(r.purchaseCost);
+  document.getElementById('r-trip-cost').textContent   = '−' + fmt(r.tripCostAll) +
+    ` (${fmt(r.tripCostOne)} × ${r.trips})`;
+  document.getElementById('r-tax').textContent         = '−' + fmt(r.taxAmount);
+  document.getElementById('r-acquiring').textContent   = '−' + fmt(r.acquiringAmount);
+
+  const profitEl = document.getElementById('r-profit');
+  profitEl.textContent  = (r.grossProfit >= 0 ? '+' : '') + fmt(r.grossProfit);
+  profitEl.style.color  = r.grossProfit > 0 ? 'var(--green)' : 'var(--red)';
+
+  document.getElementById('r-margin').textContent = r.margin + '%';
+
+  const ind  = document.getElementById('r-indicator');
+  const si   = KPEngine.formatStatus(r.status);
+  const s    = cfg.settings;
+  ind.className = 'profit-indicator ' + r.status;
+  document.getElementById('r-status-text').textContent = si.label;
+  document.getElementById('r-status-sub').textContent  =
+    `Прибыль: ${fmt(r.grossProfit)} | Маржа: ${r.margin}% | Мин. маржа: ${s.MIN_MARGIN_PERCENT}% | Мин. прибыль: ${fmt(s.MIN_ORDER_PROFIT)}`;
+
+  document.getElementById('r-auto-delivery').textContent = fmt(r.autoDeliveryPrice);
+  document.getElementById('r-override-hint').textContent = 'Корректировка не применена. Авто цена активна.';
+  document.getElementById('adm-override').value = '';
+
+  document.getElementById('r-auto-min').textContent  = r.autoMinOrder + ' м³';
+  document.getElementById('r-eff-min').textContent   = r.effectiveMinOrder + ' м³';
+  document.getElementById('r-ordered-vol').textContent = r.volume + ' м³';
+  document.getElementById('r-below-min-warn').style.display = r.belowMinOrder ? 'block' : 'none';
+}
+
+// Ручная корректировка доставки
+document.getElementById('btn-apply-override').addEventListener('click', () => {
+  if (!lastResult) return;
+  const override = parseFloat(document.getElementById('adm-override').value);
+  if (isNaN(override) || override < 0) {
+    showToast('Введите корректную цену доставки', 'error');
+    return;
+  }
+  reloadCfg();
+  const result = KPEngine.calcOrder(
+    cfg,
+    lastResult.product.id,
+    lastResult.vehicle.id,
+    lastResult.volume,
+    lastResult.distanceKm,
+    override,
+    null
+  );
+  lastResult = result;
+  renderAdminResult(result);
+  const diff = override - result.autoDeliveryPrice;
+  document.getElementById('r-override-hint').textContent =
+    `Корректировка: ${fmt(override)} (авто: ${fmt(result.autoDeliveryPrice)}, разница: ${diff >= 0 ? '+' : ''}${fmt(diff)})`;
+});
+
+// ─── SECTION: Экспорт / Импорт ───────────────────────────────────────────────
+document.getElementById('btn-export').addEventListener('click', () => {
+  const json = KPCONFIG.exportJSON();
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `kraspecok-config-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+let importData = null;
+document.getElementById('btn-import-pick').addEventListener('click', () => {
+  document.getElementById('import-file').click();
+});
+document.getElementById('import-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('import-file-name').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      importData = JSON.parse(ev.target.result);
+      document.getElementById('btn-import-apply').disabled = false;
+    } catch {
+      showToast('Файл повреждён или не является JSON', 'error');
+    }
+  };
+  reader.readAsText(file);
+});
+document.getElementById('btn-import-apply').addEventListener('click', () => {
+  if (!importData) return;
+  if (!confirm('Текущая конфигурация будет заменена импортированной. Продолжить?')) return;
+  const res = KPCONFIG.importJSON(JSON.stringify(importData));
+  if (res.ok) {
+    reloadCfg();
+    showToast('Конфигурация импортирована');
+  } else {
+    showToast('Ошибка импорта: ' + res.error, 'error');
+  }
+});
+document.getElementById('btn-factory-reset').addEventListener('click', () => {
+  if (!confirm('ПОЛНЫЙ сброс к заводским настройкам? Все изменения цен и настроек будут потеряны!')) return;
+  KPCONFIG.reset();
+  reloadCfg();
+  loadSettingsForm();
+  showToast('Конфиг сброшен к заводским настройкам');
+});
+
+// ─── Инициализация при загрузке ──────────────────────────────────────────────
+loadSettingsForm();
+</script>
+</body>
+</html>

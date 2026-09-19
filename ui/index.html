@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Галерея UI сайта КрасПесок.рф — ПК и Мобильная версия</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="stylesheet" href="ui.css">
+</head>
+<body>
+
+    <header>
+        <div class="header-title">
+            <span class="badge">UI Preview</span>
+            <h1>КрасПесок.рф — Скриншоты интерфейса</h1>
+        </div>
+
+        <div class="controls">
+            <!-- Tabs for pages -->
+            <div class="btn-group" id="page-tabs">
+                <button class="btn-tab active" data-page="index">Главная</button>
+                <button class="btn-tab" data-page="delivery_terms">Правила доставки</button>
+                <button class="btn-tab" data-page="oferta">Оферта</button>
+                <button class="btn-tab" data-page="privacy">Конфиденциальность</button>
+                <button class="btn-tab" data-page="consent">Согласие ПД</button>
+                <button class="btn-tab" data-page="cookies">Cookie</button>
+            </div>
+
+            <!-- View Modes -->
+            <div class="btn-group" id="mode-tabs">
+                <button class="btn-mode active" data-mode="both">ПК + Мобильная</button>
+                <button class="btn-mode" data-mode="desktop">Только ПК</button>
+                <button class="btn-mode" data-mode="mobile">Только Мобильная</button>
+            </div>
+
+            <a href="ui.pdf" class="action-link" target="_blank" title="Скачать или открыть PDF со всеми страницами">
+                📄 Скачать PDF
+            </a>
+            <a href="ui/" class="action-link" target="_blank" title="Открыть папку со всеми оригинальными PNG">
+                📁 Папка со снимками
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="page-indicator">
+            <h2 id="current-title">Главная страница (index.html)</h2>
+            <p id="current-desc">Калькулятор доставки, каталог песка, щебня, ПЩС, ПГС, отзывы и интерактивная карта</p>
+        </div>
+
+        <div class="view-container" id="view-container">
+            <!-- Desktop Mockup Frame -->
+            <div class="device-frame desktop-frame">
+                <div class="frame-header">
+                    <div class="dots">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    <div class="frame-title" id="desktop-url">https://краспесок.рф/ (ПК 1920x1080)</div>
+                    <div>
+                        <a id="download-desktop" href="ui/index_desktop.png" target="_blank" class="action-link action-link-sm">Оригинал ↗</a>
+                    </div>
+                </div>
+                <div class="frame-body">
+                    <img id="img-desktop" class="frame-img" src="ui/index_desktop.png" alt="ПК Версия">
+                </div>
+            </div>
+
+            <!-- Mobile Mockup Frame -->
+            <div class="device-frame mobile-frame">
+                <div class="frame-header">
+                    <div class="dots">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    <div class="frame-title" id="mobile-url">iPhone / Смартфон (390x844 Retina)</div>
+                    <div>
+                        <a id="download-mobile" href="ui/index_mobile.png" target="_blank" class="action-link action-link-sm">Оригинал ↗</a>
+                    </div>
+                </div>
+                <div class="frame-body">
+                    <img id="img-mobile" class="frame-img" src="ui/index_mobile.png" alt="Мобильная Версия">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>КрасПесок.рф &copy; 2026. Скриншоты сгенерированы в исходном разрешении (1920px Full HD Desktop / 780px Retina Mobile).</p>
+    </footer>
+
+    <script src="ui.js"></script>
+</body>
+</html>

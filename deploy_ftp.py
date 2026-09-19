@@ -18,18 +18,30 @@ if not FTP_USER or not FTP_PASS:
 # Ключевые файлы корня сайта
 ROOT_FILES = [
     'index.html',
+    'index_full.html',
+    'maintenance.html',
+    'business-config.js',
+    'pricing-engine.js',
+    'admin.html',
     'app.js',
     'order.php',
     '.htaccess',
     'style.css',
     'oferta.html',
     'delivery_terms.html',
+    'privacy.html',
+    'consent.html',
+    'cookies.html',
     'robots.txt',
     'sitemap.xml',
     'google36177f5bf8b4df82.html',
     'yandex_320ddde99b65402a.html',
     'favicon.ico',
-    'favicon.svg'
+    'favicon.svg',
+    'favicon.png',
+    'favicon-32x32.png',
+    'favicon-16x16.png',
+    'apple-touch-icon.png'
 ]
 
 def upload_file(ftp, local_path, remote_filename):
